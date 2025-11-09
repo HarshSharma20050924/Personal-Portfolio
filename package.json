@@ -1,0 +1,21 @@
+{
+  "name": "portfolio-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "server",
+    "client",
+    "admin"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm:dev --workspace=server\" \"npm:dev --workspace=client\" \"npm:dev --workspace=admin\"",
+    "build": "npm run build --workspace=client && npm run build --workspace=admin",
+    "start": "npm start --workspace=server",
+    "prisma:migrate": "npm run prisma:migrate -w server",
+    "prisma:seed": "npm run prisma:seed -w server"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
