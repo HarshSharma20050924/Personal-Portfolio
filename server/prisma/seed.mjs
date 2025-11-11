@@ -17,12 +17,22 @@ async function main() {
   // Create General Info (Hero Section)
   await prisma.generalInfo.upsert({
     where: { id: 1 },
-    update: {},
+    update: {
+      name: 'Harsh Sharma',
+      title: 'Full-Stack Developer',
+      description: 'I engineer performant and user-centric full-stack applications. My passion lies in delivering clean, maintainable code and exceptional user experiences.',
+      profileImageUrl: '/uploads/default-avatar.png',
+      email: 'hello@harshsharma.dev',
+      phone: '+1 (123) 456-7890',
+    },
     create: {
       id: 1,
-      name: 'Your Name Here',
+      name: 'Harsh Sharma',
       title: 'Full-Stack Developer',
-      description: 'I build beautiful and functional web applications. Passionate about clean code and great user experiences.',
+      description: 'I engineer performant and user-centric full-stack applications. My passion lies in delivering clean, maintainable code and exceptional user experiences.',
+      profileImageUrl: '/uploads/default-avatar.png',
+      email: 'hello@harshsharma.dev',
+      phone: '+1 (123) 456-7890',
     },
   });
   
@@ -49,7 +59,7 @@ async function main() {
       {
         title: 'Project One',
         description: 'A brief description of this amazing project.',
-        imageUrl: 'https://picsum.photos/seed/project1/500/300',
+        imageUrl: '/uploads/default-project.png',
         tags: ['React', 'Node.js', 'API'],
         liveUrl: '#',
         repoUrl: '#',
@@ -57,30 +67,11 @@ async function main() {
       {
         title: 'Project Two',
         description: 'Another fantastic project showcasing different skills.',
-        imageUrl: 'https://picsum.photos/seed/project2/500/300',
+        imageUrl: '/uploads/default-project.png',
         tags: ['TypeScript', 'Vite', 'UI/UX'],
         liveUrl: '#',
         repoUrl: '#',
       }
-    ]
-  });
-
-  // Clear and create articles
-  await prisma.article.deleteMany();
-  await prisma.article.createMany({
-    data: [
-      {
-        title: 'Understanding React Hooks',
-        excerpt: 'A deep dive into the most common hooks in React and how to use them effectively.',
-        date: 'October 26, 2023',
-        url: '#',
-      },
-      {
-        title: 'Modern CSS Layouts',
-        excerpt: 'Exploring the power of Flexbox and Grid for creating responsive designs.',
-        date: 'September 15, 2023',
-        url: '#',
-      },
     ]
   });
 
@@ -91,6 +82,7 @@ async function main() {
       { name: 'GitHub', url: '#', icon: 'github' },
       { name: 'LinkedIn', url: '#', icon: 'linkedin' },
       { name: 'Twitter', url: '#', icon: 'twitter' },
+      { name: 'Instagram', url: '#', icon: 'instagram' },
     ]
   });
 

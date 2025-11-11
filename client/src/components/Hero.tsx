@@ -1,47 +1,75 @@
 import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { HeroData } from '../types';
+import { ArrowDown } from 'lucide-react';
 
 interface HeroProps {
   data: HeroData;
 }
 
 const Hero: React.FC<HeroProps> = ({ data }) => {
+    const taglines = ["AI Engineer.", "Machine Learning Enthusiast.", "Building intelligent systems."];
+    const [index, setIndex] = React.useState(0);
+
+    React.useEffect(() => {
+        const interval = setInterval(() => {
+        setIndex((prevIndex) => (prevIndex + 1) % taglines.length);
+        }, 3000);
+        return () => clearInterval(interval);
+    }, [taglines.length]);
+
+
   return (
-    <section id="about" className="py-24 md:py-32 flex flex-col md:flex-row items-center justify-between">
-      <div className="md:w-1/2 text-center md:text-left mb-12 md:mb-0">
-        <h1 className="text-4xl md:text-6xl font-bold text-slate-800 dark:text-slate-100 mb-4 leading-tight">
+    <section id="home" className="h-screen flex flex-col items-center justify-center text-center relative">
+      <div className="max-w-4xl">
+        <motion.h1 
+          className="font-heading font-extrabold text-text"
+          style={{ fontSize: 'clamp(40px, 8vw, 96px)', lineHeight: 1.1 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
           {data.name}
-        </h1>
-        <p className="text-xl text-sky-600 dark:text-sky-400 mb-6">{data.title}</p>
-        <p className="max-w-xl text-lg text-slate-600 dark:text-slate-400 mb-8">
-          {data.description}
-        </p>
-        <div className="flex justify-center md:justify-start space-x-4">
-          <a
-            href="#contact"
-            className="bg-sky-500 text-white font-medium py-3 px-6 rounded-lg hover:bg-sky-600 transition-all duration-300 transform hover:scale-105 shadow-lg"
-          >
-            Hire Me
-          </a>
-          <a
-            href="#"
-            className="bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200 font-medium py-3 px-6 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-all duration-300"
-          >
-            Download Resume
-          </a>
+        </motion.h1>
+        
+        <div className="h-16 mt-4 relative w-full overflow-hidden">
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={taglines[index]}
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 20 }}
+                    transition={{ duration: 0.5 }}
+                    className="absolute inset-0 flex flex-col items-center justify-center"
+                >
+                    <p className="text-xl md:text-2xl text-secondary">
+                        {taglines[index]}
+                    </p>
+                    <motion.div 
+                        className="h-0.5 bg-primary mt-1"
+                        initial={{ width: 0 }}
+                        animate={{ width: '50%' }}
+                        exit={{ width: 0 }}
+                        transition={{ duration: 0.8, ease: 'easeInOut' }}
+                    />
+                </motion.div>
+            </AnimatePresence>
         </div>
       </div>
-      <div className="md:w-1/3">
-        <div className="w-64 h-64 md:w-80 md:h-80 mx-auto rounded-full overflow-hidden shadow-2xl ring-4 ring-sky-500/30 dark:ring-sky-400/30">
-          <img
-            src="https://picsum.photos/seed/portfolio-avatar/400/400"
-            alt={data.name}
-            className="w-full h-full object-cover"
-          />
-        </div>
-      </div>
+
+      <motion.div
+        className="absolute bottom-10"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1, delay: 2 }}
+      >
+        <a href="#about" aria-label="Scroll down">
+          <ArrowDown className="w-6 h-6 text-secondary animate-bounce" />
+        </a>
+      </motion.div>
     </section>
   );
 };
+
 
 export default Hero;

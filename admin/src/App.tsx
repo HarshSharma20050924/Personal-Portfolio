@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
-import { HeroData, Skill, Project, Article, SocialLink } from './types';
+import { HeroData, Skill, Project, SocialLink } from './types';
 
 type AppData = {
   heroData: HeroData;
   skills: Skill[];
   projects: Project[];
-  articles: Article[];
   socialLinks: SocialLink[];
 };
 
@@ -95,8 +94,6 @@ const App: React.FC = () => {
       setSkills={(s) => setData(prev => ({ ...prev!, skills: s }))}
       projects={data.projects}
       setProjects={(p) => setData(prev => ({ ...prev!, projects: p }))}
-      articles={data.articles}
-      setArticles={(a) => setData(prev => ({ ...prev!, articles: a }))}
       socialLinks={data.socialLinks}
       setSocialLinks={(sl) => setData(prev => ({ ...prev!, socialLinks: sl }))}
     />

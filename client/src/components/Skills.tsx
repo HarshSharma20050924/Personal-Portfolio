@@ -1,31 +1,86 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+import { useInView } from 'react-intersection-observer';
 import type { Skill } from '../types';
+import { Atom, Server, Database, Wind, FileCode2, Container, Cuboid, Code2 } from 'lucide-react';
 
 interface SkillsProps {
   skills: Skill[];
 }
 
+const containerVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+};
+
+const skillIcons: { [key: string]: React.ComponentType<{ className?: string }> } = {
+  'react': Atom,
+  'node.js': Server,
+  'prisma': Database,
+  'tailwind css': Wind,
+  'typescript': FileCode2,
+  'postgresql': Database,
+  'docker': Container,
+  'express.js': Cuboid,
+  'python': Code2,
+};
+
+
 const Skills: React.FC<SkillsProps> = ({ skills }) => {
+  const { ref, inView } = useInView({
+    triggerOnce: true,
+    threshold: 0.2,
+  });
+  
   return (
-    <section id="skills" className="py-20">
-      <h2 className="text-3xl font-bold text-center text-slate-800 dark:text-slate-100 mb-4">My Skills</h2>
-      <p className="text-lg text-center text-slate-600 dark:text-slate-400 mb-12 max-w-2xl mx-auto">
-        Here are some of the technologies and tools I'm proficient in.
-      </p>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-        {skills.map((skill) => (
-          <div key={skill.name} className="group p-6 bg-white dark:bg-slate-800/50 rounded-lg shadow-md hover:shadow-xl transition-all duration-300">
-            <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-4">{skill.name}</h3>
-            <div className="bg-slate-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden">
-              <div
-                className="bg-sky-500 dark:bg-sky-400 h-3 rounded-full transition-all duration-500 ease-out group-hover:w-full"
-                style={{ width: `${skill.level}%` }}
-              ></div>
-            </div>
-            <p className="text-right text-sm text-slate-500 dark:text-slate-400 mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">{skill.level}% Proficiency</p>
-          </div>
-        ))}
+    <section id="skills" className="py-20" ref={ref}>
+      <div className="text-center mb-16">
+        <h2 className="font-heading text-4xl font-bold">Technology Stack</h2>
+        <div className="w-20 h-1 bg-primary mx-auto mt-4"></div>
       </div>
+      <motion.div 
+        className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6"
+        variants={containerVariants}
+        initial="hidden"
+        animate={inView ? 'visible' : 'hidden'}
+      >
+        {skills.map((skill) => {
+          const Icon = skillIcons[skill.name.toLowerCase()] || Cuboid;
+          return (
+            <motion.div 
+              key={skill.name} 
+              className="p-6 text-center bg-white/30 rounded-lg shadow-soft border border-black/10 flex flex-col items-center justify-center gap-3 relative overflow-hidden"
+              style={{
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+              }}
+              variants={itemVariants}
+              whileHover={{ y: -5, scale: 1.02, boxShadow: '0 15px 30px -10px rgba(0, 119, 255, 0.2)' }}
+              transition={{ type: 'spring', stiffness: 300 }}
+            >
+              {Icon && <Icon className="w-8 h-8 text-primary" />}
+              <h3 className="font-semibold text-lg">{skill.name}</h3>
+              <div className="w-full bg-primary/20 rounded-full h-1.5 absolute bottom-0 left-0">
+                <motion.div
+                  className="bg-primary h-1.5 rounded-full"
+                  initial={{ width: 0 }}
+                  animate={inView ? { width: `${skill.level}%` } : { width: 0 }}
+                  transition={{ duration: 1, delay: 0.5, ease: 'easeOut' }}
+                />
+              </div>
+            </motion.div>
+          )
+        })}
+      </motion.div>
     </section>
   );
 };

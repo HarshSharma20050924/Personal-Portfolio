@@ -1,41 +1,35 @@
 import React from 'react';
 import Header from './Header';
 import Hero from './Hero';
+import About from './About';
 import Skills from './Skills';
 import Projects from './Projects';
-import Blog from './Blog';
 import Contact from './Contact';
 import Footer from './Footer';
-import type { HeroData, Skill, Project, Article, SocialLink } from '../types';
+import type { HeroData, Skill, Project, SocialLink } from '../types';
 
 interface PortfolioProps {
-  theme: 'light' | 'dark';
-  toggleTheme: () => void;
   heroData: HeroData;
   skills: Skill[];
   projects: Project[];
-  articles: Article[];
   socialLinks: SocialLink[];
 }
 
 const Portfolio: React.FC<PortfolioProps> = ({
-  theme,
-  toggleTheme,
   heroData,
   skills,
   projects,
-  articles,
   socialLinks,
 }) => {
   return (
-    <div className="text-slate-700 dark:text-slate-300">
-      <Header theme={theme} toggleTheme={toggleTheme} />
-      <main className="container mx-auto px-6 md:px-12">
+    <div className="text-text">
+      <Header />
+      <main className="max-w-[1200px] mx-auto px-8">
         <Hero data={heroData} />
+        <About data={heroData} />
         <Skills skills={skills} />
         <Projects projects={projects} />
-        <Blog articles={articles} />
-        <Contact socialLinks={socialLinks} />
+        <Contact socialLinks={socialLinks} heroData={heroData} />
       </main>
       <Footer name={heroData.name} />
     </div>

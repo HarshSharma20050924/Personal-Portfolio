@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import type { HeroData, Skill, Project, Article, SocialLink } from '../types';
+import type { HeroData, Skill, Project, SocialLink } from '../types';
 import ManageHero from './ManageHero';
 import ManageSkills from './ManageSkills';
 import ManageProjects from './ManageProjects';
-import ManageBlog from './ManageBlog';
 import ManageSocials from './ManageSocials';
 
 interface DashboardProps {
@@ -15,13 +14,11 @@ interface DashboardProps {
   setSkills: React.Dispatch<React.SetStateAction<Skill[]>>;
   projects: Project[];
   setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
-  articles: Article[];
-  setArticles: React.Dispatch<React.SetStateAction<Article[]>>;
   socialLinks: SocialLink[];
   setSocialLinks: React.Dispatch<React.SetStateAction<SocialLink[]>>;
 }
 
-type AdminView = 'hero' | 'skills' | 'projects' | 'blog' | 'socials';
+type AdminView = 'hero' | 'skills' | 'projects' | 'socials';
 
 const Dashboard: React.FC<DashboardProps> = (props) => {
   const [view, setView] = useState<AdminView>('hero');
@@ -32,7 +29,6 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
     { id: 'hero', label: 'Hero Section' },
     { id: 'skills', label: 'Skills' },
     { id: 'projects', label: 'Projects' },
-    { id: 'blog', label: 'Blog' },
     { id: 'socials', label: 'Social Links' },
   ];
   
@@ -59,8 +55,6 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
         return <ManageSkills skills={props.skills} setSkills={props.setSkills} />;
       case 'projects':
         return <ManageProjects projects={props.projects} setProjects={props.setProjects} />;
-      case 'blog':
-        return <ManageBlog articles={props.articles} setArticles={props.setArticles} />;
       case 'socials':
         return <ManageSocials socialLinks={props.socialLinks} setSocialLinks={props.setSocialLinks} />;
       default:

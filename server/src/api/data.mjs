@@ -5,11 +5,10 @@ const router = Router();
 
 // Helper function to fetch all portfolio data from the database
 async function getPortfolioData() {
-  const [heroData, skills, projects, articles, socialLinks] = await Promise.all([
+  const [heroData, skills, projects, socialLinks] = await Promise.all([
     prisma.generalInfo.findFirst({ where: { id: 1 } }),
     prisma.skill.findMany({ orderBy: { id: 'asc' } }),
     prisma.project.findMany({ orderBy: { id: 'asc' } }),
-    prisma.article.findMany({ orderBy: { id: 'asc' } }),
     prisma.socialLink.findMany({ orderBy: { id: 'asc' } }),
   ]);
 
@@ -24,7 +23,6 @@ async function getPortfolioData() {
     heroData: heroDataWithoutId,
     skills,
     projects,
-    articles,
     socialLinks,
   };
 }
@@ -48,7 +46,7 @@ router.post('/', async (req, res) => {
       return res.status(401).json({ message: 'Unauthorized' });
     }
     
-    const { heroData, skills, projects, articles, socialLinks } = req.body;
+    const { heroData, skills, projects, socialLinks } = req.body;
 
     // Use a transaction to update all data atomically
     await prisma.$transaction([
@@ -63,10 +61,6 @@ router.post('/', async (req, res) => {
       prisma.project.deleteMany(),
       prisma.project.createMany({
         data: projects.map(({ title, description, imageUrl, tags, liveUrl, repoUrl }) => ({ title, description, imageUrl, tags, liveUrl, repoUrl })),
-      }),
-      prisma.article.deleteMany(),
-      prisma.article.createMany({
-        data: articles.map(({ title, excerpt, date, url }) => ({ title, excerpt, date, url })),
       }),
       prisma.socialLink.deleteMany(),
       prisma.socialLink.createMany({

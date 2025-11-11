@@ -11,7 +11,7 @@ const ManageSocials: React.FC<ManageSocialsProps> = ({ socialLinks, setSocialLin
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [formData, setFormData] = useState<SocialLink>(blankForm);
 
-  const availableIcons = ['github', 'linkedin', 'twitter'];
+  const availableIcons = ['github', 'linkedin', 'twitter', 'instagram'];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;

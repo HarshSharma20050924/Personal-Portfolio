@@ -2,6 +2,9 @@ export interface HeroData {
   name: string;
   title: string;
   description: string;
+  profileImageUrl: string;
+  email?: string;
+  phone?: string;
 }
 
 export interface Skill {
@@ -18,14 +21,6 @@ export interface Project {
   tags: string[];
   liveUrl?: string;
   repoUrl?: string;
-}
-
-export interface Article {
-  id?: number;
-  title: string;
-  excerpt: string;
-  date: string;
-  url: string;
 }
 
 export interface SocialLink {

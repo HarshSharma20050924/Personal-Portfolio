@@ -2,12 +2,15 @@ export interface HeroData {
   name: string;
   title: string;
   description: string;
+  profileImageUrl: string;
+  email?: string;
+  phone?: string;
 }
 
 export interface Skill {
   id?: number;
   name: string;
-  level: number;
+  level: number; // NOTE: Level is unused in the new UI but kept for admin panel compatibility
 }
 
 export interface Project {
@@ -20,17 +23,9 @@ export interface Project {
   repoUrl?: string;
 }
 
-export interface Article {
-  id?: number;
-  title: string;
-  excerpt: string;
-  date: string;
-  url: string;
-}
-
 export interface SocialLink {
   id?: number;
   name: string;
   url: string;
-  icon: string; // Changed from ComponentType to string
+  icon: string;
 }
