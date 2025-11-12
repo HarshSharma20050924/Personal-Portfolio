@@ -3,7 +3,7 @@
   "installCommand": "npm install",
   "builds": [
     {
-      "src": "server/package.json",
+      "src": "server/src/server.mjs",
       "use": "@vercel/node",
       "config": {
         "includeFiles": [
@@ -30,10 +30,6 @@
     {
       "src": "/api/(.*)",
       "dest": "/server/src/server.mjs"
-    },
-    {
-      "src": "/assets/(.*)",
-      "dest": "/client/assets/$1"
     },
     {
       "src": "/favicon.svg",
