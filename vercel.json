@@ -32,6 +32,10 @@
       "dest": "/server/src/server.mjs"
     },
     {
+      "src": "/admin/assets/(.*)",
+      "dest": "/admin/assets/$1"
+    },
+    {
       "src": "/assets/(.*)",
       "dest": "/client/assets/$1"
     },
