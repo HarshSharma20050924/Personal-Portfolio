@@ -28,11 +28,20 @@
   ],
   "routes": [
     {
-      "handle": "filesystem"
-    },
-    {
       "src": "/api/(.*)",
       "dest": "/server/src/server.mjs"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "/client/assets/$1"
+    },
+    {
+      "src": "/favicon.svg",
+      "dest": "/client/favicon.svg"
+    },
+    {
+      "src": "/resume.pdf",
+      "dest": "/client/resume.pdf"
     },
     {
       "src": "/admin(/.*)?",
