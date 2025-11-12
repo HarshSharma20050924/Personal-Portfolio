@@ -3,43 +3,56 @@ import prisma from '../prisma.mjs';
 
 const router = Router();
 
-// Helper function to fetch all portfolio data from the database
-async function getPortfolioData() {
-  const [heroData, skills, projects, socialLinks, articles] = await Promise.all([
-    prisma.generalInfo.findFirst({ where: { id: 1 } }),
-    prisma.skill.findMany({ orderBy: { id: 'asc' } }),
-    prisma.project.findMany({ orderBy: { id: 'asc' } }),
-    prisma.socialLink.findMany({ orderBy: { id: 'asc' } }),
-    prisma.article.findMany({ orderBy: { id: 'asc' } }),
-  ]);
-
-  if (!heroData) {
-      throw new Error("Portfolio data has not been seeded. Please run the database seed script.");
-  }
-
-  // The 'id' field from generalInfo is not needed on the frontend
-  const { id, ...heroDataWithoutId } = heroData;
-
-  return {
-    heroData: heroDataWithoutId,
-    skills,
-    projects,
-    socialLinks,
-    articles,
-  };
-}
+const defaultData = {
+  heroData: {
+    name: 'Your Name',
+    title: 'Your Title',
+    description: 'Welcome to your portfolio! Use the admin panel to update this information.',
+    profileImageUrl: '',
+    email: 'your.email@example.com',
+    phone: '',
+    quote: 'Add a quote about yourself.'
+  },
+  skills: [],
+  projects: [],
+  socialLinks: [],
+  articles: []
+};
 
 // GET /api/data
 router.get('/', async (req, res) => {
   try {
-    const data = await getPortfolioData();
-    // Add cache-control headers to prevent browsers and edge networks from
-    // serving stale data. This ensures updates are reflected immediately.
+    const [heroData, skills, projects, socialLinks, articles] = await Promise.all([
+      prisma.generalInfo.findFirst({ where: { id: 1 } }),
+      prisma.skill.findMany({ orderBy: { id: 'asc' } }),
+      prisma.project.findMany({ orderBy: { id: 'asc' } }),
+      prisma.socialLink.findMany({ orderBy: { id: 'asc' } }),
+      prisma.article.findMany({ orderBy: { id: 'asc' } }),
+    ]);
+
+    let responseData;
+
+    if (!heroData) {
+      // If no heroData, this is likely a fresh deployment. Send defaults.
+      responseData = defaultData;
+    } else {
+      const { id, ...heroDataWithoutId } = heroData;
+      responseData = {
+        heroData: heroDataWithoutId,
+        skills,
+        projects,
+        socialLinks,
+        articles,
+      };
+    }
+    
+    // Add cache-control headers to prevent stale data.
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
     res.setHeader('Surrogate-Control', 'no-store');
-    res.status(200).json(data);
+    res.status(200).json(responseData);
+
   } catch (error) {
     console.error('API Error:', error);
     res.status(500).json({ message: 'Internal Server Error', error: error.message });
@@ -58,22 +71,28 @@ router.post('/', async (req, res) => {
 
     // Use a transaction to update all data atomically
     await prisma.$transaction([
-      prisma.generalInfo.update({
+      // Use upsert to create the record if it doesn't exist on the first save
+      prisma.generalInfo.upsert({
         where: { id: 1 },
-        data: heroData,
+        update: heroData,
+        create: { ...heroData, id: 1 }, // Ensure id is set on creation
       }),
+
       prisma.skill.deleteMany(),
       prisma.skill.createMany({
         data: skills.map(({ name, level }) => ({ name, level })),
       }),
+
       prisma.project.deleteMany(),
       prisma.project.createMany({
         data: projects.map(({ title, description, imageUrl, tags, liveUrl, repoUrl }) => ({ title, description, imageUrl, tags, liveUrl, repoUrl })),
       }),
+      
       prisma.socialLink.deleteMany(),
       prisma.socialLink.createMany({
         data: socialLinks.map(({ name, url, icon }) => ({ name, url, icon })),
       }),
+
       prisma.article.deleteMany(),
       prisma.article.createMany({
         data: articles.map(({ title, excerpt, date, url }) => ({ title, excerpt, date, url })),
