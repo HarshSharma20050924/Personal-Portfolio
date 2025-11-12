@@ -23,7 +23,7 @@ const Hero: React.FC<HeroProps> = ({ data }) => {
     <section id="home" className="h-screen flex flex-col items-center justify-center text-center relative">
       <div className="max-w-4xl">
         <motion.h1 
-          className="font-heading font-extrabold text-text"
+          className="font-heading font-extrabold text-text dark:text-dark-text"
           style={{ fontSize: 'clamp(40px, 8vw, 96px)', lineHeight: 1.1 }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
