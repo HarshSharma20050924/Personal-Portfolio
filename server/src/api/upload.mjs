@@ -1,9 +1,10 @@
 import { Router } from 'express';
 import multer from 'multer';
+import { put } from '@vercel/blob';
 
 const router = Router();
 
-// Configure multer to hold the file in memory instead of saving to disk
+// Configure multer to hold the file in memory
 const upload = multer({ storage: multer.memoryStorage() });
 
 // POST /api/upload
@@ -13,16 +14,20 @@ router.post('/', upload.single('image'), async (req, res) => {
   }
 
   try {
-    // Convert the image buffer to a Base64 string
-    const base64Data = req.file.buffer.toString('base64');
-    // Create a Data URI for embedding in the database and HTML
-    const dataURI = `data:${req.file.mimetype};base64,${base64Data}`;
+    const { originalname, buffer } = req.file;
 
-    // Return the Data URI. The frontend will save this to the database.
-    res.status(200).json({ filePath: dataURI });
+    // Upload the file buffer to Vercel Blob
+    const blob = await put(originalname, buffer, {
+      access: 'public', // Make the file publicly accessible
+    });
+
+    // Return the public URL of the uploaded file.
+    // The admin frontend is already set up to handle a URL here.
+    res.status(200).json({ filePath: blob.url });
   } catch (error) {
-    console.error('File Processing Error:', error);
-    res.status(500).json({ message: 'Failed to process file.', error: error.message });
+    console.error('File Upload Error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ message: `Failed to upload file to Vercel Blob. ${errorMessage}` });
   }
 });
 

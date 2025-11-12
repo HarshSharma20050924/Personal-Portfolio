@@ -7,12 +7,14 @@
   "scripts": {
     "start": "node src/server.mjs",
     "dev": "node --watch src/server.mjs",
-    "build": "npx prisma generate --schema=./prisma/schema.prisma",
-    "prisma:migrate": "npx prisma migrate dev --schema=./prisma/schema.prisma",
-    "prisma:seed": "npx prisma db seed --schema=./prisma/schema.prisma"
+    "build": "npx prisma generate",
+    "postinstall": "npx prisma migrate deploy",
+    "prisma:migrate": "npx prisma migrate dev",
+    "prisma:seed": "npx prisma db seed"
   },
   "dependencies": {
     "@prisma/client": "^5.15.0",
+    "@vercel/blob": "^0.23.2",
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "multer": "^1.4.5-lts.1"
