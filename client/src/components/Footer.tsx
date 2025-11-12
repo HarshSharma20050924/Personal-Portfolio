@@ -13,10 +13,10 @@ const Footer: React.FC<FooterProps> = ({ name }) => {
   });
   
   return (
-    <footer className="bg-off-white mt-16">
+    <footer className="bg-off-white dark:bg-dark-off-black mt-16">
       <motion.div 
         ref={ref}
-        className="max-w-[1200px] mx-auto px-8 py-6 text-center text-secondary"
+        className="max-w-[1200px] mx-auto px-8 py-6 text-center text-secondary dark:text-dark-secondary"
         initial={{ opacity: 0 }}
         animate={{ opacity: inView ? 1 : 0 }}
         transition={{ duration: 1 }}

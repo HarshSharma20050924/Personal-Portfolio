@@ -1,5 +1,7 @@
+/// <reference types="vite/client" />
 import React from 'react';
-import { motion } from 'framer-motion';
+// FIX: Import Variants to correctly type framer-motion variants.
+import { motion, Variants } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import type { HeroData } from '../types';
 
@@ -13,10 +15,10 @@ const About: React.FC<AboutProps> = ({ data }) => {
     threshold: 0.3,
   });
 
-  const imageBaseUrl = import.meta.env.DEV ? 'http://localhost:3001' : '';
-  const profileImage = data.profileImageUrl ? `${imageBaseUrl}${data.profileImageUrl}` : "https://picsum.photos/seed/portfolio-avatar/400/400";
+  const profileImage = data.profileImageUrl || "https://picsum.photos/seed/portfolio-avatar/400/400";
 
-  const variants = {
+  // FIX: Explicitly type variants with Variants type from framer-motion to fix easing type error.
+  const variants: Variants = {
     hidden: { opacity: 0, y: 50 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut' } },
   };
@@ -30,7 +32,7 @@ const About: React.FC<AboutProps> = ({ data }) => {
         animate={inView ? 'visible' : 'hidden'}
       >
         <div className="md:col-span-2">
-          <div className="w-full aspect-square rounded-lg overflow-hidden shadow-soft">
+          <div className="w-full aspect-square rounded-lg overflow-hidden shadow-soft dark:shadow-soft-dark">
             <img
               src={profileImage}
               alt={data.name}
@@ -40,17 +42,19 @@ const About: React.FC<AboutProps> = ({ data }) => {
         </div>
         <div className="md:col-span-3">
           <h2 className="font-heading text-4xl font-bold mb-6">About Me</h2>
-          <p className="text-secondary text-lg mb-6 leading-relaxed">
+          <p className="text-secondary dark:text-dark-secondary text-lg mb-6 leading-relaxed">
             {data.description}
           </p>
-          <p className="text-primary italic text-lg mb-8">
-            “Simplicity is the ultimate sophistication.”
-          </p>
+          {data.quote && (
+            <p className="text-primary dark:text-dark-primary italic text-lg mb-8">
+              “{data.quote}”
+            </p>
+          )}
           <div className="flex space-x-4">
-            <a href="#" className="border border-primary text-primary font-medium py-3 px-8 rounded-full hover:bg-primary hover:text-background transition-all duration-300">
-              Resume
+            <a href="/resume.pdf" download="HarshSharma_Resume.pdf" className="border border-primary text-primary dark:border-dark-primary dark:text-dark-primary font-medium py-3 px-8 rounded-full hover:bg-primary hover:text-background dark:hover:bg-dark-primary dark:hover:text-dark-background transition-all duration-300">
+              Download Resume
             </a>
-            <a href="#contact" className="bg-primary text-background font-medium py-3 px-8 rounded-full hover:bg-opacity-80 transition-all duration-300">
+            <a href="#contact" className="bg-primary text-background dark:bg-dark-primary dark:text-dark-background font-medium py-3 px-8 rounded-full hover:bg-opacity-80 transition-all duration-300">
               Contact
             </a>
           </div>

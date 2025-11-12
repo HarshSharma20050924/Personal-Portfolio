@@ -1,34 +1,70 @@
 import React from 'react';
 import type { Article } from '../types';
+import { motion } from 'framer-motion';
+import { useInView } from 'react-intersection-observer';
+import { ArrowRight } from 'lucide-react';
 
 interface BlogProps {
   articles: Article[];
 }
 
+const containerVariants = {
+    hidden: {},
+    visible: {
+      transition: {
+        staggerChildren: 0.2
+      }
+    }
+};
+
+const itemVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut' } }
+};
+
+
 const Blog: React.FC<BlogProps> = ({ articles }) => {
+    const { ref, inView } = useInView({
+        triggerOnce: true,
+        threshold: 0.1,
+    });
+
   return (
     <section id="blog" className="py-20">
-      <h2 className="text-3xl font-bold text-center text-slate-800 dark:text-slate-100 mb-4">Articles & Insights</h2>
-      <p className="text-lg text-center text-slate-600 dark:text-slate-400 mb-12 max-w-2xl mx-auto">
-        I enjoy writing about technology, design, and development.
-      </p>
-      <div className="grid md:grid-cols-3 gap-8">
+      <div className="text-center mb-16">
+        <h2 className="font-heading text-4xl font-bold">Articles & Insights</h2>
+        <p className="mt-4 text-lg text-secondary dark:text-dark-secondary max-w-2xl mx-auto">
+            I enjoy writing about technology, AI, and development.
+        </p>
+      </div>
+      <motion.div 
+        ref={ref}
+        className="grid md:grid-cols-2 gap-8"
+        variants={containerVariants}
+        initial="hidden"
+        animate={inView ? 'visible' : 'hidden'}
+      >
         {articles.map((article) => (
-          <a
+          <motion.a
             href={article.url}
             key={article.title}
-            className="group block p-6 bg-white dark:bg-slate-800/50 rounded-lg shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+            className="group block p-8 bg-white dark:bg-dark-off-black rounded-lg shadow-soft dark:shadow-soft-dark hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-black/10 dark:border-white/10"
+            variants={itemVariants}
           >
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">{article.date}</p>
-            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-3 group-hover:text-sky-500 dark:group-hover:text-sky-400 transition-colors">
+            <p className="text-sm text-secondary dark:text-dark-secondary mb-2">{article.date}</p>
+            <h3 className="text-xl font-bold font-heading text-text dark:text-dark-text mb-3">
               {article.title}
             </h3>
-            <p className="text-slate-600 dark:text-slate-400 text-sm">
+            <p className="text-secondary dark:text-dark-secondary mb-4">
               {article.excerpt}
             </p>
-          </a>
+            <span className="font-semibold text-primary dark:text-dark-primary flex items-center gap-2">
+                Read More
+                <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
+            </span>
+          </motion.a>
         ))}
-      </div>
+      </motion.div>
     </section>
   );
 };

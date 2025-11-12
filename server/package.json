@@ -7,8 +7,9 @@
   "scripts": {
     "start": "node src/server.mjs",
     "dev": "node --watch src/server.mjs",
-    "prisma:migrate": "npx prisma migrate dev",
-    "prisma:seed": "npx prisma db seed"
+    "build": "npx prisma generate --schema=./prisma/schema.prisma",
+    "prisma:migrate": "npx prisma migrate dev --schema=./prisma/schema.prisma",
+    "prisma:seed": "npx prisma db seed --schema=./prisma/schema.prisma"
   },
   "dependencies": {
     "@prisma/client": "^5.15.0",
@@ -20,6 +21,7 @@
     "prisma": "^5.15.0"
   },
   "prisma": {
-    "seed": "node prisma/seed.mjs"
+    "seed": "node prisma/seed.mjs",
+    "schema": "prisma/schema.prisma"
   }
 }

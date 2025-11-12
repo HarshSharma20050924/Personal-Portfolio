@@ -21,13 +21,13 @@ const Contact: React.FC<ContactProps> = ({ socialLinks, heroData }) => {
         <h2 className="font-heading text-4xl font-bold mb-4">Let’s build something incredible together.</h2>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 mb-12">
           {heroData.email && (
-            <a href={`mailto:${heroData.email}`} className="flex items-center gap-2 text-lg text-primary hover:underline">
+            <a href={`mailto:${heroData.email}`} className="flex items-center gap-2 text-lg text-primary dark:text-dark-primary hover:underline">
               <Mail className="w-5 h-5" />
               {heroData.email}
             </a>
           )}
           {heroData.phone && (
-            <div className="flex items-center gap-2 text-lg text-secondary">
+            <div className="flex items-center gap-2 text-lg text-secondary dark:text-dark-secondary">
               <Phone className="w-5 h-5" />
               {heroData.phone}
             </div>
@@ -39,7 +39,7 @@ const Contact: React.FC<ContactProps> = ({ socialLinks, heroData }) => {
             const IconComponent = iconMap[icon.toLowerCase()];
             if (!IconComponent) return null;
             return (
-              <a key={name} href={url} target="_blank" rel="noopener noreferrer" aria-label={name} className="text-secondary hover:text-primary transition-colors">
+              <a key={name} href={url} target="_blank" rel="noopener noreferrer" aria-label={name} className="text-secondary dark:text-dark-secondary hover:text-primary dark:hover:text-dark-primary transition-colors">
                 <IconComponent className="w-8 h-8" />
               </a>
             )

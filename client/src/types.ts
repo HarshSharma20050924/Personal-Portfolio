@@ -5,6 +5,7 @@ export interface HeroData {
   profileImageUrl: string;
   email?: string;
   phone?: string;
+  quote?: string;
 }
 
 export interface Skill {
@@ -28,4 +29,12 @@ export interface SocialLink {
   name: string;
   url: string;
   icon: string;
+}
+
+export interface Article {
+  id?: number;
+  title: string;
+  excerpt: string;
+  date: string;
+  url:string;
 }

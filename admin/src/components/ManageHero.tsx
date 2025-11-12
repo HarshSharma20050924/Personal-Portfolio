@@ -1,4 +1,5 @@
-import React from 'react';
+/// <reference types="vite/client" />
+import React, { useState } from 'react';
 import type { HeroData } from '../types';
 
 interface ManageHeroProps {
@@ -7,8 +8,9 @@ interface ManageHeroProps {
 }
 
 const ManageHero: React.FC<ManageHeroProps> = ({ data, setData }) => {
-  const imageBaseUrl = import.meta.env.DEV ? 'http://localhost:3001' : '';
-  
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     const updatedFormData = { ...data, [name]: value };
@@ -19,6 +21,8 @@ const ManageHero: React.FC<ManageHeroProps> = ({ data, setData }) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    setIsUploading(true);
+    setUploadError(null);
     const formData = new FormData();
     formData.append('image', file);
 
@@ -28,20 +32,21 @@ const ManageHero: React.FC<ManageHeroProps> = ({ data, setData }) => {
         body: formData,
       });
 
+      const result = await response.json();
       if (!response.ok) {
-        throw new Error('Image upload failed');
+        throw new Error(result.message || 'Image upload failed');
       }
 
-      const result = await response.json();
       setData({ ...data, profileImageUrl: result.filePath });
     } catch (error) {
       console.error("Upload Error:", error);
-      alert('Failed to upload image.');
+      setUploadError(error.message);
+    } finally {
+      setIsUploading(false);
     }
   };
 
-  const profileImage = data.profileImageUrl ? `${imageBaseUrl}${data.profileImageUrl}` : "https://via.placeholder.com/128";
-
+  const profileImage = data.profileImageUrl || "https://via.placeholder.com/128";
 
   return (
     <div>
@@ -108,8 +113,11 @@ const ManageHero: React.FC<ManageHeroProps> = ({ data, setData }) => {
               name="profileImage"
               accept="image/*"
               onChange={handleImageUpload}
-              className="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100"
+              disabled={isUploading}
+              className="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 disabled:opacity-50"
             />
+            {isUploading && <p className="text-sm text-slate-500 mt-2">Uploading...</p>}
+            {uploadError && <p className="text-sm text-red-500 mt-2 max-w-xs mx-auto">{uploadError}</p>}
           </div>
         </div>
         
@@ -121,6 +129,19 @@ const ManageHero: React.FC<ManageHeroProps> = ({ data, setData }) => {
             rows={4}
             value={data.description}
             onChange={handleChange}
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg dark:bg-slate-700 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-500"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="quote" className="block text-sm font-medium mb-1">"About Me" Quote</label>
+          <textarea
+            id="quote"
+            name="quote"
+            rows={2}
+            value={data.quote || ''}
+            onChange={handleChange}
+            placeholder="e.g., Simplicity is the ultimate sophistication."
             className="w-full px-3 py-2 border border-slate-300 rounded-lg dark:bg-slate-700 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-500"
           />
         </div>

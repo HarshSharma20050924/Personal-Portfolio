@@ -1,8 +1,17 @@
-import { PrismaClient } from '@prisma/client';
+// FIX: Added reference to node types to resolve error on `process.exit`.
+/// <reference types="node" />
+
+// FIX: Changed import to handle potential CJS/ESM interop issues.
+import prismaClient from '@prisma/client';
+const { PrismaClient } = prismaClient;
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('Start seeding ...');
+
+  // Using a self-contained placeholder image ensures the portfolio works
+  // offline and without any external network requests for initial data.
+  const placeholderImage = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAARwAAACxCAMAAAAh3/JWAAAAA1BMVEXm5+RbO+oCAAAAR0lEQVR4nO3BAQEAAACCIP+vbkhAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAO8GxYgAAb0jQ/cAAAAASUVORK5CYII=';
 
   // Create Admin User
   await prisma.admin.upsert({
@@ -21,7 +30,8 @@ async function main() {
       name: 'Harsh Sharma',
       title: 'Full-Stack Developer',
       description: 'I engineer performant and user-centric full-stack applications. My passion lies in delivering clean, maintainable code and exceptional user experiences.',
-      profileImageUrl: '/uploads/default-avatar.png',
+      quote: 'Simplicity is the ultimate sophistication.',
+      profileImageUrl: placeholderImage,
       email: 'hello@harshsharma.dev',
       phone: '+1 (123) 456-7890',
     },
@@ -30,7 +40,8 @@ async function main() {
       name: 'Harsh Sharma',
       title: 'Full-Stack Developer',
       description: 'I engineer performant and user-centric full-stack applications. My passion lies in delivering clean, maintainable code and exceptional user experiences.',
-      profileImageUrl: '/uploads/default-avatar.png',
+      quote: 'Simplicity is the ultimate sophistication.',
+      profileImageUrl: placeholderImage,
       email: 'hello@harshsharma.dev',
       phone: '+1 (123) 456-7890',
     },
@@ -59,7 +70,7 @@ async function main() {
       {
         title: 'Project One',
         description: 'A brief description of this amazing project.',
-        imageUrl: '/uploads/default-project.png',
+        imageUrl: placeholderImage,
         tags: ['React', 'Node.js', 'API'],
         liveUrl: '#',
         repoUrl: '#',
@@ -67,7 +78,7 @@ async function main() {
       {
         title: 'Project Two',
         description: 'Another fantastic project showcasing different skills.',
-        imageUrl: '/uploads/default-project.png',
+        imageUrl: placeholderImage,
         tags: ['TypeScript', 'Vite', 'UI/UX'],
         liveUrl: '#',
         repoUrl: '#',
@@ -83,6 +94,25 @@ async function main() {
       { name: 'LinkedIn', url: '#', icon: 'linkedin' },
       { name: 'Twitter', url: '#', icon: 'twitter' },
       { name: 'Instagram', url: '#', icon: 'instagram' },
+    ]
+  });
+
+  // Clear and create articles
+  await prisma.article.deleteMany();
+  await prisma.article.createMany({
+    data: [
+        {
+            title: "The Rise of Serverless Architecture",
+            excerpt: "Exploring the benefits and trade-offs of serverless computing in modern web development.",
+            date: "October 24, 2023",
+            url: "#",
+        },
+        {
+            title: "A Deep Dive into React Hooks",
+            excerpt: "Understanding how React Hooks can simplify your components and state management.",
+            date: "September 15, 2023",
+            url: "#",
+        }
     ]
   });
 

@@ -1,44 +1,29 @@
 import { Router } from 'express';
 import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
-import { fileURLToPath } from 'url';
 
 const router = Router();
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Resolve the uploads directory relative to the server's root
-const uploadDir = path.join(__dirname, '../../uploads');
-
-// Ensure the uploads directory exists
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Set up multer storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    // Create a unique filename
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  },
-});
-
-const upload = multer({ storage: storage });
+// Configure multer to hold the file in memory instead of saving to disk
+const upload = multer({ storage: multer.memoryStorage() });
 
 // POST /api/upload
-router.post('/', upload.single('image'), (req, res) => {
+router.post('/', upload.single('image'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'No file uploaded.' });
   }
 
-  // Return the path to the uploaded file
-  // The path is relative to the server root, which will be served statically
-  const filePath = `/uploads/${req.file.filename}`;
-  res.status(200).json({ filePath });
+  try {
+    // Convert the image buffer to a Base64 string
+    const base64Data = req.file.buffer.toString('base64');
+    // Create a Data URI for embedding in the database and HTML
+    const dataURI = `data:${req.file.mimetype};base64,${base64Data}`;
+
+    // Return the Data URI. The frontend will save this to the database.
+    res.status(200).json({ filePath: dataURI });
+  } catch (error) {
+    console.error('File Processing Error:', error);
+    res.status(500).json({ message: 'Failed to process file.', error: error.message });
+  }
 });
 
 export default router;

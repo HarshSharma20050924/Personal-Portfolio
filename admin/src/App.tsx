@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
-import { HeroData, Skill, Project, SocialLink } from './types';
+import { HeroData, Skill, Project, SocialLink, Article } from './types';
 
 type AppData = {
   heroData: HeroData;
   skills: Skill[];
   projects: Project[];
   socialLinks: SocialLink[];
+  articles: Article[];
 };
 
 const App: React.FC = () => {
@@ -89,13 +90,15 @@ const App: React.FC = () => {
       onLogout={handleLogout}
       onSave={handleSave}
       heroData={data.heroData}
-      setHeroData={(d) => setData(prev => ({ ...prev!, heroData: d }))}
+      setHeroData={(d) => setData(prev => ({ ...prev!, heroData: typeof d === 'function' ? d(prev!.heroData) : d }))}
       skills={data.skills}
-      setSkills={(s) => setData(prev => ({ ...prev!, skills: s }))}
+      setSkills={(s) => setData(prev => ({ ...prev!, skills: typeof s === 'function' ? s(prev!.skills) : s }))}
       projects={data.projects}
-      setProjects={(p) => setData(prev => ({ ...prev!, projects: p }))}
+      setProjects={(p) => setData(prev => ({ ...prev!, projects: typeof p === 'function' ? p(prev!.projects) : p }))}
       socialLinks={data.socialLinks}
-      setSocialLinks={(sl) => setData(prev => ({ ...prev!, socialLinks: sl }))}
+      setSocialLinks={(sl) => setData(prev => ({ ...prev!, socialLinks: typeof sl === 'function' ? sl(prev!.socialLinks) : sl }))}
+      articles={data.articles}
+      setArticles={(a) => setData(prev => ({...prev!, articles: typeof a === 'function' ? a(prev!.articles) : a }))}
     />
   );
 };

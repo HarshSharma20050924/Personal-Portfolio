@@ -5,11 +5,12 @@ const router = Router();
 
 // Helper function to fetch all portfolio data from the database
 async function getPortfolioData() {
-  const [heroData, skills, projects, socialLinks] = await Promise.all([
+  const [heroData, skills, projects, socialLinks, articles] = await Promise.all([
     prisma.generalInfo.findFirst({ where: { id: 1 } }),
     prisma.skill.findMany({ orderBy: { id: 'asc' } }),
     prisma.project.findMany({ orderBy: { id: 'asc' } }),
     prisma.socialLink.findMany({ orderBy: { id: 'asc' } }),
+    prisma.article.findMany({ orderBy: { id: 'asc' } }),
   ]);
 
   if (!heroData) {
@@ -24,6 +25,7 @@ async function getPortfolioData() {
     skills,
     projects,
     socialLinks,
+    articles,
   };
 }
 
@@ -31,6 +33,12 @@ async function getPortfolioData() {
 router.get('/', async (req, res) => {
   try {
     const data = await getPortfolioData();
+    // Add cache-control headers to prevent browsers and edge networks from
+    // serving stale data. This ensures updates are reflected immediately.
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.setHeader('Surrogate-Control', 'no-store');
     res.status(200).json(data);
   } catch (error) {
     console.error('API Error:', error);
@@ -46,7 +54,7 @@ router.post('/', async (req, res) => {
       return res.status(401).json({ message: 'Unauthorized' });
     }
     
-    const { heroData, skills, projects, socialLinks } = req.body;
+    const { heroData, skills, projects, socialLinks, articles } = req.body;
 
     // Use a transaction to update all data atomically
     await prisma.$transaction([
@@ -65,6 +73,10 @@ router.post('/', async (req, res) => {
       prisma.socialLink.deleteMany(),
       prisma.socialLink.createMany({
         data: socialLinks.map(({ name, url, icon }) => ({ name, url, icon })),
+      }),
+      prisma.article.deleteMany(),
+      prisma.article.createMany({
+        data: articles.map(({ title, excerpt, date, url }) => ({ title, excerpt, date, url })),
       }),
     ]);
     

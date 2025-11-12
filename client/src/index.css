@@ -6,10 +6,17 @@ body {
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .glass-blur {
   background: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.dark .glass-blur {
+  background: rgba(18, 18, 18, 0.6);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }

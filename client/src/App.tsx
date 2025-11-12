@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import Portfolio from './components/Portfolio';
-import { HeroData, Skill, Project, SocialLink } from './types';
+import { HeroData, Skill, Project, SocialLink, Article } from './types';
 
 type AppData = {
   heroData: HeroData;
   skills: Skill[];
   projects: Project[];
   socialLinks: SocialLink[];
+  articles: Article[];
 };
 
 const App: React.FC = () => {
@@ -34,7 +35,7 @@ const App: React.FC = () => {
   }
 
   if (!data) {
-    return <div className="min-h-screen flex items-center justify-center text-secondary">Loading...</div>;
+    return <div className="min-h-screen flex items-center justify-center text-secondary dark:text-dark-secondary">Loading...</div>;
   }
 
   return (
@@ -43,6 +44,7 @@ const App: React.FC = () => {
       skills={data.skills}
       projects={data.projects}
       socialLinks={data.socialLinks}
+      articles={data.articles}
     />
   );
 };
