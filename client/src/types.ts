@@ -6,6 +6,7 @@ export interface HeroData {
   email?: string;
   phone?: string;
   quote?: string;
+  resumeUrl?: string;
 }
 
 export interface Skill {

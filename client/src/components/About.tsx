@@ -1,4 +1,4 @@
-/// <reference types="vite/client" />
+// FIX: Removed unnecessary Vite client type reference that was causing an error.
 import React from 'react';
 // FIX: Import Variants to correctly type framer-motion variants.
 import { motion, Variants } from 'framer-motion';
@@ -16,6 +16,7 @@ const About: React.FC<AboutProps> = ({ data }) => {
   });
 
   const profileImage = data.profileImageUrl || "https://picsum.photos/seed/portfolio-avatar/400/400";
+  const resumeLink = data.resumeUrl && data.resumeUrl !== '#' ? data.resumeUrl : null;
 
   // FIX: Explicitly type variants with Variants type from framer-motion to fix easing type error.
   const variants: Variants = {
@@ -51,9 +52,11 @@ const About: React.FC<AboutProps> = ({ data }) => {
             </p>
           )}
           <div className="flex space-x-4">
-            <a href="/resume.pdf" download="HarshSharma_Resume.pdf" className="border border-primary text-primary dark:border-dark-primary dark:text-dark-primary font-medium py-3 px-8 rounded-full hover:bg-primary hover:text-background dark:hover:bg-dark-primary dark:hover:text-dark-background transition-all duration-300">
-              Download Resume
-            </a>
+            {resumeLink && (
+               <a href={resumeLink} download target="_blank" rel="noopener noreferrer" className="border border-primary text-primary dark:border-dark-primary dark:text-dark-primary font-medium py-3 px-8 rounded-full hover:bg-primary hover:text-background dark:hover:bg-dark-primary dark:hover:text-dark-background transition-all duration-300">
+                Download Resume
+              </a>
+            )}
             <a href="#contact" className="bg-primary text-background dark:bg-dark-primary dark:text-dark-background font-medium py-3 px-8 rounded-full hover:bg-opacity-80 transition-all duration-300">
               Contact
             </a>

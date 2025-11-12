@@ -39,7 +39,7 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects }
     if (!file) return;
 
     const uploadData = new FormData();
-    uploadData.append('image', file);
+    uploadData.append('file', file);
     setIsUploading(true);
     setUploadError(null);
 

@@ -1,4 +1,4 @@
-/// <reference types="vite/client" />
+// FIX: Removed unnecessary Vite client type reference that was causing an error.
 import React, { useState } from 'react';
 import type { HeroData } from '../types';
 
@@ -10,6 +10,8 @@ interface ManageHeroProps {
 const ManageHero: React.FC<ManageHeroProps> = ({ data, setData }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isUploadingResume, setIsUploadingResume] = useState(false);
+  const [uploadResumeError, setUploadResumeError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -24,7 +26,7 @@ const ManageHero: React.FC<ManageHeroProps> = ({ data, setData }) => {
     setIsUploading(true);
     setUploadError(null);
     const formData = new FormData();
-    formData.append('image', file);
+    formData.append('file', file);
 
     try {
       const response = await fetch('/api/upload', {
@@ -43,6 +45,35 @@ const ManageHero: React.FC<ManageHeroProps> = ({ data, setData }) => {
       setUploadError(error.message);
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingResume(true);
+    setUploadResumeError(null);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || 'Resume upload failed');
+      }
+
+      setData({ ...data, resumeUrl: result.filePath });
+    } catch (error) {
+      console.error("Resume Upload Error:", error);
+      setUploadResumeError((error as Error).message);
+    } finally {
+      setIsUploadingResume(false);
     }
   };
 
@@ -145,6 +176,29 @@ const ManageHero: React.FC<ManageHeroProps> = ({ data, setData }) => {
             className="w-full px-3 py-2 border border-slate-300 rounded-lg dark:bg-slate-700 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-500"
           />
         </div>
+        
+        <div className="pt-6 border-t border-slate-200 dark:border-slate-700">
+          <label htmlFor="resume" className="block text-sm font-medium mb-2">Resume (PDF)</label>
+          <div className="flex items-center gap-4">
+            <input 
+              type="file" 
+              id="resume" 
+              name="resume"
+              accept="application/pdf"
+              onChange={handleResumeUpload}
+              disabled={isUploadingResume}
+              className="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 disabled:opacity-50"
+            />
+            {isUploadingResume && <p className="text-sm text-slate-500">Uploading...</p>}
+          </div>
+          {uploadResumeError && <p className="text-sm text-red-500 mt-2">{uploadResumeError}</p>}
+          {data.resumeUrl && data.resumeUrl !== '#' && (
+            <p className="text-sm text-slate-500 mt-2">
+              Current: <a href={data.resumeUrl} target="_blank" rel="noopener noreferrer" className="text-sky-500 hover:underline">View uploaded resume</a>
+            </p>
+          )}
+        </div>
+
       </div>
     </div>
   );

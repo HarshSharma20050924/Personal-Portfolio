@@ -5,6 +5,8 @@ export interface HeroData {
   profileImageUrl: string;
   email?: string;
   phone?: string;
+  quote?: string;
+  resumeUrl?: string;
 }
 
 export interface Skill {

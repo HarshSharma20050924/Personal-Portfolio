@@ -44,10 +44,6 @@
       "dest": "/client/favicon.svg"
     },
     {
-      "src": "/resume.pdf",
-      "dest": "/client/resume.pdf"
-    },
-    {
       "src": "/admin(/.*)?",
       "dest": "/admin/index.html"
     },

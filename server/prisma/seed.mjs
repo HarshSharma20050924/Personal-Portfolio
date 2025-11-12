@@ -36,6 +36,7 @@ async function main() {
       profileImageUrl: placeholderImage,
       email: 'hello@harshsharma.dev',
       phone: '+1 (123) 456-7890',
+      resumeUrl: '#',
     },
   });
   
