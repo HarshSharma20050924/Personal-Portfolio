@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Sun, Moon } from 'lucide-react';
+import { useLenis } from '@studio-freight/react-lenis';
 import type { Article } from '../types';
 
 interface HeaderProps {
@@ -9,6 +10,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ articles }) => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const lenis = useLenis();
   
   // Initialize theme state from localStorage or system preference
   const [theme, setTheme] = useState(() => {
@@ -52,6 +54,11 @@ const Header: React.FC<HeaderProps> = ({ articles }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const handleScrollTo = (e: React.MouseEvent<HTMLAnchorElement>, target: string) => {
+    e.preventDefault();
+    lenis?.scrollTo(target, { offset: -80, duration: 1.5 });
+  };
+
   return (
     <motion.header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b ${
@@ -64,7 +71,11 @@ const Header: React.FC<HeaderProps> = ({ articles }) => {
       transition={{ duration: 0.5 }}
     >
       <div className="max-w-[1200px] mx-auto px-8 flex items-center justify-between">
-        <a href="#" className="font-heading font-semibold text-xl flex items-center gap-2 text-text dark:text-dark-text">
+        <a 
+          href="#home" 
+          onClick={(e) => handleScrollTo(e, '#home')}
+          className="font-heading font-semibold text-xl flex items-center gap-2 text-text dark:text-dark-text"
+        >
           <span className="font-extrabold text-primary dark:text-dark-primary">HS.</span>
           <span className="font-medium text-lg hidden sm:inline">Harsh Sharma</span>
         </a>
@@ -74,6 +85,7 @@ const Header: React.FC<HeaderProps> = ({ articles }) => {
               <a 
                 key={link.href} 
                 href={link.href} 
+                onClick={(e) => handleScrollTo(e, link.href)}
                 className="text-sm font-medium text-secondary dark:text-dark-secondary hover:text-primary dark:hover:text-dark-primary transition-colors relative group"
               >
                 {link.label}
@@ -91,6 +103,7 @@ const Header: React.FC<HeaderProps> = ({ articles }) => {
           
           <a
             href="#contact"
+            onClick={(e) => handleScrollTo(e, '#contact')}
             className="hidden md:block bg-primary text-white font-medium text-sm py-2.5 px-6 rounded-full hover:bg-blue-600 hover:scale-105 transform transition-all shadow-md hover:shadow-lg"
           >
             Contact Me
