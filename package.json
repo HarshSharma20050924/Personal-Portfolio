@@ -1,0 +1,23 @@
+{
+  "name": "portfolio-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "server",
+    "client",
+    "admin"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm:dev --workspace=server\" \"npm:dev --workspace=client\" \"npm:dev --workspace=admin\"",
+    "build": "npm run build --workspace=client && npm run build --workspace=admin",
+    "start": "npm start --workspace=server",
+    "prisma:migrate": "dotenv -e server/.env -- npx prisma migrate dev --schema=./server/prisma/schema.prisma",
+    "prisma:seed": "dotenv -e server/.env -- npx prisma db seed --schema=./server/prisma/schema.prisma",
+    "prisma:migrate:prod": "dotenv -e server/.env -- npx prisma migrate deploy --schema=./server/prisma/schema.prisma"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "dotenv-cli": "^7.4.2"
+  }
+}

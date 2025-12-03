@@ -1,0 +1,7 @@
+-- AlterTable
+ALTER TABLE "PlaygroundConfig" ADD COLUMN     "disableRotation" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "moveParticlesOnHover" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN     "particleBaseSize" INTEGER NOT NULL DEFAULT 100,
+ADD COLUMN     "particleCount" INTEGER NOT NULL DEFAULT 200,
+ADD COLUMN     "particleSpeed" DOUBLE PRECISION NOT NULL DEFAULT 0.1,
+ADD COLUMN     "particleSpread" INTEGER NOT NULL DEFAULT 10;

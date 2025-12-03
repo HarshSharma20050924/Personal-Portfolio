@@ -1,0 +1,207 @@
+// FIX: Removed unnecessary Vite client type reference that was causing an error.
+import React, { useState } from 'react';
+import type { HeroData } from '../types';
+
+interface ManageHeroProps {
+  data: HeroData;
+  setData: React.Dispatch<React.SetStateAction<HeroData>>;
+}
+
+const ManageHero: React.FC<ManageHeroProps> = ({ data, setData }) => {
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isUploadingResume, setIsUploadingResume] = useState(false);
+  const [uploadResumeError, setUploadResumeError] = useState<string | null>(null);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    const updatedFormData = { ...data, [name]: value };
+    setData(updatedFormData);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setUploadError(null);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || 'Image upload failed');
+      }
+
+      setData({ ...data, profileImageUrl: result.filePath });
+    } catch (error) {
+      console.error("Upload Error:", error);
+      setUploadError(error.message);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingResume(true);
+    setUploadResumeError(null);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || 'Resume upload failed');
+      }
+
+      setData({ ...data, resumeUrl: result.filePath });
+    } catch (error) {
+      console.error("Resume Upload Error:", error);
+      setUploadResumeError((error as Error).message);
+    } finally {
+      setIsUploadingResume(false);
+    }
+  };
+
+  const profileImage = data.profileImageUrl || "https://via.placeholder.com/128";
+
+  return (
+    <div>
+      <h2 className="text-3xl font-bold mb-6">Manage Hero Section</h2>
+      <div className="p-6 bg-white dark:bg-slate-800/50 rounded-lg shadow-md space-y-6 max-w-2xl">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-2 space-y-4">
+             <div>
+              <label htmlFor="name" className="block text-sm font-medium mb-1">Name</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={data.name}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg dark:bg-slate-700 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              />
+            </div>
+            <div>
+              <label htmlFor="title" className="block text-sm font-medium mb-1">Title</label>
+              <input
+                type="text"
+                id="title"
+                name="title"
+                value={data.title}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg dark:bg-slate-700 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              />
+            </div>
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium mb-1">Email</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={data.email || ''}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg dark:bg-slate-700 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              />
+            </div>
+             <div>
+              <label htmlFor="phone" className="block text-sm font-medium mb-1">Phone Number</label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                value={data.phone || ''}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg dark:bg-slate-700 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              />
+            </div>
+          </div>
+
+          <div className="text-center">
+            <label className="block text-sm font-medium mb-2">Profile Image</label>
+            <img 
+              src={profileImage} 
+              alt="Profile Preview" 
+              className="w-32 h-32 rounded-full object-cover mx-auto mb-4 border-2 border-slate-300 dark:border-slate-600"
+            />
+            <input 
+              type="file" 
+              id="profileImage" 
+              name="profileImage"
+              accept="image/*"
+              onChange={handleImageUpload}
+              disabled={isUploading}
+              className="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 disabled:opacity-50"
+            />
+            {isUploading && <p className="text-sm text-slate-500 mt-2">Uploading...</p>}
+            {uploadError && <p className="text-sm text-red-500 mt-2 max-w-xs mx-auto">{uploadError}</p>}
+          </div>
+        </div>
+        
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium mb-1">Description</label>
+          <textarea
+            id="description"
+            name="description"
+            rows={4}
+            value={data.description}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg dark:bg-slate-700 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-500"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="quote" className="block text-sm font-medium mb-1">"About Me" Quote</label>
+          <textarea
+            id="quote"
+            name="quote"
+            rows={2}
+            value={data.quote || ''}
+            onChange={handleChange}
+            placeholder="e.g., Simplicity is the ultimate sophistication."
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg dark:bg-slate-700 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-500"
+          />
+        </div>
+        
+        <div className="pt-6 border-t border-slate-200 dark:border-slate-700">
+          <label htmlFor="resume" className="block text-sm font-medium mb-2">Resume (PDF)</label>
+          <div className="flex items-center gap-4">
+            <input 
+              type="file" 
+              id="resume" 
+              name="resume"
+              accept="application/pdf"
+              onChange={handleResumeUpload}
+              disabled={isUploadingResume}
+              className="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 disabled:opacity-50"
+            />
+            {isUploadingResume && <p className="text-sm text-slate-500">Uploading...</p>}
+          </div>
+          {uploadResumeError && <p className="text-sm text-red-500 mt-2">{uploadResumeError}</p>}
+          {data.resumeUrl && data.resumeUrl !== '#' && (
+            <p className="text-sm text-slate-500 mt-2">
+              Current: <a href={data.resumeUrl} target="_blank" rel="noopener noreferrer" className="text-sky-500 hover:underline">View uploaded resume</a>
+            </p>
+          )}
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+export default ManageHero;

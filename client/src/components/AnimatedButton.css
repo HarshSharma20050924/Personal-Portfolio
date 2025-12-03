@@ -1,0 +1,16 @@
+.animated-button {
+  position: relative;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  transform: translateZ(0);
+}
+
+.animated-button .particle {
+  position: absolute;
+  border-radius: 50%;
+  background-color: var(--particle-color, #8400ff);
+  box-shadow: 0 0 8px 0 var(--particle-glow-color, rgba(132, 0, 255, 0.8));
+  transform-origin: center center;
+  pointer-events: none;
+  z-index: 10;
+}
