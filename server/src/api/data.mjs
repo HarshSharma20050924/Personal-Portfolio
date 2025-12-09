@@ -46,6 +46,79 @@ const defaultData = {
   }
 };
 
+// GET /api/data/export - Export all data as formatted text for AI/RAG
+router.get('/export', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (authHeader !== `Bearer ${process.env.ADMIN_API_KEY}`) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const [heroData, skills, projects, socialLinks, articles] = await Promise.all([
+      prisma.generalInfo.findFirst({ where: { id: 1 } }),
+      prisma.skill.findMany({ orderBy: { id: 'asc' } }),
+      prisma.project.findMany({ orderBy: { id: 'asc' } }),
+      prisma.socialLink.findMany({ orderBy: { id: 'asc' } }),
+      prisma.article.findMany({ orderBy: { id: 'asc' } }),
+    ]);
+
+    if (!heroData) {
+      return res.status(404).json({ message: 'No data found to export.' });
+    }
+
+    let content = `PORTFOLIO DATA EXPORT\nGenerated on: ${new Date().toISOString()}\n\n`;
+
+    content += `=== PERSONAL INFORMATION ===\n`;
+    content += `Name: ${heroData.name}\n`;
+    content += `Title: ${heroData.title}\n`;
+    content += `Email: ${heroData.email}\n`;
+    content += `Phone: ${heroData.phone || 'N/A'}\n`;
+    content += `Bio/Description: ${heroData.description}\n`;
+    content += `Personal Quote: "${heroData.quote}"\n\n`;
+
+    content += `=== SKILLS ===\n`;
+    content += `My technical skills and proficiency levels are:\n`;
+    skills.forEach(skill => {
+      content += `- ${skill.name} (Proficiency: ${skill.level}%)\n`;
+    });
+    content += `\n`;
+
+    content += `=== PROJECTS ===\n`;
+    content += `Here are the projects I have worked on:\n`;
+    projects.forEach(project => {
+      content += `\nTitle: ${project.title}\n`;
+      content += `Description: ${project.description}\n`;
+      content += `Techniques/Tags: ${project.tags.join(', ')}\n`;
+      if (project.liveUrl) content += `Live Demo URL: ${project.liveUrl}\n`;
+      if (project.repoUrl) content += `Source Code URL: ${project.repoUrl}\n`;
+    });
+    content += `\n`;
+
+    content += `=== BLOG ARTICLES ===\n`;
+    content += `Articles and insights I have written:\n`;
+    articles.forEach(article => {
+      content += `\nTitle: ${article.title}\n`;
+      content += `Date: ${article.date}\n`;
+      content += `Excerpt/Summary: ${article.excerpt}\n`;
+      content += `Link: ${article.url}\n`;
+    });
+    content += `\n`;
+
+    content += `=== SOCIAL LINKS ===\n`;
+    socialLinks.forEach(link => {
+      content += `- ${link.name}: ${link.url}\n`;
+    });
+
+    res.setHeader('Content-Type', 'text/plain');
+    res.setHeader('Content-Disposition', 'attachment; filename="portfolio_data.txt"');
+    res.send(content);
+
+  } catch (error) {
+    console.error('Export Error:', error);
+    res.status(500).json({ message: 'Internal Server Error', error: error.message });
+  }
+});
+
 // GET /api/data
 router.get('/', async (req, res) => {
   try {

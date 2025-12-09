@@ -57,6 +57,38 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
     }
   };
 
+  const handleExport = async () => {
+    const apiKey = sessionStorage.getItem('apiKey');
+    if (!apiKey) {
+        alert("Not authenticated.");
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/data/export', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`
+            }
+        });
+
+        if (!response.ok) throw new Error('Failed to export data');
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'portfolio_data.txt';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    } catch (error) {
+        console.error("Export failed:", error);
+        alert("Failed to export data. Please check console.");
+    }
+  };
+
   const renderView = () => {
     switch (view) {
       case 'hero':
@@ -120,6 +152,14 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
           <div className="flex items-center space-x-4">
             {saveStatus === 'success' && <p className="text-green-500">Changes saved successfully!</p>}
             {saveStatus === 'error' && <p className="text-red-500">Failed to save changes.</p>}
+            
+            <button
+                onClick={handleExport}
+                className="px-4 py-2 text-sm font-semibold text-sky-600 border border-sky-600 rounded-lg hover:bg-sky-50 dark:hover:bg-sky-900/20 transition-colors"
+            >
+                Export for AI
+            </button>
+
             <button
               onClick={handleSave}
               disabled={isSaving}
