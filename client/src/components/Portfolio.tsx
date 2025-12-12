@@ -6,6 +6,7 @@ import TemplateDotGrid from './templates/TemplateDotGrid';
 import TemplateMagicBento from './templates/TemplateMagicBento';
 import TemplateStarryNight from './templates/TemplateStarryNight';
 import TemplatePlayground from './templates/TemplatePlayground';
+import ChatWidget from './ChatWidget';
 
 interface PortfolioProps {
   heroData: HeroData;
@@ -19,24 +20,33 @@ interface PortfolioProps {
 const Portfolio: React.FC<PortfolioProps> = (props) => {
   const { heroData, playgroundConfig } = props;
 
-  switch (heroData.template) {
-    case 'playground':
-        if (playgroundConfig) {
-            return <TemplatePlayground {...props} config={playgroundConfig} />;
-        }
-        return <TemplateDefault {...props} />;
-    case 'minimalist':
-      return <TemplateMinimalist {...props} />;
-    case 'dotgrid':
-      return <TemplateDotGrid {...props} />;
-    case 'magicbento':
-      return <TemplateMagicBento {...props} />;
-    case 'starrynight':
-      return <TemplateStarryNight {...props} />;
-    case 'default':
-    default:
-      return <TemplateDefault {...props} />;
-  }
+  const renderTemplate = () => {
+    switch (heroData.template) {
+        case 'playground':
+            if (playgroundConfig) {
+                return <TemplatePlayground {...props} config={playgroundConfig} />;
+            }
+            return <TemplateDefault {...props} />;
+        case 'minimalist':
+          return <TemplateMinimalist {...props} />;
+        case 'dotgrid':
+          return <TemplateDotGrid {...props} />;
+        case 'magicbento':
+          return <TemplateMagicBento {...props} />;
+        case 'starrynight':
+          return <TemplateStarryNight {...props} />;
+        case 'default':
+        default:
+          return <TemplateDefault {...props} />;
+      }
+  };
+
+  return (
+    <>
+        {renderTemplate()}
+        <ChatWidget />
+    </>
+  );
 };
 
 export default Portfolio;

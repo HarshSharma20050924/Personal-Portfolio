@@ -9,7 +9,7 @@
     "admin"
   ],
   "scripts": {
-    "dev": "concurrently \"npm:dev --workspace=server\" \"npm:dev --workspace=client\" \"npm:dev --workspace=admin\"",
+    "dev": "concurrently \"npm:dev --workspace=server\" \"npm:dev --workspace=client\" \"npm:dev --workspace=admin\" \"cd rag_service && uvicorn main:app --reload --port 8000\"",
     "build": "npm run build --workspace=client && npm run build --workspace=admin",
     "start": "npm start --workspace=server",
     "prisma:migrate": "dotenv -e server/.env -- npx prisma migrate dev --schema=./server/prisma/schema.prisma",

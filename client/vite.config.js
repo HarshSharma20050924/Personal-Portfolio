@@ -8,8 +8,13 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
+      '/api/rag': {
+        target: 'http://localhost:8000', // Python RAG Server
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/rag/, '')
+      },
       '/api': {
-        target: 'http://localhost:3001',
+        target: 'http://localhost:3001', // Node/Express Server
         changeOrigin: true,
       },
     },

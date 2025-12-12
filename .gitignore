@@ -12,7 +12,6 @@ dist
 dist-ssr
 *.local
 
-rag_service/
 
 # Editor directories and files
 .vscode/*

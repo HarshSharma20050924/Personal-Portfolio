@@ -1,0 +1,76 @@
+PORTFOLIO DATA EXPORT
+Generated on: 2025-12-09T15:38:49.469Z
+
+=== PERSONAL INFORMATION ===
+Name: Harsh Sharma
+Title: Full-Stack Developer
+Email: harsh20050924@gmail.com
+Phone: +91 9009011030
+Bio/Description: I engineer performant and user-centric full-stack applications. My passion lies in delivering clean, maintainable code and exceptional user experiences.
+Personal Quote: "Building AI solutions, leveling up life and looks, and turning ideas into impact."
+
+=== SKILLS ===
+My technical skills and proficiency levels are:
+- React (Proficiency: 90%)
+- Node.js (Proficiency: 85%)
+- Prisma (Proficiency: 80%)
+- Tailwind CSS (Proficiency: 95%)
+- TypeScript (Proficiency: 88%)
+- PostgreSQL (Proficiency: 75%)
+- Docker (Proficiency: 70%)
+- Express.js (Proficiency: 82%)
+- Python (Proficiency: 90%)
+
+=== PROJECTS ===
+Here are the projects I have worked on:
+
+Title: Poshan Saathi-Nutrition Tracker
+Description: Tracks daily nutrition and diet intake to help users maintain a healthy lifestyle.
+Techniques/Tags: React, Node.js, API
+Source Code URL: https://github.com/HarshSharma20050924/Poshan-Saathi-Nutrition-Tracker
+
+Title: SabjiMate Vegetable Delivery App
+Description: A user-friendly app for ordering fresh vegetables with daily delivery and easy payment options.
+Techniques/Tags: TypeScript, Vite, UI/UX
+Live Demo URL: https://sabji-mate-server-ivm2.vercel.app/
+Source Code URL: https://github.com/HarshSharma20050924/SabjiMate
+
+Title: Personal Portfolio 
+Description: Showcases my projects, skills, and experience through a clean, interactive personal portfolio.
+Techniques/Tags: 
+Live Demo URL: https://personal-portfolio-server-z644-h8jyaq48y.vercel.app/
+Source Code URL: https://github.com/HarshSharma20050924/Personal-Portfolio
+
+Title: Student Performance Predictor
+Description: Predicts student performance using machine learning based on study and demographic data.
+Techniques/Tags: Python
+Source Code URL: https://github.com/HarshSharma20050924/Student-Performance-Predictor
+
+Title: House Prediction Model
+Description: Predicts house prices using machine learning based on property features and location.
+Techniques/Tags: 
+Source Code URL: https://github.com/HarshSharma20050924/House-prediction-Model
+
+=== BLOG ARTICLES ===
+Articles and insights I have written:
+
+Title: The Rise of Serverless Architecture
+Date: 12 Mar 2024
+Excerpt/Summary: Exploring the benefits and trade-offs of serverless computing in modern web development.
+Link: https://pcg.io/insights/the-rise-of-serverless-architecture/
+
+Title: A Deep Dive into React Hooks
+Date: 23 February 2022
+Excerpt/Summary: Understanding how React Hooks can simplify your components and state management.
+Link: https://codersociety.com/blog/articles/react-hooks
+
+Title: 5 Ways AI is Changing Everyday Life
+Date: Feb 26, 2025
+Excerpt/Summary: Artificial Intelligence is no longer just a tech buzzword. Here’s how it’s transforming the way we work, shop, and communicate.
+Link: https://www.linqto.com/blog/ways-artificial-intelligence-ai-is-affecting-our-daily-lives/
+
+=== SOCIAL LINKS ===
+- GitHub: https://github.com/HarshSharma20050924
+- LinkedIn: https://www.linkedin.com/in/harsh-sharma-b0b180300/
+- Twitter: https://x.com/ahm_harsh
+- Instagram: https://www.instagram.com/harsh_sharma200509?igsh=c3M2ODNnMnNxMWk1
