@@ -27,29 +27,33 @@
     }
   ],
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/server/src/server.mjs"
-    },
-    {
-      "src": "/admin/assets/(.*)",
-      "dest": "/admin/assets/$1"
-    },
-    {
-      "src": "/assets/(.*)",
-      "dest": "/client/assets/$1"
-    },
-    {
-      "src": "/favicon.svg",
-      "dest": "/client/favicon.svg"
-    },
-    {
-      "src": "/admin(/.*)?",
-      "dest": "/admin/index.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/client/index.html"
-    }
-  ]
+  {
+    "src": "/api/rag/(.*)",
+    "dest": "https://personal-portfolio-1-jnfz.onrender.com/$1"
+  },
+  {
+    "src": "/api/(.*)",
+    "dest": "/server/src/server.mjs"
+  },
+  {
+    "src": "/admin/assets/(.*)",
+    "dest": "/admin/assets/$1"
+  },
+  {
+    "src": "/assets/(.*)",
+    "dest": "/client/assets/$1"
+  },
+  {
+    "src": "/favicon.svg",
+    "dest": "/client/favicon.svg"
+  },
+  {
+    "src": "/admin(/.*)?",
+    "dest": "/admin/index.html"
+  },
+  {
+    "src": "/(.*)",
+    "dest": "/client/index.html"
+  }
+]
 }
