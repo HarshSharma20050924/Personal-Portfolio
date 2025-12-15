@@ -1,6 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { ReactLenis } from '@studio-freight/react-lenis';
 import Portfolio from './components/Portfolio';
+import ProjectDetails from './pages/ProjectDetails';
 import { HeroData, Skill, Project, SocialLink, Article, PlaygroundConfig } from './types';
 
 type AppData = {
@@ -12,8 +15,16 @@ type AppData = {
   playgroundConfig: PlaygroundConfig;
 };
 
+// ScrollToTop component to ensure navigation starts at top of page
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+};
+
 const App: React.FC = () => {
-  // --- Data Management ---
   const [data, setData] = useState<AppData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,7 +34,12 @@ const App: React.FC = () => {
         const response = await fetch('/api/data');
         if (!response.ok) throw new Error('Failed to fetch portfolio data.');
         const result = await response.json();
-        setData(result);
+        // Add IDs to projects if missing for routing
+        const projectsWithIds = result.projects.map((p: Project, i: number) => ({
+             ...p,
+             id: p.id || i
+        }));
+        setData({ ...result, projects: projectsWithIds });
       } catch (err) {
         setError((err as Error).message);
         console.error(err);
@@ -41,16 +57,29 @@ const App: React.FC = () => {
   }
 
   return (
-    <ReactLenis root>
-      <Portfolio
-        heroData={data.heroData}
-        skills={data.skills}
-        projects={data.projects}
-        socialLinks={data.socialLinks}
-        articles={data.articles}
-        playgroundConfig={data.playgroundConfig}
-      />
-    </ReactLenis>
+    <Router>
+        <ScrollToTop />
+        <ReactLenis root>
+            <Routes>
+                <Route path="/" element={
+                    <Portfolio
+                        heroData={data.heroData}
+                        skills={data.skills}
+                        projects={data.projects}
+                        socialLinks={data.socialLinks}
+                        articles={data.articles}
+                        playgroundConfig={data.playgroundConfig}
+                    />
+                } />
+                <Route path="/project/:id" element={
+                    <ProjectDetails 
+                        projects={data.projects} 
+                        template={data.heroData.template} 
+                    />
+                } />
+            </Routes>
+        </ReactLenis>
+    </Router>
   );
 };
 

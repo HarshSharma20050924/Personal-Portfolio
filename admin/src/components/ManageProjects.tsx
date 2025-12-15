@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import type { Project } from '../types';
 
@@ -7,13 +8,14 @@ interface ManageProjectsProps {
 }
 
 const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects }) => {
-  const blankForm: Project = { title: '', description: '', imageUrl: '', tags: [], liveUrl: '', repoUrl: '' };
+  const blankForm: Project = { title: '', description: '', imageUrl: '', videoUrl: '', docUrl: '', huggingFaceUrl: '', tags: [], liveUrl: '', repoUrl: '' };
   const [isEditing, setIsEditing] = useState<number | null>(null);
   const [form, setForm] = useState<Project>(blankForm);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isUploadingDoc, setIsUploadingDoc] = useState(false);
+  const [uploadDocError, setUploadDocError] = useState<string | null>(null);
 
-  // Sync parent state changes to the form if editing
   useEffect(() => {
     if (isEditing !== null) {
       setForm(projects[isEditing]);
@@ -24,11 +26,9 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects }
     const { name, value } = e.target;
     const updatedValue = name === 'tags' ? value.split(',').map(tag => tag.trim()) : value;
 
-    // Update form state for direct UI feedback
     const newForm = { ...form, [name]: updatedValue };
     setForm(newForm);
 
-    // If editing, sync with parent state immediately
     if (isEditing !== null) {
       setProjects(projects.map((p, index) => (index === isEditing ? newForm : p)));
     }
@@ -64,6 +64,34 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects }
       setUploadError((error as Error).message);
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleDocUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const uploadData = new FormData();
+    uploadData.append('file', file);
+    setIsUploadingDoc(true);
+    setUploadDocError(null);
+
+    try {
+      const response = await fetch('/api/upload', { method: 'POST', body: uploadData });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || 'Doc upload failed');
+      
+      const newForm = { ...form, docUrl: result.filePath };
+      setForm(newForm);
+
+      if (isEditing !== null) {
+        setProjects(projects.map((p, index) => (index === isEditing ? newForm : p)));
+      }
+    } catch (error) {
+      console.error("Upload Error:", error);
+      setUploadDocError((error as Error).message);
+    } finally {
+      setIsUploadingDoc(false);
     }
   };
 
@@ -104,6 +132,7 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects }
           <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6">
             <input name="title" value={currentForm.title} onChange={handleFormChange} placeholder="Title" className="md:col-span-2 p-2 border rounded dark:bg-slate-700 dark:border-slate-600" />
             <div className="flex flex-col">
+              <label className="text-xs text-slate-500 mb-1">Cover Image</label>
               <div className="flex items-center space-x-4">
                 {currentForm.imageUrl && <img src={currentForm.imageUrl} alt="preview" className="w-16 h-10 object-cover rounded" />}
                 <input type="file" name="image" onChange={handleImageUpload} disabled={isUploading} className="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 disabled:opacity-50"/>
@@ -112,13 +141,27 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects }
               {uploadError && <p className="text-sm text-red-500 mt-1 pl-2 max-w-xs">{uploadError}</p>}
             </div>
           </div>
-          <textarea name="description" value={currentForm.description} onChange={handleFormChange} placeholder="Description" className="md:col-span-2 p-2 border rounded dark:bg-slate-700 dark:border-slate-600" />
+          
+          <textarea name="description" value={currentForm.description} onChange={handleFormChange} placeholder="Description" rows={3} className="md:col-span-2 p-2 border rounded dark:bg-slate-700 dark:border-slate-600" />
           <input name="tags" value={currentForm.tags.join(', ')} onChange={handleFormChange} placeholder="Tags (comma-separated)" className="md:col-span-2 p-2 border rounded dark:bg-slate-700 dark:border-slate-600" />
+          
           <input name="liveUrl" value={currentForm.liveUrl || ''} onChange={handleFormChange} placeholder="Live URL" className="p-2 border rounded dark:bg-slate-700 dark:border-slate-600" />
-          <input name="repoUrl" value={currentForm.repoUrl || ''} onChange={handleFormChange} placeholder="Repo URL" className="p-2 border rounded dark:bg-slate-700 dark:border-slate-600" />
+          <input name="repoUrl" value={currentForm.repoUrl || ''} onChange={handleFormChange} placeholder="GitHub Repo URL" className="p-2 border rounded dark:bg-slate-700 dark:border-slate-600" />
+          <input name="huggingFaceUrl" value={currentForm.huggingFaceUrl || ''} onChange={handleFormChange} placeholder="Hugging Face URL" className="p-2 border rounded dark:bg-slate-700 dark:border-slate-600" />
+          <input name="videoUrl" value={currentForm.videoUrl || ''} onChange={handleFormChange} placeholder="Video Showcase URL (YouTube/MP4)" className="p-2 border rounded dark:bg-slate-700 dark:border-slate-600" />
+          
+          <div className="md:col-span-2 flex flex-col">
+             <label className="text-xs text-slate-500 mb-1">Project Document (PDF)</label>
+             <div className="flex items-center space-x-4">
+                <input type="file" onChange={handleDocUpload} disabled={isUploadingDoc} accept=".pdf,.doc,.docx" className="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 disabled:opacity-50"/>
+                 {currentForm.docUrl && <span className="text-xs text-green-500">Doc Attached</span>}
+             </div>
+             {isUploadingDoc && <p className="text-sm text-slate-500 mt-1">Uploading Doc...</p>}
+          </div>
+
           <div className="md:col-span-2 flex items-center space-x-2">
             {isEditing === null ? (
-              <button type="submit" disabled={isUploading} className="px-4 py-2 font-semibold text-white bg-sky-500 rounded-lg hover:bg-sky-600 disabled:bg-sky-300">Add Project</button>
+              <button type="submit" disabled={isUploading || isUploadingDoc} className="px-4 py-2 font-semibold text-white bg-sky-500 rounded-lg hover:bg-sky-600 disabled:bg-sky-300">Add Project</button>
             ) : (
               <button type="button" onClick={handleDoneEditing} className="px-4 py-2 font-semibold bg-slate-200 dark:bg-slate-600 rounded-lg">Done Editing</button>
             )}
@@ -133,7 +176,12 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects }
               <img src={project.imageUrl} alt={project.title} className="w-24 h-16 object-cover rounded"/>
               <div>
                 <h4 className="font-bold">{project.title}</h4>
-                <p className="text-sm text-slate-600 dark:text-slate-400">{project.description}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">{project.description}</p>
+                <div className="flex gap-2 mt-1">
+                   {project.videoUrl && <span className="text-[10px] bg-red-100 text-red-600 px-1 rounded">Video</span>}
+                   {project.docUrl && <span className="text-[10px] bg-blue-100 text-blue-600 px-1 rounded">Doc</span>}
+                   {project.huggingFaceUrl && <span className="text-[10px] bg-yellow-100 text-yellow-600 px-1 rounded">HF</span>}
+                </div>
               </div>
             </div>
             <div className="flex-shrink-0 space-x-2">

@@ -1,6 +1,8 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
-  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -19,12 +21,12 @@ model GeneralInfo {
   name            String
   title           String
   description     String
-  quote           String?
   profileImageUrl String
   email           String?
   phone           String?
+  quote           String?
   resumeUrl       String?
-  template        String  @default("default")
+  template        String? @default("default")
 }
 
 model Skill {
@@ -34,13 +36,16 @@ model Skill {
 }
 
 model Project {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String
-  imageUrl    String
-  tags        String[]
-  liveUrl     String?
-  repoUrl     String?
+  id             Int      @id @default(autoincrement())
+  title          String
+  description    String
+  imageUrl       String
+  videoUrl       String?  // New field for video showcase (YouTube/MP4)
+  docUrl         String?  // New field for document PDF
+  huggingFaceUrl String?  // New field for Hugging Face links
+  tags           String[]
+  liveUrl        String?
+  repoUrl        String?
 }
 
 model SocialLink {
@@ -60,33 +65,29 @@ model Article {
 
 model PlaygroundConfig {
   id                   Int     @id @default(autoincrement())
-  heroTitle            String  @default("Experimental Hero")
-  heroSubtitle         String  @default("Testing new aesthetics")
-  bgType               String  @default("gradient")
-  bgColor1             String  @default("#0f172a")
-  bgColor2             String  @default("#334155")
-  textColor            String  @default("#ffffff")
-  primaryColor         String  @default("#38bdf8")
-  cardStyle            String  @default("glass")
-  borderRadius         String  @default("rounded-2xl")
+  heroTitle            String?
+  heroSubtitle         String?
+  bgType               String  @default("solid")
+  bgColor1             String  @default("#ffffff")
+  bgColor2             String  @default("#f0f0f0")
+  textColor            String  @default("#000000")
+  primaryColor         String  @default("#3b82f6")
+  cardStyle            String  @default("solid")
+  borderRadius         String  @default("rounded-lg")
   showHero             Boolean @default(true)
   showSkills           Boolean @default(true)
   showProjects         Boolean @default(true)
   showContact          Boolean @default(true)
   animationSpeed       String  @default("normal")
-  
-  // Particles
-  particleCount        Int     @default(200)
-  particleSpread       Int     @default(10)
-  particleBaseSize     Int     @default(100)
-  moveParticlesOnHover Boolean @default(true)
-  disableRotation      Boolean @default(false)
-  particleSpeed        Float   @default(0.1)
-
-  // Floating Lines
-  flLineCount          Int     @default(10)
-  flLineDistance       Float   @default(5.0)
-  flBendRadius         Float   @default(5.0)
-  flBendStrength       Float   @default(-0.5)
-  flParallax           Boolean @default(true)
+  particleCount        Int?    @default(200)
+  particleSpread       Int?    @default(10)
+  particleBaseSize     Int?    @default(100)
+  moveParticlesOnHover Boolean? @default(true)
+  disableRotation      Boolean? @default(false)
+  particleSpeed        Float?   @default(0.1)
+  flLineCount          Int?     @default(10)
+  flLineDistance       Float?   @default(5.0)
+  flBendRadius         Float?   @default(5.0)
+  flBendStrength       Float?   @default(-0.5)
+  flParallax           Boolean? @default(true)
 }

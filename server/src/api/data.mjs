@@ -1,3 +1,4 @@
+
 import { Router } from 'express';
 import prisma from '../prisma.mjs';
 
@@ -91,6 +92,8 @@ router.get('/export', async (req, res) => {
       content += `Techniques/Tags: ${project.tags.join(', ')}\n`;
       if (project.liveUrl) content += `Live Demo URL: ${project.liveUrl}\n`;
       if (project.repoUrl) content += `Source Code URL: ${project.repoUrl}\n`;
+      if (project.videoUrl) content += `Video Showcase: ${project.videoUrl}\n`;
+      if (project.huggingFaceUrl) content += `Hugging Face: ${project.huggingFaceUrl}\n`;
     });
     content += `\n`;
 
@@ -134,11 +137,9 @@ router.get('/', async (req, res) => {
     let responseData;
 
     if (!heroData) {
-      // If no heroData, this is likely a fresh deployment. Send defaults.
       responseData = defaultData;
     } else {
       const { id, ...heroDataWithoutId } = heroData;
-      // Fix for playgroundConfig if it doesn't exist yet (migration handling)
       const safePlaygroundConfig = playgroundConfig || defaultData.playgroundConfig;
       const { id: pgId, ...playgroundConfigWithoutId } = safePlaygroundConfig;
 
@@ -152,7 +153,6 @@ router.get('/', async (req, res) => {
       };
     }
     
-    // Add cache-control headers to prevent stale data.
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
@@ -175,16 +175,13 @@ router.post('/', async (req, res) => {
     
     const { heroData, skills, projects, socialLinks, articles, playgroundConfig } = req.body;
 
-    // Use a transaction to update all data atomically
     await prisma.$transaction([
-      // Use upsert to create the record if it doesn't exist on the first save
       prisma.generalInfo.upsert({
         where: { id: 1 },
         update: heroData,
-        create: { ...heroData, id: 1 }, // Ensure id is set on creation
+        create: { ...heroData, id: 1 },
       }),
 
-      // Playground Config
       prisma.playgroundConfig.upsert({
         where: { id: 1 },
         update: playgroundConfig,
@@ -198,7 +195,9 @@ router.post('/', async (req, res) => {
 
       prisma.project.deleteMany(),
       prisma.project.createMany({
-        data: projects.map(({ title, description, imageUrl, tags, liveUrl, repoUrl }) => ({ title, description, imageUrl, tags, liveUrl, repoUrl })),
+        data: projects.map(({ title, description, imageUrl, videoUrl, docUrl, tags, liveUrl, repoUrl, huggingFaceUrl }) => ({ 
+          title, description, imageUrl, videoUrl, docUrl, tags, liveUrl, repoUrl, huggingFaceUrl 
+        })),
       }),
       
       prisma.socialLink.deleteMany(),

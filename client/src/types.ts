@@ -1,3 +1,4 @@
+
 export interface HeroData {
   name: string;
   title: string;
@@ -13,7 +14,7 @@ export interface HeroData {
 export interface Skill {
   id?: number;
   name: string;
-  level: number; // NOTE: Level is unused in the new UI but kept for admin panel compatibility
+  level: number;
 }
 
 export interface Project {
@@ -21,9 +22,12 @@ export interface Project {
   title: string;
   description: string;
   imageUrl: string;
+  videoUrl?: string;
+  docUrl?: string;
   tags: string[];
   liveUrl?: string;
   repoUrl?: string;
+  huggingFaceUrl?: string;
 }
 
 export interface SocialLink {
@@ -44,20 +48,19 @@ export interface Article {
 export interface PlaygroundConfig {
   heroTitle: string;
   heroSubtitle: string;
-  bgType: string; // 'solid' | 'gradient' | 'mesh' | 'stars' | 'particles' | 'floatingLines'
+  bgType: string;
   bgColor1: string;
   bgColor2: string;
   textColor: string;
   primaryColor: string;
-  cardStyle: string; // 'glass' | 'solid' | 'outline' | 'neobrutalism'
+  cardStyle: string;
   borderRadius: string;
   showHero: boolean;
   showSkills: boolean;
   showProjects: boolean;
   showContact: boolean;
-  animationSpeed: string; // 'slow' | 'normal' | 'fast'
+  animationSpeed: string;
   
-  // Particles
   particleCount?: number;
   particleSpread?: number;
   particleBaseSize?: number;
@@ -65,7 +68,6 @@ export interface PlaygroundConfig {
   disableRotation?: boolean;
   particleSpeed?: number;
 
-  // Floating Lines
   flLineCount?: number;
   flLineDistance?: number;
   flBendRadius?: number;

@@ -1,7 +1,9 @@
+
 import React from 'react';
 import { motion, Variants } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { Github, ExternalLink } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Github, ExternalLink, ArrowRight } from 'lucide-react';
 import type { Project } from '../types';
 
 interface ProjectsProps {
@@ -48,11 +50,11 @@ const Projects: React.FC<ProjectsProps> = ({ projects, template = 'default' }) =
         initial="hidden"
         animate={inView ? 'visible' : 'hidden'}
       >
-        {projects.map((project) => {
+        {projects.map((project, index) => {
           if (isMinimalist) {
             return (
               <motion.div
-                key={project.title}
+                key={index}
                 className="bg-white dark:bg-dark-off-black rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden flex flex-col"
                 variants={itemVariants}
               >
@@ -61,59 +63,43 @@ const Projects: React.FC<ProjectsProps> = ({ projects, template = 'default' }) =
                 </div>
                 <div className="p-6 flex flex-col flex-grow">
                   <h3 className="text-xl font-bold font-heading mb-2 text-text dark:text-dark-text">{project.title}</h3>
-                  <p className="text-secondary dark:text-dark-secondary mb-4 text-sm flex-grow">{project.description}</p>
-                  <div className="flex gap-4 mt-auto">
-                      {project.repoUrl && <a href={project.repoUrl} className="text-sm font-medium text-primary hover:underline">Code</a>}
-                      {project.liveUrl && <a href={project.liveUrl} className="text-sm font-medium text-primary hover:underline">Live Demo</a>}
+                  <p className="text-secondary dark:text-dark-secondary mb-4 text-sm flex-grow line-clamp-3">{project.description}</p>
+                  <div className="flex gap-4 mt-auto items-center">
+                       <Link to={`/project/${project.id || index}`} className="text-sm font-bold text-primary hover:underline flex items-center gap-1">
+                          View Details <ArrowRight size={14}/>
+                       </Link>
                   </div>
                 </div>
               </motion.div>
             );
           }
           
-          // Default Template - Restored Clean Hover Overlay
+          // Default Template
           return (
             <motion.div 
-              key={project.title} 
-              className="group relative bg-gray-900 rounded-xl overflow-hidden shadow-lg"
+              key={index} 
+              className="group relative bg-gray-900 rounded-xl overflow-hidden shadow-lg h-64"
               variants={itemVariants}
             >
-              <div className="aspect-video overflow-hidden">
+              <div className="absolute inset-0">
                   <img 
                     src={project.imageUrl} 
                     alt={project.title} 
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:opacity-50" 
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:opacity-40" 
                   />
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
               
-              <div className="absolute inset-0 flex flex-col justify-center items-center p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/80 text-center">
+              <div className="absolute inset-0 flex flex-col justify-center items-center p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-center">
                 <h3 className="text-2xl font-bold font-heading text-white mb-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">{project.title}</h3>
-                <p className="text-gray-300 text-sm mb-6 line-clamp-3 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75">
-                  {project.description}
-                </p>
-                <div className="flex gap-6 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-100">
-                  {project.repoUrl && (
-                    <a 
-                      href={project.repoUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="text-white hover:text-primary transition-colors"
-                      aria-label="GitHub"
-                    >
-                      <Github size={24} />
-                    </a>
-                  )}
-                  {project.liveUrl && (
-                    <a 
-                      href={project.liveUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="text-white hover:text-primary transition-colors"
-                      aria-label="Live Demo"
-                    >
-                      <ExternalLink size={24} />
-                    </a>
-                  )}
+                
+                <div className="flex gap-4 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-100 mt-4">
+                  <Link 
+                    to={`/project/${project.id || index}`}
+                    className="px-6 py-2 bg-primary hover:bg-blue-600 text-white rounded-full font-medium transition-colors"
+                  >
+                    View Project
+                  </Link>
                 </div>
               </div>
             </motion.div>

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { HeroData } from '../../../types';
@@ -9,7 +10,11 @@ const EliteHero: React.FC<{ data: HeroData }> = ({ data }) => {
 
   if (!data) return null;
 
-  const name = data.name || "";
+  const fullName = data.name || "ARCHITECT";
+  // Split name into First and Last for stacked layout
+  const [firstName, ...rest] = fullName.split(' ');
+  const lastName = rest.join(' ');
+
   const description = data.description || "";
   const title = data.title || "";
 
@@ -23,40 +28,42 @@ const EliteHero: React.FC<{ data: HeroData }> = ({ data }) => {
 
       <motion.div 
         style={{ y, opacity }}
-        className="relative z-10 max-w-6xl w-full"
+        className="relative z-10 max-w-7xl w-full flex flex-col items-center"
       >
         <motion.div 
           initial="hidden"
           animate="visible"
-          variants={{
-            hidden: { opacity: 0 },
-            visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
-          }}
-          className="flex flex-col gap-2"
+          className="flex flex-col items-center justify-center leading-none"
         >
-          <div className="flex flex-wrap justify-center gap-x-4 md:gap-x-8">
-            {name.split("").map((char, i) => (
-              <motion.span
-                  key={i}
-                  variants={{
-                    hidden: { y: 100, opacity: 0, rotateX: -45 },
-                    visible: { y: 0, opacity: 1, rotateX: 0, transition: { duration: 1.2, ease: [0.16, 1, 0.3, 1] } }
-                  }}
-                  className="inline-block"
-              >
-                  <h1 className="text-[10vw] md:text-[11vw] leading-[0.9] font-heading font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500 select-none">
-                    {char.toUpperCase()}
-                  </h1>
-              </motion.span>
-            ))}
-          </div>
+            {/* First Name - Outlined/Stroked style look or huge bold */}
+            <motion.h1
+               initial={{ y: 50, opacity: 0 }}
+               animate={{ y: 0, opacity: 1 }}
+               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+               className="text-[12vw] md:text-[13vw] font-heading font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-400 select-none"
+            >
+                {firstName.toUpperCase()}
+            </motion.h1>
+            
+            {/* Last Name - if exists, styled slightly differently or solid to contrast */}
+            {lastName && (
+                <motion.h1
+                    initial={{ y: 50, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 1, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                    className="text-[12vw] md:text-[13vw] font-heading font-black tracking-tighter text-white/10 select-none relative -mt-[2vw] md:-mt-[3vw]"
+                    style={{ WebkitTextStroke: '1px rgba(255,255,255,0.3)' }}
+                >
+                    {lastName.toUpperCase()}
+                </motion.h1>
+            )}
         </motion.div>
 
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1, duration: 1 }}
-          className="flex justify-between items-end mt-12 border-t border-white/10 pt-6"
+          className="flex justify-between items-end mt-16 w-full max-w-4xl border-t border-white/10 pt-6"
         >
           <div className="max-w-md">
             <p className="text-gray-400 text-sm md:text-base leading-relaxed tracking-wide font-light">
