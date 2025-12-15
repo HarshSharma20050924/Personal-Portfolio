@@ -1,7 +1,6 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Send, Maximize2, Minimize2, Trash2 } from 'lucide-react';
+import { MessageSquare, X, Send, Maximize2, Minimize2, Trash2, Terminal } from 'lucide-react';
 import './ChatWidget.css';
 
 interface Message {
@@ -9,15 +8,21 @@ interface Message {
   content: string;
 }
 
-const ChatWidget: React.FC = () => {
+interface ChatWidgetProps {
+    template?: string;
+}
+
+const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'ai', content: "Hey! I’m Harsh. Curious about what I’ve built or what I’m good at? Feel free to ask me anything." }
+    { role: 'ai', content: "System online. How may I assist you with this portfolio data?" }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const isElite = template === 'elite';
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -52,7 +57,7 @@ const ChatWidget: React.FC = () => {
 
     } catch (error) {
       console.error(error);
-      setMessages(prev => [...prev, { role: 'ai', content: "I'm having trouble connecting to the brain right now. Please try again later." }]);
+      setMessages(prev => [...prev, { role: 'ai', content: "Connection interrupted. Retry recommended." }]);
     } finally {
       setIsLoading(false);
     }
@@ -65,9 +70,117 @@ const ChatWidget: React.FC = () => {
   };
 
   const handleClearChat = () => {
-    setMessages([{ role: 'ai', content: "Chat history cleared. How can I help you today?" }]);
+    setMessages([{ role: 'ai', content: "Memory buffer cleared. Ready for input." }]);
   };
 
+  if (isElite) {
+    return (
+        <div className="chat-widget-container font-mono">
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                        animate={{ 
+                            opacity: 1, 
+                            scale: 1, 
+                            y: 0,
+                            width: isExpanded ? '90vw' : '400px',
+                            height: isExpanded ? '85vh' : '550px',
+                            position: isExpanded ? 'fixed' : 'relative',
+                            top: isExpanded ? '50%' : 'auto',
+                            left: isExpanded ? '50%' : 'auto',
+                            x: isExpanded ? '-50%' : '0%',
+                            y: isExpanded ? '-50%' : '0%',
+                            zIndex: 100,
+                        }}
+                        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                        className={`
+                            pointer-events-auto flex flex-col overflow-hidden
+                            bg-black border border-white/20 shadow-[0_0_30px_rgba(255,255,255,0.1)]
+                            ${isExpanded ? 'fixed inset-0 m-auto' : 'mb-4'}
+                        `}
+                    >
+                        {/* Elite Header */}
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-white/20 bg-black">
+                            <div className="flex items-center gap-3">
+                                <div className="w-2 h-2 bg-white animate-pulse" />
+                                <h3 className="text-xs uppercase tracking-widest text-white">System.AI</h3>
+                            </div>
+                            <div className="flex items-center gap-4 text-white/50">
+                                <button onClick={handleClearChat} className="hover:text-white transition-colors"><Trash2 size={14} /></button>
+                                <button onClick={() => setIsExpanded(!isExpanded)} className="hover:text-white transition-colors">
+                                    {isExpanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+                                </button>
+                                <button onClick={() => setIsOpen(false)} className="hover:text-white transition-colors"><X size={14} /></button>
+                            </div>
+                        </div>
+
+                        {/* Elite Messages */}
+                        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-black scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-black">
+                            {messages.map((msg, idx) => (
+                                <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                                    <span className="text-[10px] text-white/30 uppercase tracking-widest mb-1">
+                                        {msg.role === 'user' ? 'USER' : 'SYSTEM'}
+                                    </span>
+                                    <div className={`
+                                        max-w-[90%] text-sm leading-relaxed
+                                        ${msg.role === 'user' ? 'text-white text-right' : 'text-gray-400 text-left border-l border-white/20 pl-3'}
+                                    `}>
+                                        {msg.content}
+                                    </div>
+                                </div>
+                            ))}
+                             {isLoading && (
+                                <div className="flex justify-start">
+                                    <span className="text-[10px] text-white/30 uppercase tracking-widest animate-pulse">Processing...</span>
+                                </div>
+                             )}
+                             <div ref={messagesEndRef} />
+                        </div>
+
+                        {/* Elite Input */}
+                        <div className="p-4 border-t border-white/20 bg-black">
+                             <div className="flex items-center gap-2">
+                                <span className="text-white/50">{'>'}</span>
+                                <input
+                                    type="text"
+                                    className="flex-1 bg-transparent border-none outline-none text-white text-sm font-mono placeholder-white/20"
+                                    placeholder="Execute command..."
+                                    value={inputValue}
+                                    onChange={(e) => setInputValue(e.target.value)}
+                                    onKeyPress={handleKeyPress}
+                                    disabled={isLoading}
+                                    autoFocus
+                                />
+                                <button 
+                                    onClick={handleSendMessage}
+                                    disabled={!inputValue.trim() || isLoading}
+                                    className="text-white/50 hover:text-white disabled:opacity-30 transition-colors uppercase text-xs tracking-widest"
+                                >
+                                    SEND
+                                </button>
+                             </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <motion.button
+                className={`
+                    pointer-events-auto w-12 h-12 flex items-center justify-center transition-all
+                    bg-black border border-white/20 text-white hover:bg-white hover:text-black hover:border-white
+                `}
+                onClick={() => setIsOpen(!isOpen)}
+                whileHover={{ scale: 1.0 }}
+                whileTap={{ scale: 0.95 }}
+            >
+                {isOpen ? <X size={20} /> : <Terminal size={20} />}
+            </motion.button>
+        </div>
+    );
+  }
+
+  // Default Chat Widget Style
   return (
     <div className="chat-widget-container">
       <AnimatePresence>

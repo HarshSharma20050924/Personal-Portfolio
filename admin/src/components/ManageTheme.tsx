@@ -33,6 +33,16 @@ const templates = [
     description: 'An elegant dark theme with an animated starry sky background and glowing interactive elements.',
   },
   {
+    id: 'elite',
+    name: 'Elite (System Architect)',
+    description: 'A high-end, cinematic, and interaction-heavy dark theme. Features a terminal-style chat and sleek typography.',
+  },
+  {
+    id: 'profilecard',
+    name: '3D Profile Card',
+    description: 'A unique, single-screen layout featuring a 3D tiltable profile card with holographic effects.',
+  },
+  {
     id: 'playground',
     name: 'Playground / Experimental',
     description: 'A customizable container where you can control background types, colors, and component styles via the "Playground" tab.',
@@ -53,30 +63,28 @@ const ManageTheme: React.FC<ManageThemeProps> = ({ data, setData }) => {
         <p className="text-slate-600 dark:text-slate-400 mb-6">
           Choose a template to change the overall look and feel of your portfolio. Your content will remain the same.
         </p>
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {templates.map((template) => (
             <div
               key={template.id}
               onClick={() => handleSelect(template.id)}
-              className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+              className={`p-4 border-2 rounded-lg cursor-pointer transition-all h-full flex flex-col ${
                 selectedTemplate === template.id
                   ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20'
                   : 'border-slate-300 dark:border-slate-700 hover:border-sky-400 dark:hover:border-sky-600'
               }`}
             >
-              <div className="flex items-center">
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold">{template.name}</h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">{template.description}</p>
-                </div>
+              <div className="flex items-start justify-between mb-2">
+                <h3 className="text-lg font-semibold">{template.name}</h3>
                 {selectedTemplate === template.id && (
-                   <div className="w-5 h-5 rounded-full bg-sky-500 flex items-center justify-center ml-4 flex-shrink-0">
+                   <div className="w-5 h-5 rounded-full bg-sky-500 flex items-center justify-center flex-shrink-0">
                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
                      </svg>
                    </div>
                 )}
               </div>
+              <p className="text-sm text-slate-500 dark:text-slate-400 flex-grow">{template.description}</p>
             </div>
           ))}
         </div>

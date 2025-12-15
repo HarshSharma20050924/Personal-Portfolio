@@ -6,6 +6,8 @@ import TemplateDotGrid from './templates/TemplateDotGrid';
 import TemplateMagicBento from './templates/TemplateMagicBento';
 import TemplateStarryNight from './templates/TemplateStarryNight';
 import TemplatePlayground from './templates/TemplatePlayground';
+import TemplateProfileCard from './templates/TemplateProfileCard';
+import TemplateElite from './templates/TemplateElite';
 import ChatWidget from './ChatWidget';
 
 interface PortfolioProps {
@@ -35,6 +37,10 @@ const Portfolio: React.FC<PortfolioProps> = (props) => {
           return <TemplateMagicBento {...props} />;
         case 'starrynight':
           return <TemplateStarryNight {...props} />;
+        case 'profilecard':
+          return <TemplateProfileCard {...props} />;
+        case 'elite':
+          return <TemplateElite {...props} />;
         case 'default':
         default:
           return <TemplateDefault {...props} />;
@@ -44,7 +50,7 @@ const Portfolio: React.FC<PortfolioProps> = (props) => {
   return (
     <>
         {renderTemplate()}
-        <ChatWidget />
+        <ChatWidget template={heroData.template} />
     </>
   );
 };

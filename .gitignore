@@ -13,6 +13,8 @@ dist-ssr
 *.local
 
 rag_service/.env
+ps
+/ps
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -23,3 +25,21 @@ rag_service/.env
 *.njsproj
 *.sln
 *.sw?
+
+# Python
+rag_service/__pycache__
+*.pyc
+*.pyo
+
+# Virtual environments
+venv/
+.env/
+.ps/
+ps/
+rag_service/ps/
+lib/
+lib64/
+pyvenv.cfg
+
+# OS junk
+.DS_Store

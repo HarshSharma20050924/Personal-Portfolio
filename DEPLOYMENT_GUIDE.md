@@ -239,3 +239,15 @@ If you encounter any issues:
 4. Clear browser cache and test again
 
 **Happy deploying! 🚀**
+
+---
+
+## RAG Service (server-side) — reduce first-request latency 🔧
+
+If you're running the `rag_service` (LLM + embeddings), the *first* request after deployment can be slow due to provider cold-starts (embedding model and the LLM model like `llama-3.3-70b-versatile`). To mitigate:
+
+- Use the built-in warmup: the service now runs a non-blocking warmup on startup which calls a small embedding and a tiny chat completion. You can disable it with `WARMUP_ENABLED=false`.
+- Optionally enable periodic keepalive with `WARMUP_KEEPALIVE_INTERVAL` (seconds) to keep providers warm.
+- You can also trigger a manual warmup at runtime with a POST to `/warmup`.
+
+Tip: Use `rag_service/measure_direct.py` to measure cold vs warm timings locally.
