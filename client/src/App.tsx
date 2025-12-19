@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { ReactLenis } from '@studio-freight/react-lenis';
 import Portfolio from './components/Portfolio';
 import ProjectDetails from './pages/ProjectDetails';
+import ProjectGallery from './pages/ProjectGallery';
 import { HeroData, Skill, Project, SocialLink, Article, PlaygroundConfig } from './types';
 
 type AppData = {
@@ -15,7 +16,6 @@ type AppData = {
   playgroundConfig: PlaygroundConfig;
 };
 
-// ScrollToTop component to ensure navigation starts at top of page
 const ScrollToTop = () => {
   const { pathname } = useLocation();
   useEffect(() => {
@@ -34,7 +34,6 @@ const App: React.FC = () => {
         const response = await fetch('/api/data');
         if (!response.ok) throw new Error('Failed to fetch portfolio data.');
         const result = await response.json();
-        // Add IDs to projects if missing for routing
         const projectsWithIds = result.projects.map((p: Project, i: number) => ({
              ...p,
              id: p.id || i
@@ -73,6 +72,12 @@ const App: React.FC = () => {
                 } />
                 <Route path="/project/:id" element={
                     <ProjectDetails 
+                        projects={data.projects} 
+                        template={data.heroData.template} 
+                    />
+                } />
+                <Route path="/gallery" element={
+                    <ProjectGallery 
                         projects={data.projects} 
                         template={data.heroData.template} 
                     />

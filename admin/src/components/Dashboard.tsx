@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import type { HeroData, Skill, Project, SocialLink, Article, PlaygroundConfig } from '../types';
 import ManageHero from './ManageHero';
@@ -7,6 +8,7 @@ import ManageSocials from './ManageSocials';
 import ManageBlog from './ManageBlog';
 import ManageTheme from './ManageTheme';
 import ManagePlayground from './ManagePlayground';
+import ManageSecurity from './ManageSecurity';
 
 interface DashboardProps {
   onLogout: () => void;
@@ -25,7 +27,7 @@ interface DashboardProps {
   setPlaygroundConfig: React.Dispatch<React.SetStateAction<PlaygroundConfig>>;
 }
 
-type AdminView = 'hero' | 'theme' | 'skills' | 'projects' | 'socials' | 'blog' | 'playground';
+type AdminView = 'hero' | 'theme' | 'skills' | 'projects' | 'socials' | 'blog' | 'playground' | 'security';
 
 const Dashboard: React.FC<DashboardProps> = (props) => {
   const [view, setView] = useState<AdminView>('hero');
@@ -40,6 +42,7 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
     { id: 'projects', label: 'Projects' },
     { id: 'socials', label: 'Social Links' },
     { id: 'blog', label: 'Blog' },
+    { id: 'security', label: 'Security' },
   ];
   
   const handleSave = async () => {
@@ -105,6 +108,8 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
         return <ManageSocials socialLinks={props.socialLinks} setSocialLinks={props.setSocialLinks} />;
       case 'blog':
         return <ManageBlog articles={props.articles} setArticles={props.setArticles} />;
+      case 'security':
+        return <ManageSecurity />;
       default:
         return <p>Select a section to manage.</p>;
     }

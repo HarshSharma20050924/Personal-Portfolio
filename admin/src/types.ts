@@ -1,221 +1,77 @@
 
-import { Router } from 'express';
-import prisma from '../prisma.mjs';
+export interface HeroData {
+  name: string;
+  title: string;
+  description: string;
+  profileImageUrl: string;
+  email?: string;
+  phone?: string;
+  quote?: string;
+  resumeUrl?: string;
+  template?: string;
+}
 
-const router = Router();
+export interface Skill {
+  id?: number;
+  name: string;
+  level: number;
+}
 
-const defaultData = {
-  heroData: {
-    name: 'Your Name',
-    title: 'Your Title',
-    description: 'Welcome to your portfolio! Use the admin panel to update this information.',
-    profileImageUrl: '',
-    email: 'your.email@example.com',
-    phone: '',
-    quote: 'Add a quote about yourself.'
-  },
-  skills: [],
-  projects: [],
-  socialLinks: [],
-  articles: [],
-  playgroundConfig: {
-    heroTitle: "Playground Mode",
-    heroSubtitle: "Experimenting with colors, shapes, and layouts.",
-    bgType: "gradient",
-    bgColor1: "#0f172a",
-    bgColor2: "#1e293b",
-    textColor: "#f8fafc",
-    primaryColor: "#38bdf8",
-    cardStyle: "glass",
-    borderRadius: "rounded-2xl",
-    showHero: true,
-    showSkills: true,
-    showProjects: true,
-    showContact: true,
-    animationSpeed: "normal",
-    particleCount: 200,
-    particleSpread: 10,
-    particleBaseSize: 100,
-    moveParticlesOnHover: true,
-    disableRotation: false,
-    particleSpeed: 0.1,
-    flLineCount: 10,
-    flLineDistance: 5.0,
-    flBendRadius: 5.0,
-    flBendStrength: -0.5,
-    flParallax: true
-  }
-};
+export interface Project {
+  id?: number;
+  title: string;
+  description: string;
+  imageUrl: string;
+  videoUrl?: string;
+  docUrl?: string;
+  tags: string[];
+  liveUrl?: string;
+  repoUrl?: string;
+  huggingFaceUrl?: string;
+  featured?: boolean;
+}
 
-// GET /api/data/export - Export all data as formatted text for AI/RAG
-router.get('/export', async (req, res) => {
-  try {
-    const authHeader = req.headers.authorization;
-    if (authHeader !== `Bearer ${process.env.ADMIN_API_KEY}`) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
+export interface SocialLink {
+  id?: number;
+  name: string;
+  url: string;
+  icon: string;
+}
 
-    const [heroData, skills, projects, socialLinks, articles] = await Promise.all([
-      prisma.generalInfo.findFirst({ where: { id: 1 } }),
-      prisma.skill.findMany({ orderBy: { id: 'asc' } }),
-      prisma.project.findMany({ orderBy: { id: 'asc' } }),
-      prisma.socialLink.findMany({ orderBy: { id: 'asc' } }),
-      prisma.article.findMany({ orderBy: { id: 'asc' } }),
-    ]);
+export interface Article {
+  id?: number;
+  title: string;
+  excerpt: string;
+  date: string;
+  url: string;
+}
 
-    if (!heroData) {
-      return res.status(404).json({ message: 'No data found to export.' });
-    }
+export interface PlaygroundConfig {
+  heroTitle: string;
+  heroSubtitle: string;
+  bgType: string;
+  bgColor1: string;
+  bgColor2: string;
+  textColor: string;
+  primaryColor: string;
+  cardStyle: string;
+  borderRadius: string;
+  showHero: boolean;
+  showSkills: boolean;
+  showProjects: boolean;
+  showContact: boolean;
+  animationSpeed: string;
+  
+  particleCount?: number;
+  particleSpread?: number;
+  particleBaseSize?: number;
+  moveParticlesOnHover?: boolean;
+  disableRotation?: boolean;
+  particleSpeed?: number;
 
-    let content = `PORTFOLIO DATA EXPORT\nGenerated on: ${new Date().toISOString()}\n\n`;
-
-    content += `=== PERSONAL INFORMATION ===\n`;
-    content += `Name: ${heroData.name}\n`;
-    content += `Title: ${heroData.title}\n`;
-    content += `Email: ${heroData.email}\n`;
-    content += `Phone: ${heroData.phone || 'N/A'}\n`;
-    content += `Bio/Description: ${heroData.description}\n`;
-    content += `Personal Quote: "${heroData.quote}"\n\n`;
-
-    content += `=== SKILLS ===\n`;
-    content += `My technical skills and proficiency levels are:\n`;
-    skills.forEach(skill => {
-      content += `- ${skill.name} (Proficiency: ${skill.level}%)\n`;
-    });
-    content += `\n`;
-
-    content += `=== PROJECTS ===\n`;
-    content += `Here are the projects I have worked on:\n`;
-    projects.forEach(project => {
-      content += `\nTitle: ${project.title}\n`;
-      content += `Description: ${project.description}\n`;
-      content += `Techniques/Tags: ${project.tags.join(', ')}\n`;
-      if (project.liveUrl) content += `Live Demo URL: ${project.liveUrl}\n`;
-      if (project.repoUrl) content += `Source Code URL: ${project.repoUrl}\n`;
-      if (project.videoUrl) content += `Video Showcase: ${project.videoUrl}\n`;
-      if (project.huggingFaceUrl) content += `Hugging Face: ${project.huggingFaceUrl}\n`;
-    });
-    content += `\n`;
-
-    content += `=== BLOG ARTICLES ===\n`;
-    content += `Articles and insights I have written:\n`;
-    articles.forEach(article => {
-      content += `\nTitle: ${article.title}\n`;
-      content += `Date: ${article.date}\n`;
-      content += `Excerpt/Summary: ${article.excerpt}\n`;
-      content += `Link: ${article.url}\n`;
-    });
-    content += `\n`;
-
-    content += `=== SOCIAL LINKS ===\n`;
-    socialLinks.forEach(link => {
-      content += `- ${link.name}: ${link.url}\n`;
-    });
-
-    res.setHeader('Content-Type', 'text/plain');
-    res.setHeader('Content-Disposition', 'attachment; filename="portfolio_data.txt"');
-    res.send(content);
-
-  } catch (error) {
-    console.error('Export Error:', error);
-    res.status(500).json({ message: 'Internal Server Error', error: error.message });
-  }
-});
-
-// GET /api/data
-router.get('/', async (req, res) => {
-  try {
-    const [heroData, skills, projects, socialLinks, articles, playgroundConfig] = await Promise.all([
-      prisma.generalInfo.findFirst({ where: { id: 1 } }),
-      prisma.skill.findMany({ orderBy: { id: 'asc' } }),
-      prisma.project.findMany({ orderBy: { id: 'asc' } }),
-      prisma.socialLink.findMany({ orderBy: { id: 'asc' } }),
-      prisma.article.findMany({ orderBy: { id: 'asc' } }),
-      prisma.playgroundConfig.findFirst({ where: { id: 1 } }),
-    ]);
-
-    let responseData;
-
-    if (!heroData) {
-      responseData = defaultData;
-    } else {
-      const { id, ...heroDataWithoutId } = heroData;
-      const safePlaygroundConfig = playgroundConfig || defaultData.playgroundConfig;
-      const { id: pgId, ...playgroundConfigWithoutId } = safePlaygroundConfig;
-
-      responseData = {
-        heroData: heroDataWithoutId,
-        skills,
-        projects,
-        socialLinks,
-        articles,
-        playgroundConfig: playgroundConfigWithoutId,
-      };
-    }
-    
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-    res.setHeader('Surrogate-Control', 'no-store');
-    res.status(200).json(responseData);
-
-  } catch (error) {
-    console.error('API Error:', error);
-    res.status(500).json({ message: 'Internal Server Error', error: error.message });
-  }
-});
-
-// POST /api/data
-router.post('/', async (req, res) => {
-  try {
-    const authHeader = req.headers.authorization;
-    if (authHeader !== `Bearer ${process.env.ADMIN_API_KEY}`) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
-    
-    const { heroData, skills, projects, socialLinks, articles, playgroundConfig } = req.body;
-
-    await prisma.$transaction([
-      prisma.generalInfo.upsert({
-        where: { id: 1 },
-        update: heroData,
-        create: { ...heroData, id: 1 },
-      }),
-
-      prisma.playgroundConfig.upsert({
-        where: { id: 1 },
-        update: playgroundConfig,
-        create: { ...playgroundConfig, id: 1 },
-      }),
-
-      prisma.skill.deleteMany(),
-      prisma.skill.createMany({
-        data: skills.map(({ name, level }) => ({ name, level })),
-      }),
-
-      prisma.project.deleteMany(),
-      prisma.project.createMany({
-        data: projects.map(({ title, description, imageUrl, videoUrl, docUrl, tags, liveUrl, repoUrl, huggingFaceUrl }) => ({ 
-          title, description, imageUrl, videoUrl, docUrl, tags, liveUrl, repoUrl, huggingFaceUrl 
-        })),
-      }),
-      
-      prisma.socialLink.deleteMany(),
-      prisma.socialLink.createMany({
-        data: socialLinks.map(({ name, url, icon }) => ({ name, url, icon })),
-      }),
-
-      prisma.article.deleteMany(),
-      prisma.article.createMany({
-        data: articles.map(({ title, excerpt, date, url }) => ({ title, excerpt, date, url })),
-      }),
-    ]);
-    
-    res.status(200).json({ message: 'Data saved successfully' });
-  } catch (error) {
-    console.error('API Error:', error);
-    res.status(500).json({ message: 'Internal Server Error', error: error.message });
-  }
-});
-
-export default router;
+  flLineCount?: number;
+  flLineDistance?: number;
+  flBendRadius?: number;
+  flBendStrength?: number;
+  flParallax?: boolean;
+}

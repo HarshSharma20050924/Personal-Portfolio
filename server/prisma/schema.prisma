@@ -40,12 +40,13 @@ model Project {
   title          String
   description    String
   imageUrl       String
-  videoUrl       String?  // New field for video showcase (YouTube/MP4)
-  docUrl         String?  // New field for document PDF
-  huggingFaceUrl String?  // New field for Hugging Face links
+  videoUrl       String?  // Video showcase (YouTube/MP4)
+  docUrl         String?  // Document PDF
+  huggingFaceUrl String?  // Hugging Face links
   tags           String[]
   liveUrl        String?
   repoUrl        String?
+  featured       Boolean? @default(false) // Highlights project on Home page
 }
 
 model SocialLink {

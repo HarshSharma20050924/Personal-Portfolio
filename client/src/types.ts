@@ -28,6 +28,7 @@ export interface Project {
   liveUrl?: string;
   repoUrl?: string;
   huggingFaceUrl?: string;
+  featured?: boolean;
 }
 
 export interface SocialLink {
