@@ -1,6 +1,7 @@
 
 import { Router } from 'express';
 import prisma from '../prisma.mjs';
+import crypto from 'crypto';
 
 const router = Router();
 
@@ -16,9 +17,7 @@ router.post('/', async (req, res) => {
       where: { username: username },
     });
 
-    // In a real app, use a library like bcrypt to compare hashed passwords.
     if (adminUser && adminUser.password === password) {
-      // Return the API key from env vars on successful login for the frontend to use
       const adminApiKey = process.env.ADMIN_API_KEY;
       if (!adminApiKey) {
         console.error('ADMIN_API_KEY is not set in environment variables.');
@@ -34,8 +33,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// SIMULATION: Register a biometric credential
-// In a real production app, this would verify a WebAuthn attestation.
+// Register a biometric credential
 router.post('/register-biometric', async (req, res) => {
     try {
         const authHeader = req.headers.authorization;
@@ -45,26 +43,47 @@ router.post('/register-biometric', async (req, res) => {
             return res.status(401).json({ message: 'Unauthorized. Please log in with password first.' });
         }
 
-        // Here we would normally save the public key credential to the database associated with the admin.
-        // For this portfolio template, we acknowledge the registration.
-        console.log("Biometric credential registered for device:", req.body.deviceName);
+        // Generate a unique token for this device
+        const credentialId = crypto.randomUUID();
+        const deviceName = req.body.deviceName || 'Unknown Device';
+
+        await prisma.biometricCredential.create({
+            data: {
+                credentialId,
+                deviceName
+            }
+        });
         
-        return res.status(200).json({ message: 'Device registered successfully.' });
+        console.log(`Registered device: ${deviceName} with ID: ${credentialId}`);
+        
+        // Return the token to the client to be stored in localStorage
+        return res.status(200).json({ 
+            message: 'Device registered successfully.',
+            credentialId: credentialId 
+        });
     } catch (error) {
         console.error('Registration Error:', error);
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 });
 
-// SIMULATION: Login with biometric
-// In a real production app, this would verify a WebAuthn assertion.
+// Login with biometric
 router.post('/biometric', async (req, res) => {
     try {
-        // Since we are simulating, we check if the feature is enabled or simply allow it 
-        // if the client claims to have a credential. 
-        // SECURITY NOTE: This endpoint currently returns the API key without actual verification 
-        // because we cannot implement full FIDO2 server logic in this single file without external libs.
-        // It relies on the browser's local authentication simulation in the frontend.
+        const { credentialId } = req.body;
+
+        if (!credentialId) {
+            return res.status(400).json({ message: 'No credential provided. Please register this device first.' });
+        }
+
+        // Verify if this credential ID exists in our database
+        const credential = await prisma.biometricCredential.findUnique({
+            where: { credentialId }
+        });
+
+        if (!credential) {
+            return res.status(401).json({ message: 'Device not recognized. Access denied.' });
+        }
         
         const adminApiKey = process.env.ADMIN_API_KEY;
         if (!adminApiKey) {

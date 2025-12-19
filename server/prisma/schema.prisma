@@ -16,6 +16,14 @@ model Admin {
   password String
 }
 
+// Stores authorized device tokens for biometric login
+model BiometricCredential {
+  id           String   @id @default(uuid())
+  credentialId String   @unique
+  deviceName   String
+  createdAt    DateTime @default(now())
+}
+
 model GeneralInfo {
   id              Int     @id @default(autoincrement())
   name            String

@@ -14,7 +14,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const passwordRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Check if WebAuthn is available and if there's a stored credential hint
+    // Check if WebAuthn is available
     if (window.PublicKeyCredential) {
       setIsBiometricAvailable(true);
     }
@@ -53,38 +53,36 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     setError('');
     setIsLoading(true);
 
-    // This is a simulation of the WebAuthn flow. 
-    // In a real production app, you'd fetch an assertion challenge from the server.
     try {
-      const challenge = new Uint8Array(32);
-      window.crypto.getRandomValues(challenge);
+      // Check if this specific device has a stored credential token
+      const credentialId = localStorage.getItem('portfolio_biometric_id');
 
-      // Trigger the browser's biometric/security key dialog
-      // Note: This requires the device to be registered first (handled in Dashboard)
+      if (!credentialId) {
+          throw new Error("This device is not registered. Please log in with a password and register it in the Security tab.");
+      }
+
       if (window.PublicKeyCredential) {
-        // Here we'd call navigator.credentials.get({...})
-        // For this demo environment, we will assume "Success" if the browser prompts
+        // Simulate biometric prompt
         console.log("Requesting biometric assertion...");
+        await new Promise(r => setTimeout(r, 600));
         
-        // Simulating the prompt delay
-        await new Promise(r => setTimeout(r, 800));
-        
-        // In a real scenario, you'd verify the signed assertion on the server
-        // For now, we fall back to a "Security Key" prompt simulation
+        // Send the stored credential ID to the server for verification
         const response = await fetch('/api/auth/biometric', {
            method: 'POST',
-           headers: { 'Content-Type': 'application/json' }
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({ credentialId })
         });
         
         const data = await response.json();
+        
         if (response.ok) {
            onLogin(data.apiKey);
         } else {
-           setError("No biometric device registered for this account.");
+           setError(data.message || "Authentication failed.");
         }
       }
-    } catch (err) {
-      setError('Biometric authentication failed or canceled.');
+    } catch (err: any) {
+      setError(err.message || 'Biometric authentication failed.');
     } finally {
       setIsLoading(false);
     }
@@ -99,7 +97,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             </div>
             <h1 className="text-2xl font-bold text-center">Admin Access</h1>
             <p className="text-center text-sm text-slate-500 dark:text-slate-400 mt-1">
-                Enter your credentials or use biometrics.
+                Enter your credentials or use a registered device.
             </p>
         </div>
 
