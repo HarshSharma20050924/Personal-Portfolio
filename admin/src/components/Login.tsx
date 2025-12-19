@@ -88,7 +88,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       try {
           credentialIdBuffer = base64ToUint8Array(storedCredentialId);
       } catch (e) {
-          // Fallback if the ID was stored raw (unlikely with standard API, but safe to handle)
+          // Fallback if the ID was stored raw
           credentialIdBuffer = Uint8Array.from(storedCredentialId, c => c.charCodeAt(0));
       }
 
@@ -98,7 +98,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           allowCredentials: [{
               id: credentialIdBuffer,
               type: 'public-key',
-              transports: ['internal', 'hybrid'] 
+              // FIX: Removed 'transports' array. Forcing ['internal', 'hybrid'] causes some mobile browsers 
+              // to ignore the credential if they don't strictly report the transport type correctly.
           }],
           userVerification: "required",
           timeout: 60000,
@@ -113,7 +114,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
       console.log("Biometric assertion received. ID:", assertion.id);
 
-      // 4. Send the ID to server for verification (The server checks if this ID exists in DB)
+      // 4. Send the ID to server for verification
       const response = await fetch('/api/auth/biometric', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

@@ -6,8 +6,7 @@ const ManageSecurity: React.FC = () => {
     const [isRegistering, setIsRegistering] = useState(false);
     const [status, setStatus] = useState<string | null>(null);
 
-    // Helper to convert base64url to Uint8Array (needed for WebAuthn challenges if we were doing strict verification, 
-    // but here mainly to ensure we have data buffers)
+    // Helper to convert base64url to Uint8Array
     const strToBin = (str: string) => Uint8Array.from(str, c => c.charCodeAt(0));
 
     const handleRegisterBiometric = async () => {
@@ -22,8 +21,6 @@ const ManageSecurity: React.FC = () => {
             console.log("Starting WebAuthn registration...");
 
             // 1. Create the challenge and user info
-            // In a full production app, the challenge comes from the server to prevent replay attacks.
-            // For this implementation, we generate it locally to trigger the hardware prompt.
             const challenge = new Uint8Array(32);
             window.crypto.getRandomValues(challenge);
 
@@ -34,7 +31,7 @@ const ManageSecurity: React.FC = () => {
                 challenge: challenge,
                 rp: {
                     name: "Portfolio Admin",
-                    id: window.location.hostname // Must match the current domain
+                    id: window.location.hostname
                 },
                 user: {
                     id: userId,
@@ -46,15 +43,16 @@ const ManageSecurity: React.FC = () => {
                     { alg: -257, type: "public-key" }, // RS256
                 ],
                 authenticatorSelection: {
-                    authenticatorAttachment: "platform", // Forces built-in authenticator (TouchID/FaceID)
+                    // FIX: Removed 'authenticatorAttachment: "platform"' to prevent "device not supported" errors on mobile.
+                    // This allows the browser to negotiate the best authenticator (Internal, Hybrid, or Security Key).
                     userVerification: "required",
-                    requireResidentKey: false
+                    residentKey: "preferred" 
                 },
                 timeout: 60000,
                 attestation: "none"
             };
 
-            // 2. Call the browser API - This triggers the FaceID/TouchID prompt
+            // 2. Call the browser API
             const credential = await navigator.credentials.create({ publicKey }) as PublicKeyCredential;
 
             if (!credential) {
@@ -71,7 +69,6 @@ const ManageSecurity: React.FC = () => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${apiKey}`
                 },
-                // We send the credential.id (base64url string) to the server
                 body: JSON.stringify({ 
                     deviceName: navigator.userAgent,
                     credentialId: credential.id 
@@ -82,7 +79,7 @@ const ManageSecurity: React.FC = () => {
 
             const data = await response.json();
             
-            // 4. Save the Credential ID locally to identify this device later
+            // 4. Save the Credential ID locally
             if (data.credentialId) {
                 localStorage.setItem('portfolio_biometric_id', data.credentialId);
                 setStatus("success");
@@ -92,11 +89,10 @@ const ManageSecurity: React.FC = () => {
 
         } catch (err: any) {
             console.error(err);
-            // Handle specific WebAuthn errors
             if (err.name === 'NotAllowedError') {
                 setStatus("Registration canceled or timed out.");
             } else if (err.name === 'SecurityError') {
-                setStatus("Security error: Domain mismatch or insecure context.");
+                setStatus("Security error: Domain mismatch or insecure context (HTTPS required).");
             } else {
                 setStatus(err.message || "Registration failed.");
             }
