@@ -89,6 +89,7 @@ router.get('/export', async (req, res) => {
     projects.forEach(project => {
       content += `\nTitle: ${project.title}\n`;
       content += `Description: ${project.description}\n`;
+      content += `Featured: ${project.featured ? 'Yes' : 'No'}\n`;
       content += `Techniques/Tags: ${project.tags.join(', ')}\n`;
       if (project.liveUrl) content += `Live Demo URL: ${project.liveUrl}\n`;
       if (project.repoUrl) content += `Source Code URL: ${project.repoUrl}\n`;
@@ -195,8 +196,9 @@ router.post('/', async (req, res) => {
 
       prisma.project.deleteMany(),
       prisma.project.createMany({
-        data: projects.map(({ title, description, imageUrl, videoUrl, docUrl, tags, liveUrl, repoUrl, huggingFaceUrl }) => ({ 
-          title, description, imageUrl, videoUrl, docUrl, tags, liveUrl, repoUrl, huggingFaceUrl 
+        // ADDED 'featured' here so it actually gets saved to the database
+        data: projects.map(({ title, description, imageUrl, videoUrl, docUrl, tags, liveUrl, repoUrl, huggingFaceUrl, featured }) => ({ 
+          title, description, imageUrl, videoUrl, docUrl, tags, liveUrl, repoUrl, huggingFaceUrl, featured 
         })),
       }),
       
