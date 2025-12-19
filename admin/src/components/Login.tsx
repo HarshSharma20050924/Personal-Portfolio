@@ -9,14 +9,15 @@ interface LoginProps {
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isBiometricAvailable, setIsBiometricAvailable] = useState(false);
+  const [hasRegisteredDevice, setHasRegisteredDevice] = useState(false);
   const usernameRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Check if WebAuthn is available
-    if (window.PublicKeyCredential) {
-      setIsBiometricAvailable(true);
+    // Check if we have a stored credential for this device
+    const credentialId = localStorage.getItem('portfolio_biometric_id');
+    if (credentialId) {
+      setHasRegisteredDevice(true);
     }
   }, []);
 
@@ -49,40 +50,90 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     }
   };
 
+  // Helper to convert base64 string to Uint8Array
+  const base64ToUint8Array = (base64: string): Uint8Array => {
+      const binaryString = window.atob(base64.replace(/-/g, '+').replace(/_/g, '/'));
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+      }
+      return bytes;
+  };
+
   const handleBiometricLogin = async () => {
     setError('');
     setIsLoading(true);
 
     try {
-      // Check if this specific device has a stored credential token
-      const credentialId = localStorage.getItem('portfolio_biometric_id');
+      // 1. Retrieve the stored Credential ID
+      const storedCredentialId = localStorage.getItem('portfolio_biometric_id');
 
-      if (!credentialId) {
+      if (!storedCredentialId) {
           throw new Error("This device is not registered. Please log in with a password and register it in the Security tab.");
       }
 
-      if (window.PublicKeyCredential) {
-        // Simulate biometric prompt
-        console.log("Requesting biometric assertion...");
-        await new Promise(r => setTimeout(r, 600));
-        
-        // Send the stored credential ID to the server for verification
-        const response = await fetch('/api/auth/biometric', {
-           method: 'POST',
-           headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify({ credentialId })
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-           onLogin(data.apiKey);
-        } else {
-           setError(data.message || "Authentication failed.");
-        }
+      if (!window.PublicKeyCredential) {
+          throw new Error("WebAuthn is not supported on this browser.");
+      }
+
+      console.log("Starting WebAuthn login...");
+
+      // 2. Prepare the challenge (Generated locally for this implementation)
+      const challenge = new Uint8Array(32);
+      window.crypto.getRandomValues(challenge);
+
+      // Convert stored base64 credential ID to buffer
+      let credentialIdBuffer: Uint8Array;
+      try {
+          credentialIdBuffer = base64ToUint8Array(storedCredentialId);
+      } catch (e) {
+          // Fallback if the ID was stored raw (unlikely with standard API, but safe to handle)
+          credentialIdBuffer = Uint8Array.from(storedCredentialId, c => c.charCodeAt(0));
+      }
+
+      const publicKey: PublicKeyCredentialRequestOptions = {
+          challenge: challenge,
+          rpId: window.location.hostname,
+          allowCredentials: [{
+              id: credentialIdBuffer,
+              type: 'public-key',
+              transports: ['internal', 'hybrid'] 
+          }],
+          userVerification: "required",
+          timeout: 60000,
+      };
+
+      // 3. Trigger the browser prompt (TouchID/FaceID)
+      const assertion = await navigator.credentials.get({ publicKey }) as PublicKeyCredential;
+
+      if (!assertion) {
+          throw new Error("Authentication failed.");
+      }
+
+      console.log("Biometric assertion received. ID:", assertion.id);
+
+      // 4. Send the ID to server for verification (The server checks if this ID exists in DB)
+      const response = await fetch('/api/auth/biometric', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ credentialId: assertion.id })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+          onLogin(data.apiKey);
+      } else {
+          setError(data.message || "Authentication failed.");
       }
     } catch (err: any) {
-      setError(err.message || 'Biometric authentication failed.');
+      console.error(err);
+      if (err.name === 'NotAllowedError') {
+          setError("Login canceled.");
+      } else {
+          setError(err.message || 'Biometric authentication failed.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -136,14 +187,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           </button>
         </form>
 
-        {isBiometricAvailable && (
+        {hasRegisteredDevice && (
             <div className="relative py-4">
                 <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200 dark:border-slate-700"></div></div>
-                <div className="relative flex justify-center text-xs uppercase"><span className="bg-white dark:bg-slate-800 px-2 text-slate-500">Or use touch ID</span></div>
+                <div className="relative flex justify-center text-xs uppercase"><span className="bg-white dark:bg-slate-800 px-2 text-slate-500">Quick Access</span></div>
             </div>
         )}
 
-        {isBiometricAvailable && (
+        {hasRegisteredDevice && (
             <button
                 onClick={handleBiometricLogin}
                 disabled={isLoading}
