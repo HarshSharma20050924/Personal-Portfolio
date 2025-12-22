@@ -1,7 +1,10 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, X, Send, Maximize2, Minimize2, Trash2, Terminal } from 'lucide-react';
 import './ChatWidget.css';
+
+const M = motion as any;
 
 interface Message {
   role: 'user' | 'ai';
@@ -78,19 +81,18 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
         <div className="chat-widget-container font-mono">
             <AnimatePresence>
                 {isOpen && (
-                    <motion.div
+                    <M.div
                         initial={{ opacity: 0, scale: 0.95, y: 10 }}
                         animate={{ 
                             opacity: 1, 
                             scale: 1, 
-                            y: 0,
+                            y: isExpanded ? '-50%' : '0%',
                             width: isExpanded ? '90vw' : '400px',
-                            height: isExpanded ? '85vh' : '550px',
+                            height: isExpanded ? 'calc(100vh - 160px)' : '550px',
                             position: isExpanded ? 'fixed' : 'relative',
                             top: isExpanded ? '50%' : 'auto',
                             left: isExpanded ? '50%' : 'auto',
                             x: isExpanded ? '-50%' : '0%',
-                            y: isExpanded ? '-50%' : '0%',
                             zIndex: 100,
                         }}
                         exit={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -161,11 +163,11 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
                                 </button>
                              </div>
                         </div>
-                    </motion.div>
+                    </M.div>
                 )}
             </AnimatePresence>
 
-            <motion.button
+            <M.button
                 className={`
                     pointer-events-auto w-12 h-12 flex items-center justify-center transition-all
                     bg-black border border-white/20 text-white hover:bg-white hover:text-black hover:border-white
@@ -175,7 +177,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
                 whileTap={{ scale: 0.95 }}
             >
                 {isOpen ? <X size={20} /> : <Terminal size={20} />}
-            </motion.button>
+            </M.button>
         </div>
     );
   }
@@ -185,19 +187,18 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
     <div className="chat-widget-container">
       <AnimatePresence>
         {isOpen && (
-          <motion.div
+          <M.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ 
               opacity: 1, 
               scale: 1, 
-              y: 0,
+              y: isExpanded ? '-50%' : '0%',
               width: isExpanded ? '90vw' : '400px',
-              height: isExpanded ? '85vh' : '600px',
+              height: isExpanded ? 'calc(100vh - 160px)' : '600px',
               position: isExpanded ? 'fixed' : 'relative',
               top: isExpanded ? '50%' : 'auto',
               left: isExpanded ? '50%' : 'auto',
               x: isExpanded ? '-50%' : '0%',
-              y: isExpanded ? '-50%' : '0%',
               zIndex: 100,
             }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -306,11 +307,11 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
                 </button>
               </div>
             </div>
-          </motion.div>
+          </M.div>
         )}
       </AnimatePresence>
 
-      <motion.button
+      <M.button
         className={`
           pointer-events-auto w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all
           bg-primary hover:bg-blue-600 text-white
@@ -321,7 +322,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
         whileTap={{ scale: 0.95 }}
       >
         {isOpen ? <X size={24} /> : <MessageSquare size={24} />}
-      </motion.button>
+      </M.button>
     </div>
   );
 };
