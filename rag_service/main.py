@@ -36,12 +36,16 @@ class ChatRequest(BaseModel):
     history: List[Message]
 
 def get_embedding(text):
-    result = genai.embed_content(
-        model="models/text-embedding-004",
-        content=text,
-        task_type="retrieval_query"
-    )
-    return result['embedding']
+    try:
+        result = genai.embed_content(
+            model="models/text-embedding-004",
+            content=text,
+            task_type="retrieval_query"
+        )
+        return result['embedding']
+    except Exception as e:
+        print(f"Embedding error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Embedding service error: {str(e)}")
 
 
 def _do_warmup():
@@ -112,16 +116,19 @@ async def chat(request: ChatRequest):
         query_embedding = get_embedding(request.message)
 
         # 2. Search Supabase for relevant documents
-        response = supabase.rpc(
-            "match_documents",
-            {
-                "query_embedding": query_embedding,
-                "match_threshold": 0.5, # Adjust based on result quality
-                "match_count": 5
-            }
-        ).execute()
-        
-        matches = response.data
+        try:
+            response = supabase.rpc(
+                "match_documents",
+                {
+                    "query_embedding": query_embedding,
+                    "match_threshold": 0.5, # Adjust based on result quality
+                    "match_count": 5
+                }
+            ).execute()
+            matches = response.data
+        except Exception as e:
+            print(f"Supabase error: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Database search error: {str(e)}")
         
         # 3. Construct Context from matches
         context_str = ""
@@ -152,14 +159,17 @@ async def chat(request: ChatRequest):
         messages.append({"role": "user", "content": request.message})
 
         # 5. Call Groq (Llama 3)
-        chat_completion = groq_client.chat.completions.create(
-            messages=messages,
-            model="llama-3.3-70b-versatile",
-            temperature=0.7,
-            max_tokens=500,
-        )
-
-        return {"reply": chat_completion.choices[0].message.content}
+        try:
+            chat_completion = groq_client.chat.completions.create(
+                messages=messages,
+                model="llama-3.3-70b-versatile",
+                temperature=0.7,
+                max_tokens=500,
+            )
+            return {"reply": chat_completion.choices[0].message.content}
+        except Exception as e:
+            print(f"Groq error: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"LLM service error: {str(e)}")
 
     except Exception as e:
         print(f"Error: {str(e)}")
