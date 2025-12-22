@@ -12,6 +12,14 @@
       }
     },
     {
+      "src": "rag_service/main.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxDuration": 120,
+        "runtime": "python3.10"
+      }
+    },
+    {
       "src": "admin/package.json",
       "use": "@vercel/static-build",
       "config": {
@@ -27,33 +35,33 @@
     }
   ],
   "routes": [
-  {
-    "src": "/api/rag/(.*)",
-    "dest": "https://personal-portfolio-1-jnfz.onrender.com/$1"
-  },
-  {
-    "src": "/api/(.*)",
-    "dest": "/server/src/server.mjs"
-  },
-  {
-    "src": "/admin/assets/(.*)",
-    "dest": "/admin/assets/$1"
-  },
-  {
-    "src": "/assets/(.*)",
-    "dest": "/client/assets/$1"
-  },
-  {
-    "src": "/favicon.svg",
-    "dest": "/client/favicon.svg"
-  },
-  {
-    "src": "/admin(/.*)?",
-    "dest": "/admin/index.html"
-  },
-  {
-    "src": "/(.*)",
-    "dest": "/client/index.html"
-  }
-]
+    {
+      "src": "/api/rag/(.*)",
+      "dest": "/rag_service/main.py"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "/server/src/server.mjs"
+    },
+    {
+      "src": "/admin/assets/(.*)",
+      "dest": "/admin/assets/$1"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "/client/assets/$1"
+    },
+    {
+      "src": "/favicon.svg",
+      "dest": "/client/favicon.svg"
+    },
+    {
+      "src": "/admin(/.*)?",
+      "dest": "/admin/index.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/client/index.html"
+    }
+  ]
 }
