@@ -1,5 +1,6 @@
 import os
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from supabase import create_client, Client
 from dotenv import load_dotenv
 from PyPDF2 import PdfReader
@@ -19,7 +20,7 @@ if not all([SUPABASE_URL, SUPABASE_KEY, GOOGLE_API_KEY]):
 
 # Initialize Clients
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-genai.configure(api_key=GOOGLE_API_KEY)
+genai_client = genai.Client(api_key=GOOGLE_API_KEY)
 
 def get_pdf_text(pdf_path):
     text = ""
@@ -37,13 +38,12 @@ def split_text(text):
     return text_splitter.split_text(text)
 
 def get_embedding(text):
-    result = genai.embed_content(
-        model="models/text-embedding-004",
-        content=text,
-        task_type="retrieval_document",
-        title="Portfolio Document"
+    result = genai_client.models.embed_content(
+        model="text-embedding-004",
+        contents=text,
+        config=types.EmbedContentConfig(task_type="retrieval_document", title="Portfolio Document")
     )
-    return result['embedding']
+    return result.embeddings[0].values
 
 def process_documents():
     docs_folder = "docs"

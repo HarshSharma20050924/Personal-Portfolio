@@ -4,7 +4,8 @@ from pydantic import BaseModel
 from typing import List, Optional
 from supabase import create_client, Client
 from groq import Groq
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -21,7 +22,7 @@ app = FastAPI()
 # Initialize Clients
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 groq_client = Groq(api_key=GROQ_API_KEY)
-genai.configure(api_key=GOOGLE_API_KEY)
+genai_client = genai.Client(api_key=GOOGLE_API_KEY)
 
 # Warmup configuration
 WARMUP_ENABLED = os.getenv("WARMUP_ENABLED", "true").lower() in ("1", "true", "yes")
@@ -37,12 +38,12 @@ class ChatRequest(BaseModel):
 
 def get_embedding(text):
     try:
-        result = genai.embed_content(
-            model="models/text-embedding-004",
-            content=text,
-            task_type="retrieval_query"
+        response = genai_client.models.embed_content(
+            model="text-embedding-004",
+            contents=text,
+            config=types.EmbedContentConfig(task_type="retrieval_query")
         )
-        return result['embedding']
+        return response.embeddings[0].values
     except Exception as e:
         print(f"Embedding error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Embedding service error: {str(e)}")
