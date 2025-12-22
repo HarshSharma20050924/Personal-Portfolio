@@ -91,11 +91,13 @@ async def startup_warmup():
         asyncio.create_task(periodic_keepalive())
 
 @app.get("/")
+@app.get("/api/rag/")
 def read_root():
     return {"status": "RAG Service Running"}
 
 
 @app.post("/warmup")
+@app.post("/api/rag/warmup")
 async def warmup_endpoint():
     """Manual warmup endpoint. Triggers the same warmup routine in background and returns immediately."""
     import asyncio
@@ -103,6 +105,7 @@ async def warmup_endpoint():
     return {"status": "warmup triggered"}
 
 @app.post("/chat")
+@app.post("/api/rag/chat")
 async def chat(request: ChatRequest):
     try:
         # 1. Generate embedding for the user query
