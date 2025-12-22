@@ -234,8 +234,9 @@ router.post('/', async (req, res) => {
             
             // Send to Python RAG Service
             console.log("Triggering RAG knowledge update...");
-            const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:8000';
-            const ragUrl = `${baseUrl}/api/rag/update-knowledge`;
+            const ragUrl = process.env.NODE_ENV === 'production' 
+                ? '/api/rag/update-knowledge'
+                : 'http://localhost:8000/update-knowledge';
             await fetch(ragUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
