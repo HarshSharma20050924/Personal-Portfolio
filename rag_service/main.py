@@ -128,7 +128,22 @@ async def chat(request: ChatRequest):
             matches = response.data
         except Exception as e:
             print(f"Supabase error: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Database search error: {str(e)}")
+            # Retry once after a short delay
+            import time
+            time.sleep(0.5)
+            try:
+                response = supabase.rpc(
+                    "match_documents",
+                    {
+                        "query_embedding": query_embedding,
+                        "match_threshold": 0.5,
+                        "match_count": 5
+                    }
+                ).execute()
+                matches = response.data
+            except Exception as e2:
+                print(f"Supabase retry failed: {str(e2)}")
+                raise HTTPException(status_code=500, detail=f"Database search error: {str(e2)}")
         
         # 3. Construct Context from matches
         context_str = ""
