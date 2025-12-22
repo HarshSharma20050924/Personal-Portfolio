@@ -1,4 +1,3 @@
-
 import { Router } from 'express';
 import prisma from '../prisma.mjs';
 
@@ -100,7 +99,7 @@ const formatPortfolioData = (heroData, skills, projects, socialLinks, articles) 
     return content;
 };
 
-// GET /api/data/export - Export all data as formatted text for AI/RAG
+// GET /api/data/export
 router.get('/export', async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
@@ -121,7 +120,6 @@ router.get('/export', async (req, res) => {
     res.setHeader('Content-Type', 'text/plain');
     res.setHeader('Content-Disposition', 'attachment; filename="portfolio_data.txt"');
     res.send(content);
-
   } catch (error) {
     console.error('Export Error:', error);
     res.status(500).json({ message: 'Internal Server Error', error: error.message });
@@ -160,11 +158,7 @@ router.get('/', async (req, res) => {
     }
     
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-    res.setHeader('Surrogate-Control', 'no-store');
     res.status(200).json(responseData);
-
   } catch (error) {
     console.error('API Error:', error);
     res.status(500).json({ message: 'Internal Server Error', error: error.message });
@@ -188,69 +182,63 @@ router.post('/', async (req, res) => {
         update: heroData,
         create: { ...heroData, id: 1 },
       }),
-
       prisma.playgroundConfig.upsert({
         where: { id: 1 },
         update: playgroundConfig,
         create: { ...playgroundConfig, id: 1 },
       }),
-
       prisma.skill.deleteMany(),
       prisma.skill.createMany({
         data: skills.map(({ name, level }) => ({ name, level })),
       }),
-
       prisma.project.deleteMany(),
       prisma.project.createMany({
         data: projects.map(({ title, description, imageUrl, videoUrl, docUrl, tags, liveUrl, repoUrl, huggingFaceUrl, featured }) => ({ 
           title, description, imageUrl, videoUrl, docUrl, tags, liveUrl, repoUrl, huggingFaceUrl, featured 
         })),
       }),
-      
       prisma.socialLink.deleteMany(),
       prisma.socialLink.createMany({
         data: socialLinks.map(({ name, url, icon }) => ({ name, url, icon })),
       }),
-
       prisma.article.deleteMany(),
       prisma.article.createMany({
         data: articles.map(({ title, excerpt, date, url }) => ({ title, excerpt, date, url })),
       }),
     ]);
 
-    // 2. Trigger Auto-Update for AI Knowledge Base
-    // We do this asynchronously (fire and forget) so we don't block the UI response.
-    (async () => {
-        try {
-            const [hData, s, p, sl, a] = await Promise.all([
-                prisma.generalInfo.findFirst({ where: { id: 1 } }),
-                prisma.skill.findMany({ orderBy: { id: 'asc' } }),
-                prisma.project.findMany({ orderBy: { id: 'asc' } }),
-                prisma.socialLink.findMany({ orderBy: { id: 'asc' } }),
-                prisma.article.findMany({ orderBy: { id: 'asc' } }),
-            ]);
+    // 2. Trigger Auto-Update for AI Knowledge Base (AWAITED for Vercel)
+    try {
+        const textContent = formatPortfolioData(heroData, skills, projects, socialLinks, articles);
+        
+        // Construct Absolute URL using Vercel System Variables
+        const domain = process.env.VERCEL_PROJECT_PRODUCTION_URL 
+            ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` 
+            : 'http://localhost:8000'; // Fallback for local
             
-            const textContent = formatPortfolioData(hData, s, p, sl, a);
-            
-            // Send to Python RAG Service
-            console.log("Triggering RAG knowledge update...");
-            const ragUrl = process.env.NODE_ENV === 'production' 
-                ? '/api/rag/update-knowledge'
-                : 'http://localhost:8000/update-knowledge';
-            await fetch(ragUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    content: textContent,
-                    source: 'portfolio_live' 
-                })
-            });
+        const ragUrl = `${domain}/api/rag/update-knowledge`;
+        
+        console.log("Triggering RAG update at:", ragUrl);
+
+        const response = await fetch(ragUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                content: textContent,
+                source: 'portfolio_live' 
+            })
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`RAG Service responded with ${response.status}:`, errorText);
+        } else {
             console.log("RAG knowledge update triggered successfully.");
-        } catch (ragError) {
-            console.error("Failed to auto-update RAG service:", ragError.message);
-            // Note: We don't fail the main request if RAG update fails, but we log it.
         }
-    })();
+    } catch (ragError) {
+        // We log the error but don't fail the 200 response since data was saved to DB
+        console.error("Failed to auto-update RAG service:", ragError.message);
+    }
     
     res.status(200).json({ message: 'Data saved successfully' });
   } catch (error) {

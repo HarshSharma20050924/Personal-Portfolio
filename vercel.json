@@ -36,6 +36,10 @@
   ],
   "routes": [
     {
+      "src": "/api/rag/update-knowledge",
+      "dest": "/rag_service/main.py"
+    },
+    {
       "src": "/api/rag/chat",
       "dest": "/rag_service/main.py"
     },
