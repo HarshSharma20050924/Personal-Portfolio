@@ -36,7 +36,15 @@
   ],
   "routes": [
     {
-      "src": "/api/rag/(.*)",
+      "src": "/api/rag/chat",
+      "dest": "/rag_service/main.py"
+    },
+    {
+      "src": "/api/rag/warmup",
+      "dest": "/rag_service/main.py"
+    },
+    {
+      "src": "/api/rag/",
       "dest": "/rag_service/main.py"
     },
     {
