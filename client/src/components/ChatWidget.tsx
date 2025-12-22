@@ -86,20 +86,18 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
                         animate={{ 
                             opacity: 1, 
                             scale: 1, 
-                            y: isExpanded ? '-50%' : '0%',
-                            width: isExpanded ? '90vw' : '400px',
-                            height: isExpanded ? 'calc(100vh - 160px)' : '550px',
-                            position: isExpanded ? 'fixed' : 'relative',
-                            top: isExpanded ? '50%' : 'auto',
-                            left: isExpanded ? '50%' : 'auto',
-                            x: isExpanded ? '-50%' : '0%',
-                            zIndex: 100,
+                            y: 0,
+                            width: isExpanded ? '500px' : '400px',
+                            height: isExpanded ? '85vh' : '550px',
+                            marginBottom: '1rem', // Keep spacing from the button
+                            originX: 1, // Animate from right
+                            originY: 1, // Animate from bottom
                         }}
                         exit={{ opacity: 0, scale: 0.95, y: 10 }}
                         className={`
                             pointer-events-auto flex flex-col overflow-hidden
                             bg-black border border-white/20 shadow-[0_0_30px_rgba(255,255,255,0.1)]
-                            ${isExpanded ? 'fixed inset-0 m-auto' : 'mb-4'}
+                            mb-4
                         `}
                     >
                         {/* Elite Header */}
@@ -109,11 +107,11 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
                                 <h3 className="text-xs uppercase tracking-widest text-white">System.AI</h3>
                             </div>
                             <div className="flex items-center gap-4 text-white/50">
-                                <button onClick={handleClearChat} className="hover:text-white transition-colors"><Trash2 size={14} /></button>
-                                <button onClick={() => setIsExpanded(!isExpanded)} className="hover:text-white transition-colors">
+                                <button onClick={handleClearChat} className="hover:text-white transition-colors" title="Clear Chat"><Trash2 size={14} /></button>
+                                <button onClick={() => setIsExpanded(!isExpanded)} className="hover:text-white transition-colors" title={isExpanded ? "Minimize" : "Expand"}>
                                     {isExpanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
                                 </button>
-                                <button onClick={() => setIsOpen(false)} className="hover:text-white transition-colors"><X size={14} /></button>
+                                <button onClick={() => setIsOpen(false)} className="hover:text-white transition-colors" title="Close"><X size={14} /></button>
                             </div>
                         </div>
 
@@ -192,14 +190,12 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
             animate={{ 
               opacity: 1, 
               scale: 1, 
-              y: isExpanded ? '-50%' : '0%',
-              width: isExpanded ? '90vw' : '400px',
-              height: isExpanded ? 'calc(100vh - 160px)' : '600px',
-              position: isExpanded ? 'fixed' : 'relative',
-              top: isExpanded ? '50%' : 'auto',
-              left: isExpanded ? '50%' : 'auto',
-              x: isExpanded ? '-50%' : '0%',
-              zIndex: 100,
+              y: 0,
+              width: isExpanded ? '480px' : '400px',
+              height: isExpanded ? '85vh' : '600px',
+              marginBottom: '1rem',
+              originX: 1,
+              originY: 1,
             }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
@@ -207,7 +203,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
               pointer-events-auto flex flex-col overflow-hidden shadow-2xl
               bg-white dark:bg-slate-900 
               border border-gray-200 dark:border-gray-700
-              ${isExpanded ? 'rounded-2xl fixed inset-0 m-auto' : 'rounded-2xl mb-4'}
+              rounded-2xl
             `}
           >
             {/* Header */}
