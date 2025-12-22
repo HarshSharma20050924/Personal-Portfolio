@@ -47,25 +47,9 @@ const defaultData = {
   }
 };
 
-// GET /api/data/export - Export all data as formatted text for AI/RAG
-router.get('/export', async (req, res) => {
-  try {
-    const authHeader = req.headers.authorization;
-    if (authHeader !== `Bearer ${process.env.ADMIN_API_KEY}`) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
-
-    const [heroData, skills, projects, socialLinks, articles] = await Promise.all([
-      prisma.generalInfo.findFirst({ where: { id: 1 } }),
-      prisma.skill.findMany({ orderBy: { id: 'asc' } }),
-      prisma.project.findMany({ orderBy: { id: 'asc' } }),
-      prisma.socialLink.findMany({ orderBy: { id: 'asc' } }),
-      prisma.article.findMany({ orderBy: { id: 'asc' } }),
-    ]);
-
-    if (!heroData) {
-      return res.status(404).json({ message: 'No data found to export.' });
-    }
+// Helper function to format portfolio data as text
+const formatPortfolioData = (heroData, skills, projects, socialLinks, articles) => {
+    if (!heroData) return "No data available.";
 
     let content = `PORTFOLIO DATA EXPORT\nGenerated on: ${new Date().toISOString()}\n\n`;
 
@@ -112,6 +96,27 @@ router.get('/export', async (req, res) => {
     socialLinks.forEach(link => {
       content += `- ${link.name}: ${link.url}\n`;
     });
+
+    return content;
+};
+
+// GET /api/data/export - Export all data as formatted text for AI/RAG
+router.get('/export', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (authHeader !== `Bearer ${process.env.ADMIN_API_KEY}`) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const [heroData, skills, projects, socialLinks, articles] = await Promise.all([
+      prisma.generalInfo.findFirst({ where: { id: 1 } }),
+      prisma.skill.findMany({ orderBy: { id: 'asc' } }),
+      prisma.project.findMany({ orderBy: { id: 'asc' } }),
+      prisma.socialLink.findMany({ orderBy: { id: 'asc' } }),
+      prisma.article.findMany({ orderBy: { id: 'asc' } }),
+    ]);
+
+    const content = formatPortfolioData(heroData, skills, projects, socialLinks, articles);
 
     res.setHeader('Content-Type', 'text/plain');
     res.setHeader('Content-Disposition', 'attachment; filename="portfolio_data.txt"');
@@ -176,6 +181,7 @@ router.post('/', async (req, res) => {
     
     const { heroData, skills, projects, socialLinks, articles, playgroundConfig } = req.body;
 
+    // 1. Save data to SQL Database (Prisma)
     await prisma.$transaction([
       prisma.generalInfo.upsert({
         where: { id: 1 },
@@ -196,7 +202,6 @@ router.post('/', async (req, res) => {
 
       prisma.project.deleteMany(),
       prisma.project.createMany({
-        // ADDED 'featured' here so it actually gets saved to the database
         data: projects.map(({ title, description, imageUrl, videoUrl, docUrl, tags, liveUrl, repoUrl, huggingFaceUrl, featured }) => ({ 
           title, description, imageUrl, videoUrl, docUrl, tags, liveUrl, repoUrl, huggingFaceUrl, featured 
         })),
@@ -212,6 +217,39 @@ router.post('/', async (req, res) => {
         data: articles.map(({ title, excerpt, date, url }) => ({ title, excerpt, date, url })),
       }),
     ]);
+
+    // 2. Trigger Auto-Update for AI Knowledge Base
+    // We do this asynchronously (fire and forget) so we don't block the UI response.
+    (async () => {
+        try {
+            const [hData, s, p, sl, a] = await Promise.all([
+                prisma.generalInfo.findFirst({ where: { id: 1 } }),
+                prisma.skill.findMany({ orderBy: { id: 'asc' } }),
+                prisma.project.findMany({ orderBy: { id: 'asc' } }),
+                prisma.socialLink.findMany({ orderBy: { id: 'asc' } }),
+                prisma.article.findMany({ orderBy: { id: 'asc' } }),
+            ]);
+            
+            const textContent = formatPortfolioData(hData, s, p, sl, a);
+            
+            // Send to Python RAG Service
+            console.log("Triggering RAG knowledge update...");
+            const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:8000';
+            const ragUrl = `${baseUrl}/api/rag/update-knowledge`;
+            await fetch(ragUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    content: textContent,
+                    source: 'portfolio_live' 
+                })
+            });
+            console.log("RAG knowledge update triggered successfully.");
+        } catch (ragError) {
+            console.error("Failed to auto-update RAG service:", ragError.message);
+            // Note: We don't fail the main request if RAG update fails, but we log it.
+        }
+    })();
     
     res.status(200).json({ message: 'Data saved successfully' });
   } catch (error) {

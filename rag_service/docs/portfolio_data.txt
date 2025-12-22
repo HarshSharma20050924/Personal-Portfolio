@@ -1,9 +1,9 @@
 PORTFOLIO DATA EXPORT
-Generated on: 2025-12-09T15:38:49.469Z
+Generated on: 2025-12-22T09:47:58.278Z
 
 === PERSONAL INFORMATION ===
 Name: Harsh Sharma
-Title: Full-Stack Developer
+Title: AI Solution Architect
 Email: harsh20050924@gmail.com
 Phone: +91 9009011030
 Bio/Description: I engineer performant and user-centric full-stack applications. My passion lies in delivering clean, maintainable code and exceptional user experiences.
@@ -26,30 +26,49 @@ Here are the projects I have worked on:
 
 Title: Poshan Saathi-Nutrition Tracker
 Description: Tracks daily nutrition and diet intake to help users maintain a healthy lifestyle.
+Featured: No
 Techniques/Tags: React, Node.js, API
-Source Code URL: https://github.com/HarshSharma20050924/Poshan-Saathi-Nutrition-Tracker
+Source Code URL: https://github.com/HarshSharma20050924/Poshan-Saathi-2.0.git
 
 Title: SabjiMate Vegetable Delivery App
 Description: A user-friendly app for ordering fresh vegetables with daily delivery and easy payment options.
+Featured: No
 Techniques/Tags: TypeScript, Vite, UI/UX
 Live Demo URL: https://sabji-mate-server-ivm2.vercel.app/
 Source Code URL: https://github.com/HarshSharma20050924/SabjiMate
 
 Title: Personal Portfolio 
 Description: Showcases my projects, skills, and experience through a clean, interactive personal portfolio.
+Featured: No
 Techniques/Tags: 
 Live Demo URL: https://personal-portfolio-server-z644-h8jyaq48y.vercel.app/
 Source Code URL: https://github.com/HarshSharma20050924/Personal-Portfolio
 
 Title: Student Performance Predictor
 Description: Predicts student performance using machine learning based on study and demographic data.
+Featured: No
 Techniques/Tags: Python
 Source Code URL: https://github.com/HarshSharma20050924/Student-Performance-Predictor
 
 Title: House Prediction Model
 Description: Predicts house prices using machine learning based on property features and location.
+Featured: No
 Techniques/Tags: 
 Source Code URL: https://github.com/HarshSharma20050924/House-prediction-Model
+
+Title: Face recognition attendance system
+Description: This is a modern web-based Face Recognition Attendance System built for the Department of Artificial Intelligence and Data Science at Mahakal Institute of Technology. It streamlines the attendance process by utilizing facial recognition technology, offering a fast, accurate, and automated solution for marking student presence.
+Featured: Yes
+Techniques/Tags: React, TypeScript, Vite, Python, Fastapi, Flask
+Source Code URL: https://github.com/HarshSharma20050924/Face-recognition-attendance-system
+
+Title: Cortex Intelligence Console
+Description: Cortex Intelligence Console is an enterprise AI interface for secure, private knowledge synthesis using RAG. It turns documents and web data into a citation-backed intelligence system that answers questions only from your own sources, wrapped in a high-end, dark-mode architectural UI.
+Featured: Yes
+Techniques/Tags: React, TypeScript, Python, Flask
+Live Demo URL: https://cortex-intelligence.vercel.app/
+Source Code URL: https://github.com/HarshSharma20050924/cortex-intelligence-console
+Video Showcase: https://www.youtube.com/embed/JDy5zBF2xKg?si=Q0PthuiDB2lep53n
 
 === BLOG ARTICLES ===
 Articles and insights I have written:

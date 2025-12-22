@@ -7,6 +7,7 @@ from groq import Groq
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 # Load environment variables
 load_dotenv()
@@ -36,6 +37,10 @@ class ChatRequest(BaseModel):
     message: str
     history: List[Message]
 
+class UpdateKnowledgeRequest(BaseModel):
+    content: str
+    source: str = "portfolio_live"
+
 def get_embedding(text):
     try:
         response = genai_client.models.embed_content(
@@ -46,6 +51,18 @@ def get_embedding(text):
         return response.embeddings[0].values
     except Exception as e:
         print(f"Embedding error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Embedding service error: {str(e)}")
+
+def get_document_embedding(text):
+    try:
+        response = genai_client.models.embed_content(
+            model="text-embedding-004",
+            contents=text,
+            config=types.EmbedContentConfig(task_type="retrieval_document", title="Portfolio Content")
+        )
+        return response.embeddings[0].values
+    except Exception as e:
+        print(f"Document embedding error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Embedding service error: {str(e)}")
 
 
@@ -99,6 +116,51 @@ async def startup_warmup():
 @app.get("/api/rag/")
 def read_root():
     return {"status": "RAG Service Running"}
+
+@app.post("/update-knowledge")
+@app.post("/api/rag/update-knowledge")
+async def update_knowledge(request: UpdateKnowledgeRequest):
+    """
+    Receives raw text content, chunks it, embeds it, and stores it in Supabase.
+    Replaces old data for the given source to keep it fresh.
+    """
+    try:
+        # 1. Clean up old data for this source
+        try:
+            supabase.table("documents").delete().eq("metadata->>source", request.source).execute()
+        except Exception as delete_err:
+            print(f"Could not delete old records (might be empty): {delete_err}")
+
+        # 2. Text Splitting
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=1000,
+            chunk_overlap=200,
+            separators=["\n\n", "\n", " ", ""],
+            length_function=len,
+        )
+        chunks = text_splitter.split_text(request.content)
+        
+        print(f"Generated {len(chunks)} chunks.")
+
+        # 3. Generate Embeddings and Prepare Records
+        records = []
+        for chunk in chunks:
+            vector = get_document_embedding(chunk)
+            records.append({
+                "content": chunk,
+                "embedding": vector,
+                "metadata": {"source": request.source}
+            })
+
+        # 4. Insert into Supabase
+        if records:
+            supabase.table("documents").insert(records).execute()
+        
+        return {"message": "Knowledge base updated successfully", "chunks_processed": len(chunks)}
+
+    except Exception as e:
+        print(f"Update failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/warmup")
