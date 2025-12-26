@@ -6,7 +6,6 @@ import { fileURLToPath } from 'url';
 import authRouter from './api/auth.mjs';
 import dataRouter from './api/data.mjs';
 import uploadRouter from './api/upload.mjs';
-import chatRouter from './api/chat.mjs'; // Your RAG chat router
 import prisma from './prisma.mjs';
 
 const app = express();
@@ -15,14 +14,13 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // --- Middleware ---
 app.use(cors());
-app.use(express.json({ limit: '50mb' })); // Parse large JSON bodies
-app.use(express.urlencoded({ limit: '50mb', extended: true })); // Parse URL-encoded bodies
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // --- API Routes ---
 app.use('/api/auth', authRouter);
 app.use('/api/data', dataRouter);
 app.use('/api/upload', uploadRouter);
-app.use('/api/chat', chatRouter); // Ensure RAG chat works
 
 // --- Dynamic Sitemap ---
 app.get('/sitemap.xml', async (req, res) => {
@@ -31,7 +29,6 @@ app.get('/sitemap.xml', async (req, res) => {
     const protocol = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https' ? 'https' : 'http';
     const baseUrl = `${protocol}://${host}`;
 
-    // Fetch projects from database
     const projects = await prisma.project.findMany({
       select: { id: true }
     });
