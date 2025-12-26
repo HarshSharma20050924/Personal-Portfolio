@@ -1,6 +1,9 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Skill, Article } from '../../../types';
+
+const M = motion as any;
 
 const EliteThinking: React.FC<{ skills: Skill[]; articles: Article[] }> = ({ skills = [], articles = [] }) => {
   const safeSkills = skills || [];
@@ -10,69 +13,103 @@ const EliteThinking: React.FC<{ skills: Skill[]; articles: Article[] }> = ({ ski
     <section id="philosophy" className="py-32 px-6 bg-[#080808]">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-24">
         
-        {/* Skills - Visualized as a System */}
+        {/* Playful Interactive Skills Grid */}
         <div>
-          <h3 className="text-sm font-mono text-gray-500 uppercase tracking-widest mb-12">Technical Arsenal</h3>
-          <div className="grid grid-cols-2 gap-px bg-white/10 border border-white/10">
-            {safeSkills.map((skill) => (
-              <motion.div 
+          <h3 className="text-sm font-mono text-gray-500 uppercase tracking-widest mb-12 flex items-center gap-2">
+             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+             System Capabilities
+          </h3>
+          
+          <div className="flex flex-wrap gap-2">
+            {safeSkills.map((skill, i) => (
+              <M.div 
                 key={skill.name}
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5 }}
-                className="bg-[#080808] p-6 hover:bg-[#0f0f0f] transition-colors duration-300 group"
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: i * 0.05 }}
+                className="relative group cursor-default"
               >
-                <div className="flex justify-between items-start mb-4">
-                  <span className="text-gray-400 font-mono text-xs">SYS.0{skill.id || Math.floor(Math.random()*99)}</span>
-                  <div className="w-1 h-1 bg-gray-700 rounded-full group-hover:bg-blue-500 group-hover:shadow-[0_0_10px_rgba(59,130,246,0.8)] transition-all" />
+                <div className="
+                    px-4 py-3 bg-[#111] border border-white/10 rounded-lg 
+                    group-hover:border-white/40 group-hover:bg-[#1a1a1a] 
+                    transition-all duration-300 relative z-10
+                    flex items-center gap-2
+                ">
+                    <span className="text-gray-400 group-hover:text-white font-mono text-sm transition-colors">{skill.name}</span>
+                    <span className="text-[10px] text-gray-600 group-hover:text-green-400 transition-colors opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 duration-300">
+                        {skill.level}%
+                    </span>
                 </div>
-                <h4 className="text-xl text-white font-medium mb-2">{skill.name}</h4>
-                <div className="w-full bg-gray-900 h-[2px] mt-4">
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    whileInView={{ width: `${skill.level}%` }}
-                    transition={{ duration: 1.5, ease: "circOut" }}
-                    className="h-full bg-white/40"
-                  />
-                </div>
-              </motion.div>
+                {/* Glow Effect */}
+                <div className="absolute inset-0 bg-white/5 blur-lg rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-0" />
+              </M.div>
             ))}
-            {safeSkills.length === 0 && <div className="p-6 text-gray-500 font-mono text-sm">No skills listed.</div>}
+            {safeSkills.length === 0 && <div className="text-gray-500 font-mono text-sm">Initializing skills database...</div>}
+          </div>
+
+          <div className="mt-12 p-6 bg-[#111] border border-white/5 rounded-xl">
+             <div className="flex items-center gap-2 mb-4 text-xs font-mono text-gray-500 uppercase">
+                <div className="w-1.5 h-1.5 bg-blue-500" />
+                Live Metric
+             </div>
+             <div className="flex justify-between items-end h-24 gap-1">
+                {[...Array(20)].map((_, i) => (
+                    <M.div 
+                        key={i}
+                        className="flex-1 bg-white/10 hover:bg-blue-500/50 transition-colors"
+                        initial={{ height: '20%' }}
+                        animate={{ height: `${Math.random() * 80 + 20}%` }}
+                        transition={{ 
+                            repeat: Infinity, 
+                            repeatType: 'mirror', 
+                            duration: Math.random() * 1 + 0.5,
+                            ease: "easeInOut"
+                        }}
+                    />
+                ))}
+             </div>
           </div>
         </div>
 
-        {/* Philosophy / Articles */}
-        <div className="flex flex-col justify-between">
+        {/* 3D Interactive Articles */}
+        <div className="flex flex-col justify-between perspective-1000">
           <div>
-            <h3 className="text-sm font-mono text-gray-500 uppercase tracking-widest mb-12">Thinking</h3>
-            <div className="space-y-12">
-               {safeArticles.length > 0 ? safeArticles.slice(0, 3).map((article) => (
-                 <a 
+            <h3 className="text-sm font-mono text-gray-500 uppercase tracking-widest mb-12">Latest Transmissions</h3>
+            <div className="space-y-6">
+               {safeArticles.length > 0 ? safeArticles.slice(0, 3).map((article, idx) => (
+                 <M.a 
                    key={article.title} 
                    href={article.url}
-                   className="block group elite-interactive"
+                   initial={{ opacity: 0, x: 20 }}
+                   whileInView={{ opacity: 1, x: 0 }}
+                   transition={{ delay: idx * 0.1 }}
+                   whileHover={{ 
+                       scale: 1.02, 
+                       rotateX: 5,
+                       rotateY: -2,
+                       backgroundColor: "rgba(255,255,255,0.05)" 
+                   }}
+                   className="block group elite-interactive p-6 border border-white/5 bg-white/[0.02] rounded-xl transition-all duration-300 transform-gpu"
                  >
-                   <div className="flex items-baseline gap-4 mb-2">
-                      <span className="text-xs text-gray-600 font-mono">{article.date}</span>
-                      <h4 className="text-2xl text-white font-light group-hover:text-blue-400 transition-colors">
+                   <div className="flex justify-between items-start mb-3">
+                      <h4 className="text-xl text-white font-light group-hover:text-blue-400 transition-colors max-w-[80%]">
                         {article.title}
                       </h4>
+                      <span className="text-[10px] text-gray-600 font-mono border border-white/10 px-2 py-1 rounded">
+                          LOG.{String(idx + 1).padStart(3, '0')}
+                      </span>
                    </div>
-                   <p className="text-gray-500 text-sm line-clamp-2 pl-24 border-l border-white/10 group-hover:border-blue-500/50 transition-colors">
+                   <p className="text-gray-500 text-sm line-clamp-2 leading-relaxed">
                      {article.excerpt}
                    </p>
-                 </a>
+                   <div className="mt-4 flex items-center gap-2 text-xs font-mono text-gray-600 group-hover:text-white transition-colors">
+                       READ_ENTRY <div className="w-4 h-[1px] bg-gray-600 group-hover:bg-white transition-colors" />
+                   </div>
+                 </M.a>
                )) : (
                  <div className="text-gray-500 font-mono text-sm">No articles to display.</div>
                )}
             </div>
-          </div>
-          
-          <div className="mt-20 p-8 border border-white/10 rounded-2xl bg-white/5 backdrop-blur-sm">
-             <p className="text-white text-lg italic font-serif">
-               "Good design is obvious. Great design is transparent."
-             </p>
           </div>
         </div>
 

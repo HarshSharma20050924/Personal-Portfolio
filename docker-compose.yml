@@ -12,7 +12,7 @@ services:
       POSTGRES_DB: portfolio_db
     ports:
       # Exposes the database port to your local machine
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       # Persists database data across container restarts
       - postgres_data:/var/lib/postgresql/data

@@ -5,87 +5,85 @@ import { Link } from 'react-router-dom';
 import { Project } from '../../../types';
 import { ArrowUpRight, LayoutGrid } from 'lucide-react';
 
+const M = motion as any;
+
 const EliteWork: React.FC<{ projects: Project[] }> = ({ projects = [] }) => {
   const [hoveredProject, setHoveredProject] = useState<number | null>(null);
-
-  // Filter for featured projects only for the home page
+  
   const featuredProjects = projects.filter(p => p.featured);
-  // If no projects are marked as featured, show the first 3
-  const displayProjects = featuredProjects.length > 0 ? featuredProjects : projects.slice(0, 3);
+  const displayProjects = featuredProjects.length > 0 ? featuredProjects : projects.slice(0, 4);
 
   return (
-    <section id="work" className="relative py-32 px-4 bg-[#050505] min-h-screen flex flex-col justify-center">
-      
-      {/* Background Image Preview - Cinematic Effect */}
-      <div className="fixed inset-0 z-0 pointer-events-none flex items-center justify-center opacity-20">
-        <AnimatePresence mode="wait">
+    <section 
+        id="work" 
+        className="relative py-32 px-4 bg-[#050505] min-h-screen z-20 overflow-hidden" 
+    >
+      {/* Background Reveal Layer */}
+      <div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
+         <AnimatePresence>
             {hoveredProject !== null && (
-                <motion.img 
+                <M.div
                     key={hoveredProject}
-                    src={displayProjects[hoveredProject].imageUrl}
                     initial={{ opacity: 0, scale: 1.1 }}
-                    animate={{ opacity: 1, scale: 1 }}
+                    animate={{ opacity: 0.4, scale: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="w-full h-full object-cover blur-sm"
-                />
+                    className="absolute inset-0 w-full h-full"
+                >
+                    <img 
+                        src={displayProjects[hoveredProject].imageUrl} 
+                        alt="Background" 
+                        className="w-full h-full object-cover filter blur-sm grayscale-[50%]"
+                    />
+                    <div className="absolute inset-0 bg-[#050505]/60" />
+                </M.div>
             )}
-        </AnimatePresence>
-        <div className="absolute inset-0 bg-black/70" /> 
+         </AnimatePresence>
       </div>
 
-      <div className="relative z-10 max-w-5xl mx-auto w-full">
-         <div className="mb-12 flex items-end justify-between border-b border-white/20 pb-4">
-             <h3 className="text-sm font-mono text-gray-500 uppercase tracking-widest">Featured Highlights</h3>
-             <span className="text-xs text-gray-600 font-mono">01 — {String(displayProjects.length).padStart(2, '0')}</span>
+      <div className="max-w-6xl mx-auto relative z-10">
+         <div className="mb-20 flex items-end justify-between border-b border-white/10 pb-6">
+             <h2 className="text-4xl md:text-6xl font-black text-white tracking-tighter">SELECTED WORKS</h2>
+             <span className="text-xs text-gray-600 font-mono hidden md:block">
+                 (01) — ({String(displayProjects.length).padStart(2, '0')})
+             </span>
          </div>
       
-         <div className="flex flex-col mb-16">
-            {displayProjects.length > 0 ? (
-                displayProjects.map((project, index) => (
-                    <Link 
-                        to={`/project/${project.id || index}`}
-                        key={index}
-                        onMouseEnter={() => setHoveredProject(index)}
-                        onMouseLeave={() => setHoveredProject(null)}
-                        className="group flex items-center justify-between py-10 border-b border-white/10 hover:border-white/40 transition-colors cursor-pointer elite-interactive"
-                    >
-                        <div className="flex items-baseline gap-6 md:gap-12 w-full">
-                            <span className="text-xs font-mono text-gray-600 group-hover:text-blue-500 transition-colors">
-                                0{index + 1}
-                            </span>
-                            <div className="flex flex-col md:flex-row md:items-baseline gap-4 w-full">
-                                <h2 className="text-4xl md:text-6xl font-bold text-gray-400 group-hover:text-white group-hover:translate-x-4 transition-all duration-300">
-                                    {project.title}
-                                </h2>
-                                <p className="text-xs text-gray-600 mt-2 opacity-0 group-hover:opacity-100 transition-opacity translate-x-4 line-clamp-1 max-w-md hidden md:block">
-                                    {project.description}
-                                </p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-2 group-hover:translate-y-0">
-                            <span className="text-xs font-mono text-gray-500 hidden md:block">
-                                {project.tags[0] || 'View'}
-                            </span>
-                            <div className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center shrink-0">
-                                <ArrowUpRight size={16} />
-                            </div>
-                        </div>
-                    </Link>
-                ))
-            ) : (
-                <div className="text-gray-500 font-mono text-center py-20">No featured projects to display.</div>
-            )}
+         <div className="flex flex-col">
+            {displayProjects.map((project, index) => (
+                <Link 
+                    to={`/project/${project.id || index}`}
+                    key={index}
+                    onMouseEnter={() => setHoveredProject(index)}
+                    onMouseLeave={() => setHoveredProject(null)}
+                    className="group relative flex flex-col md:flex-row items-baseline justify-between py-12 border-b border-white/5 hover:border-white/20 transition-all duration-500 elite-interactive"
+                >
+                    <div className="flex items-center gap-8 z-10">
+                        <span className="text-xs font-mono text-gray-600 group-hover:text-white transition-colors duration-300">
+                            0{index + 1}
+                        </span>
+                        <h3 className="text-3xl md:text-5xl font-bold text-gray-400 group-hover:text-white group-hover:pl-4 transition-all duration-300">
+                            {project.title}
+                        </h3>
+                    </div>
+                    
+                    <div className="mt-4 md:mt-0 flex items-center gap-4 z-10 opacity-50 group-hover:opacity-100 transition-opacity">
+                        <span className="text-xs font-mono text-gray-500 uppercase tracking-widest group-hover:text-white transition-colors">
+                            {project.tags[0] || 'Development'}
+                        </span>
+                        <ArrowUpRight size={20} className="text-white transform group-hover:rotate-45 transition-transform duration-300" />
+                    </div>
+                </Link>
+            ))}
          </div>
 
-         <div className="flex justify-center">
+         <div className="flex justify-center mt-20">
             <Link 
                 to="/gallery" 
-                className="group flex items-center gap-4 px-8 py-4 border border-white/20 rounded-full hover:bg-white hover:text-black transition-all duration-500 elite-interactive"
+                className="group relative inline-flex items-center gap-3 px-8 py-4 bg-white/5 rounded-full overflow-hidden elite-interactive hover:bg-white/10 transition-colors"
             >
-                <LayoutGrid size={18} />
-                <span className="text-sm font-bold uppercase tracking-widest">Enter Project Gallery</span>
-                <span className="text-xs opacity-50 group-hover:opacity-100 transition-opacity">({projects.length} Items)</span>
+                <LayoutGrid size={18} className="text-white relative z-10" />
+                <span className="text-sm font-bold uppercase tracking-widest text-white relative z-10">View Archive</span>
             </Link>
          </div>
       </div>

@@ -24,8 +24,16 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   const isElite = template === 'elite';
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize(); // Check on mount
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -87,11 +95,12 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
                             opacity: 1, 
                             scale: 1, 
                             y: 0,
-                            width: isExpanded ? '500px' : '400px',
-                            height: isExpanded ? '85vh' : '550px',
-                            marginBottom: '1rem', // Keep spacing from the button
-                            originX: 1, // Animate from right
-                            originY: 1, // Animate from bottom
+                            // Responsive width/height logic
+                            width: isMobile ? '90vw' : (isExpanded ? '500px' : '400px'),
+                            height: isMobile ? '60vh' : (isExpanded ? '85vh' : '550px'),
+                            marginBottom: '1rem', 
+                            originX: 1, 
+                            originY: 1,
                         }}
                         exit={{ opacity: 0, scale: 0.95, y: 10 }}
                         className={`
@@ -191,8 +200,9 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
               opacity: 1, 
               scale: 1, 
               y: 0,
-              width: isExpanded ? '480px' : '400px',
-              height: isExpanded ? '85vh' : '600px',
+              // Responsive logic
+              width: isMobile ? '90vw' : (isExpanded ? '480px' : '400px'),
+              height: isMobile ? '60vh' : (isExpanded ? '85vh' : '600px'),
               marginBottom: '1rem',
               originX: 1,
               originY: 1,
