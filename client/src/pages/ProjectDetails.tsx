@@ -2,7 +2,7 @@
 import React, { useLayoutEffect, useRef, useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
-import { ArrowLeft, Github, ExternalLink, Box, ArrowRight } from 'lucide-react';
+import { ArrowLeft, Github, ExternalLink, Box, ArrowRight, FileText } from 'lucide-react';
 import { useLenis } from '@studio-freight/react-lenis';
 import { Project } from '../types';
 
@@ -203,6 +203,11 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projects, template }) =
                             <div>
                                 <h3 className="text-xs font-mono uppercase tracking-widest text-gray-500 mb-4">Links</h3>
                                 <div className="flex flex-col gap-3">
+                                    {project.docUrl && (
+                                        <a href={project.docUrl} target="_blank" rel="noreferrer" className="flex items-center justify-between p-4 border border-white/10 hover:bg-white/5 transition-colors group text-blue-400">
+                                            <span>Documentation</span> <FileText size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                        </a>
+                                    )}
                                     {project.liveUrl && (
                                         <a href={project.liveUrl} target="_blank" rel="noreferrer" className="flex items-center justify-between p-4 border border-white/10 hover:bg-white/5 transition-colors group text-white">
                                             <span>Live Demo</span> <ExternalLink size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
@@ -272,3 +277,4 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projects, template }) =
 };
 
 export default ProjectDetails;
+    
