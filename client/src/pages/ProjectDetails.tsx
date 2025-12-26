@@ -19,72 +19,102 @@ const NextProjectPortal: React.FC<{ nextProject: Project; onNavigate: () => void
     const [triggered, setTriggered] = useState(false);
 
     // Track scroll progress specifically for this footer section
-    // offset "start end" means when top of footer enters viewport
-    // offset "end end" means when bottom of footer hits bottom of viewport
     const { scrollYProgress } = useScroll({
         target: containerRef,
-        offset: ["start end", "end end"]
+        offset: ["start end", "end end"] 
+        // start end: top of container hits bottom of viewport (start showing)
+        // end end: bottom of container hits bottom of viewport (fully scrolled)
     });
 
-    // Map progress (0 to 1) to circle completion (0 to 100)
-    // We only start filling the circle when the user is 20% into the section to add "resistance"
-    const progressMap = useTransform(scrollYProgress, [0.2, 1], [0, 100]);
-    // Smooth the visual fill heavily for a liquid feel
-    const smoothProgress = useSpring(progressMap, { stiffness: 50, damping: 20 });
+    // Map progress (0 to 0.9) to circle completion (0 to 100).
+    // We finish the circle slightly BEFORE the absolute bottom (at 90% scroll) 
+    // to prevent getting stuck due to browser scroll rounding errors.
+    const progressMap = useTransform(scrollYProgress, [0, 0.9], [0, 100]);
+    
+    // Smooth the progress for the visual circle
+    const smoothProgress = useSpring(progressMap, { stiffness: 60, damping: 20 });
 
     useEffect(() => {
-        const unsubscribe = scrollYProgress.on("change", (latest) => {
-            // Trigger navigation only when strictly 100% (value >= 1)
-            // This prevents accidental triggers during quick scrolls
-            if (latest >= 0.995 && !triggered) {
+        const unsubscribe = smoothProgress.on("change", (v) => {
+            // Trigger navigation if we hit ~99%
+            if (v >= 99 && !triggered) {
                 setTriggered(true);
-                // Optional: Add a tiny delay before navigating to let the user see the completion
-                setTimeout(() => onNavigate(), 100);
+                onNavigate();
             }
         });
         return () => unsubscribe();
-    }, [scrollYProgress, triggered, onNavigate]);
+    }, [smoothProgress, triggered, onNavigate]);
 
     return (
         <section 
             ref={containerRef} 
-            // Increased height to 150vh. This means the user must scroll 1.5x height of screen
-            // to get from top of footer to bottom, creating a "robust" physical scroll feel.
-            className="h-[150vh] w-full flex flex-col items-center justify-center relative bg-[#050505] border-t border-white/5 mt-0 z-20"
+            className="relative h-[130vh] bg-[#050505] z-30" 
         >
-            <div className="flex flex-col items-center gap-6 relative z-10 pointer-events-none sticky top-1/2 -translate-y-1/2">
-                <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-gray-500">
-                    Next Project
-                </span>
-
-                {/* Circular Progress Indicator */}
-                <div className="relative w-24 h-24 flex items-center justify-center">
-                    <svg className="absolute inset-0 w-full h-full -rotate-90 transform" viewBox="0 0 100 100">
-                        {/* Background Track */}
-                        <circle cx="50" cy="50" r="46" fill="none" stroke="#222" strokeWidth="1" />
-                        {/* Filling Indicator */}
-                        <M.circle 
-                            cx="50" 
-                            cy="50" 
-                            r="46" 
-                            fill="none" 
-                            stroke="#fff" 
-                            strokeWidth="2" 
-                            pathLength="100"
-                            strokeDasharray="100 100"
-                            style={{ strokeDashoffset: useTransform(smoothProgress, [0, 100], [100, 0]) }}
-                        />
-                    </svg>
+            {/* 
+                Sticky container. 
+                Using sticky top-0 and h-screen ensures it occupies the viewport 
+                and stays pinned while we scroll through the parent section.
+                flex-col justify-end puts content at the bottom.
+            */}
+            <div className="sticky top-0 h-screen w-full flex flex-col items-center justify-end pb-12 overflow-hidden pointer-events-none">
+                
+                {/* Visual Content */}
+                <div className="relative flex flex-col items-center gap-6 mb-8 z-10">
                     
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <ArrowRight className="text-white w-6 h-6" />
-                    </div>
-                </div>
+                    {/* Next Project Name Fade In */}
+                    <M.div 
+                        style={{ opacity: useTransform(scrollYProgress, [0.2, 0.6], [0, 1]), y: useTransform(scrollYProgress, [0.2, 0.6], [20, 0]) }}
+                        className="text-center space-y-2"
+                    >
+                        <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-gray-500">
+                            Next Project
+                        </span>
+                        <h2 className="text-3xl md:text-5xl font-black text-white tracking-tighter uppercase">
+                            {nextProject.title}
+                        </h2>
+                    </M.div>
 
-                <div className="text-center">
-                    <h2 className="text-2xl md:text-4xl font-bold text-white tracking-tight">{nextProject.title}</h2>
-                    <p className="text-xs text-gray-600 mt-2 font-mono uppercase tracking-widest">Keep scrolling to enter</p>
+                    {/* Circle Loader */}
+                    <div className="relative w-24 h-24 flex items-center justify-center">
+                        <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
+                            {/* Track */}
+                            <circle cx="50" cy="50" r="45" fill="none" stroke="#222" strokeWidth="2" />
+                            {/* Fill */}
+                            <M.circle 
+                                cx="50" 
+                                cy="50" 
+                                r="45" 
+                                fill="none" 
+                                stroke="#fff" 
+                                strokeWidth="2" 
+                                pathLength="100"
+                                strokeDasharray="100 100"
+                                style={{ strokeDashoffset: useTransform(smoothProgress, [0, 100], [100, 0]) }}
+                            />
+                        </svg>
+                        
+                        {/* Icon */}
+                        <div className="absolute inset-0 flex items-center justify-center text-white">
+                            <ArrowRight size={24} />
+                        </div>
+                    </div>
+                    
+                    <M.p 
+                        style={{ opacity: useTransform(scrollYProgress, [0, 0.3], [0, 1]) }}
+                        className="text-[10px] text-gray-600 font-mono uppercase tracking-widest"
+                    >
+                        Scroll to Navigate
+                    </M.p>
                 </div>
+                
+                {/* Background Image of Next Project (Subtle Reveal) */}
+                <M.div 
+                    style={{ opacity: useTransform(scrollYProgress, [0, 1], [0, 0.3]) }}
+                    className="absolute inset-0 z-0"
+                >
+                    <img src={nextProject.imageUrl} alt="" className="w-full h-full object-cover filter grayscale blur-sm" />
+                    <div className="absolute inset-0 bg-[#050505]/80" />
+                </M.div>
             </div>
         </section>
     );
@@ -122,36 +152,35 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projects, template }) =
         return <div className="min-h-screen bg-[#050505]" />; 
     }
 
-    const isElite = template === 'elite';
-    const baseClasses = isElite 
+    const baseClasses = template === 'elite' 
         ? "bg-[#050505] text-white selection:bg-white selection:text-black min-h-screen font-sans overflow-x-hidden" 
         : "bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen font-sans";
 
-    const imageY = useTransform(scrollY, [0, 1000], [0, 150]);
-    const imageOpacity = useTransform(scrollY, [0, 600], [1, 0.3]);
+    const imageY = useTransform(scrollY, [0, 1000], [0, 200]);
+    const imageOpacity = useTransform(scrollY, [0, 600], [1, 0.4]);
 
     return (
         <div className={baseClasses}>
             {/* 
-               CRITICAL: Nav must be OUTSIDE the motion.div.
+               Nav must be OUTSIDE the motion.div to stay fixed 
             */}
             <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center mix-blend-difference text-white pointer-events-none">
                 <Link to="/gallery" className="flex items-center gap-2 text-sm font-medium hover:opacity-70 transition-opacity group pointer-events-auto">
                     <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
                     Back to Gallery
                 </Link>
-                {isElite && <span className="text-xs font-mono opacity-50 uppercase tracking-widest hidden md:block">Project Details</span>}
+                {template === 'elite' && <span className="text-xs font-mono opacity-50 uppercase tracking-widest hidden md:block">Project Details</span>}
             </nav>
 
             {/* 
                Content Wrapper
-               Slow down the duration to 1.2s for a "slow professional" landing.
+               Gentle entrance from top (y: -50 -> 0) as requested.
             */}
             <M.div
                 key={id} 
-                initial={{ opacity: 0, y: -40 }}
+                initial={{ opacity: 0, y: -50 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }} 
+                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }} 
                 className="w-full relative"
             >
                 {/* Hero Section */}
@@ -162,14 +191,14 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projects, template }) =
                             alt={project.title} 
                             className="w-full h-[120%] object-cover"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/30 to-transparent" />
                     </M.div>
 
                     <div className="relative z-10 w-full max-w-7xl mx-auto px-6 pb-24">
                         <M.div
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 1.5, delay: 0.2, ease: "easeOut" }}
+                            transition={{ duration: 1.0, delay: 0.3, ease: "easeOut" }}
                         >
                             <div className="flex gap-4 mb-6">
                                 {project.tags.map((tag, i) => (
@@ -277,4 +306,3 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projects, template }) =
 };
 
 export default ProjectDetails;
-    
