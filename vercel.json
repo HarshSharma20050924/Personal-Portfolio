@@ -56,6 +56,10 @@
       "dest": "/server/src/server.mjs"
     },
     {
+      "src": "/sitemap.xml",
+      "dest": "/server/src/server.mjs"
+    },
+    {
       "src": "/admin/assets/(.*)",
       "dest": "/admin/assets/$1"
     },
