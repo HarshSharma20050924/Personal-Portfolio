@@ -77,7 +77,7 @@ const ProjectGallery: React.FC<ProjectGalleryProps> = ({ projects, template }) =
     return (
         <div className={baseClasses}>
             {/* Nav - Fixed, outside animation flow */}
-            <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center bg-[#050505]/90 backdrop-blur-md border-b border-white/5">
+            <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 pt-10 md:pt-6 flex justify-between items-center bg-[#050505]/90 backdrop-blur-md border-b border-white/5">
                 <Link to="/" className="flex items-center gap-2 text-sm font-medium hover:opacity-70 transition-opacity elite-interactive text-white">
                     <ArrowLeft size={18} />
                     Back
@@ -86,7 +86,7 @@ const ProjectGallery: React.FC<ProjectGalleryProps> = ({ projects, template }) =
             </nav>
 
             <M.div 
-                className="pt-40 pb-20 px-6"
+                className="pt-32 md:pt-40 pb-20 px-6"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1.2, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}

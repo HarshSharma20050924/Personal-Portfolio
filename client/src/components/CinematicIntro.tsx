@@ -22,10 +22,11 @@ const CinematicIntro: React.FC<CinematicIntroProps> = ({ name, onComplete, loade
                     clearInterval(interval);
                     return 100;
                 }
-                const jump = Math.floor(Math.random() * 15) + 5; // Slightly faster for responsiveness
+                // Snappy loading speed
+                const jump = Math.floor(Math.random() * 15) + 5; 
                 return Math.min(prev + jump, 100);
             });
-        }, 80);
+        }, 60); // Faster interval
         return () => clearInterval(interval);
     }, [loaded]);
 
@@ -33,7 +34,7 @@ const CinematicIntro: React.FC<CinematicIntroProps> = ({ name, onComplete, loade
         if (count < 90) {
             const wordInterval = setInterval(() => {
                 setIndex((prev) => (prev + 1) % words.length);
-            }, 200);
+            }, 180);
             return () => clearInterval(wordInterval);
         }
     }, [count]);
@@ -42,7 +43,7 @@ const CinematicIntro: React.FC<CinematicIntroProps> = ({ name, onComplete, loade
         if (count === 100) {
             const timer = setTimeout(() => {
                 onComplete();
-            }, 600); 
+            }, 500); 
             return () => clearTimeout(timer);
         }
     }, [count, onComplete]);
@@ -52,7 +53,7 @@ const CinematicIntro: React.FC<CinematicIntroProps> = ({ name, onComplete, loade
 
     return (
         <motion.div
-            className="fixed inset-0 z-[9999] flex flex-col justify-between bg-[#080808] text-white px-6 py-10 overflow-hidden cursor-wait"
+            className="fixed inset-0 z-[9999] flex flex-col justify-between bg-[#080808] text-white px-6 py-8 overflow-hidden cursor-wait h-[100svh]"
             initial={{ opacity: 1 }}
             exit={{
                 y: "-100%",
@@ -60,7 +61,7 @@ const CinematicIntro: React.FC<CinematicIntroProps> = ({ name, onComplete, loade
             }}
         >
             {/* Top Bar */}
-            <div className="flex justify-between items-start w-full opacity-40">
+            <div className="flex justify-between items-start w-full opacity-40 shrink-0">
                 <span className="font-mono text-[10px] tracking-widest uppercase">
                     Core_Kernel.v1
                 </span>
@@ -70,7 +71,7 @@ const CinematicIntro: React.FC<CinematicIntroProps> = ({ name, onComplete, loade
             </div>
 
             {/* Center Content */}
-            <div className="flex flex-col items-center justify-center relative z-10 w-full">
+            <div className="flex flex-col items-center justify-center relative z-10 w-full flex-grow">
                 <AnimatePresence mode="wait">
                     {count < 100 ? (
                         <motion.div 
@@ -78,14 +79,14 @@ const CinematicIntro: React.FC<CinematicIntroProps> = ({ name, onComplete, loade
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0, filter: 'blur(10px)' }}
-                            className="flex flex-col items-center gap-8"
+                            className="flex flex-col items-center gap-6 md:gap-8"
                         >
                             <div className="text-5xl md:text-7xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-gray-100 to-gray-600 mix-blend-difference uppercase">
                                 {words[index]}
                             </div>
                             
-                            {/* Centered Progress UI */}
-                            <div className="flex flex-col items-center gap-3">
+                            {/* Centered Progress UI - Kept close to text */}
+                            <div className="flex flex-col items-center gap-3 mt-2">
                                 <div className="w-32 h-[1px] bg-white/10 relative overflow-hidden">
                                     <motion.div 
                                         className="absolute inset-0 bg-white"
@@ -105,7 +106,7 @@ const CinematicIntro: React.FC<CinematicIntroProps> = ({ name, onComplete, loade
                                 initial={{ y: 50, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ duration: 0.6, ease: [0.76, 0, 0.24, 1] }}
-                                className="text-[15vw] md:text-[12vw] leading-none font-black tracking-tighter text-white mix-blend-difference"
+                                className="text-[13vw] md:text-[12vw] leading-none font-black tracking-tighter text-white mix-blend-difference"
                             >
                                 {firstName}
                             </motion.h1>
@@ -114,7 +115,7 @@ const CinematicIntro: React.FC<CinematicIntroProps> = ({ name, onComplete, loade
                                     initial={{ y: 50, opacity: 0 }}
                                     animate={{ y: 0, opacity: 1 }}
                                     transition={{ duration: 0.6, delay: 0.05, ease: [0.76, 0, 0.24, 1] }}
-                                    className="text-[15vw] md:text-[12vw] leading-none font-black tracking-tighter text-gray-500/10 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[-1] blur-md"
+                                    className="text-[13vw] md:text-[12vw] leading-none font-black tracking-tighter text-gray-500/10 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[-1] blur-md"
                                 >
                                     {lastName}
                                 </motion.h1>
@@ -125,7 +126,7 @@ const CinematicIntro: React.FC<CinematicIntroProps> = ({ name, onComplete, loade
             </div>
 
             {/* Bottom Bar - Minimalism */}
-            <div className="flex justify-between items-end w-full opacity-30">
+            <div className="flex justify-between items-end w-full opacity-30 shrink-0">
                 <span className="font-mono text-[10px] uppercase tracking-widest">System Ready</span>
                 <span className="font-mono text-[10px] uppercase tracking-widest tracking-tighter">{new Date().toLocaleTimeString()}</span>
             </div>

@@ -36,8 +36,8 @@ const NextProjectPortal: React.FC<{ nextProject: Project; onNavigate: () => void
     }, [smoothProgress, triggered, onNavigate]);
 
     return (
-        <section ref={containerRef} className="relative h-[120vh] bg-[#050505] z-30">
-            <div className="sticky top-0 h-screen w-full flex flex-col items-center justify-end pb-20 overflow-hidden pointer-events-none px-6">
+        <section ref={containerRef} className="relative h-[80svh] md:h-[120vh] bg-[#050505] z-30">
+            <div className="sticky top-0 h-[100svh] w-full flex flex-col items-center justify-end pb-20 overflow-hidden pointer-events-none px-6">
                 <div className="relative flex flex-col items-center gap-8 mb-8 z-10">
                     <M.div 
                         style={{ opacity: useTransform(scrollYProgress, [0.2, 0.6], [0, 1]), y: useTransform(scrollYProgress, [0.2, 0.6], [20, 0]) }}
@@ -96,8 +96,8 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projects, template }) =
 
     return (
         <div className="bg-[#050505] text-white selection:bg-white selection:text-black min-h-screen overflow-x-hidden">
-            <nav className="fixed top-0 left-0 w-full z-50 px-4 md:px-8 py-6 flex justify-between items-center mix-blend-difference text-white">
-                <Link to="/gallery" className="flex items-center gap-2 text-xs md:text-sm font-medium hover:opacity-70 transition-opacity group">
+            <nav className="fixed top-0 left-0 w-full z-50 px-4 md:px-8 py-6 pt-10 md:pt-6 flex justify-between items-center mix-blend-difference text-white">
+                <Link to="/gallery" className="flex items-center gap-2 text-xs md:text-sm font-medium hover:opacity-70 transition-opacity group pointer-events-auto">
                     <ArrowLeft size={18} />
                     Gallery
                 </Link>

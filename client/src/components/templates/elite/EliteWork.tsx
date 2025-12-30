@@ -16,7 +16,7 @@ const EliteWork: React.FC<{ projects: Project[] }> = ({ projects = [] }) => {
   return (
     <section 
         id="work" 
-        className="relative py-32 px-4 bg-[#050505] min-h-screen z-20 overflow-hidden" 
+        className="relative py-20 md:py-32 px-4 bg-[#050505] min-h-screen z-20 overflow-hidden" 
     >
       {/* Background Reveal Layer */}
       <div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
@@ -42,8 +42,8 @@ const EliteWork: React.FC<{ projects: Project[] }> = ({ projects = [] }) => {
       </div>
 
       <div className="max-w-6xl mx-auto relative z-10">
-         <div className="mb-20 flex items-end justify-between border-b border-white/10 pb-6">
-             <h2 className="text-4xl md:text-6xl font-black text-white tracking-tighter">SELECTED WORKS</h2>
+         <div className="mb-12 md:mb-20 flex items-end justify-between border-b border-white/10 pb-6">
+             <h2 className="text-3xl md:text-6xl font-black text-white tracking-tighter">SELECTED WORKS</h2>
              <span className="text-xs text-gray-600 font-mono hidden md:block">
                  (01) — ({String(displayProjects.length).padStart(2, '0')})
              </span>
@@ -56,18 +56,18 @@ const EliteWork: React.FC<{ projects: Project[] }> = ({ projects = [] }) => {
                     key={index}
                     onMouseEnter={() => setHoveredProject(index)}
                     onMouseLeave={() => setHoveredProject(null)}
-                    className="group relative flex flex-col md:flex-row items-baseline justify-between py-12 border-b border-white/5 hover:border-white/20 transition-all duration-500 elite-interactive"
+                    className="group relative flex flex-col md:flex-row items-baseline justify-between py-8 md:py-12 border-b border-white/5 hover:border-white/20 transition-all duration-500 elite-interactive"
                 >
-                    <div className="flex items-center gap-8 z-10">
+                    <div className="flex items-center gap-4 md:gap-8 z-10">
                         <span className="text-xs font-mono text-gray-600 group-hover:text-white transition-colors duration-300">
                             0{index + 1}
                         </span>
-                        <h3 className="text-3xl md:text-5xl font-bold text-gray-400 group-hover:text-white group-hover:pl-4 transition-all duration-300">
+                        <h3 className="text-2xl md:text-5xl font-bold text-gray-400 group-hover:text-white group-hover:pl-4 transition-all duration-300">
                             {project.title}
                         </h3>
                     </div>
                     
-                    <div className="mt-4 md:mt-0 flex items-center gap-4 z-10 opacity-50 group-hover:opacity-100 transition-opacity">
+                    <div className="mt-4 md:mt-0 flex items-center gap-4 z-10 opacity-50 group-hover:opacity-100 transition-opacity pl-8 md:pl-0">
                         <span className="text-xs font-mono text-gray-500 uppercase tracking-widest group-hover:text-white transition-colors">
                             {project.tags[0] || 'Development'}
                         </span>

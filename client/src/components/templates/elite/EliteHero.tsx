@@ -16,7 +16,7 @@ const EliteHero: React.FC<{ data: HeroData }> = ({ data }) => {
   const lastName = rest.join(' ');
 
   return (
-    <section id="hero" className="relative h-[100svh] w-full flex flex-col justify-center items-center px-4 overflow-hidden pt-10">
+    <section id="hero" className="relative h-[100svh] w-full flex flex-col justify-center items-center px-4 overflow-hidden pt-24 md:pt-10">
       
       {/* 3D Background - pointer-events-auto allows interaction */}
       <TechOrb />
@@ -32,7 +32,7 @@ const EliteHero: React.FC<{ data: HeroData }> = ({ data }) => {
                initial={{ y: 30, opacity: 0 }}
                animate={{ y: 0, opacity: 1 }}
                transition={{ duration: 1, ease: "easeOut" }}
-               className="text-[16vw] md:text-[13vw] font-heading font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500 select-none z-10 mix-blend-difference"
+               className="text-[13vw] md:text-[13vw] font-heading font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500 select-none z-10 mix-blend-difference"
             >
                 {firstName.toUpperCase()}
             </motion.h1>
@@ -43,7 +43,7 @@ const EliteHero: React.FC<{ data: HeroData }> = ({ data }) => {
                     initial={{ y: 30, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 1, delay: 0.1, ease: "easeOut" }}
-                    className="text-[16vw] md:text-[13vw] font-heading font-black tracking-tighter text-white/5 select-none relative mt-4 md:-mt-[3vw] z-0"
+                    className="text-[13vw] md:text-[13vw] font-heading font-black tracking-tighter text-white/5 select-none relative mt-2 md:-mt-[3vw] z-0"
                     style={{ WebkitTextStroke: '1px rgba(255,255,255,0.4)' }}
                 >
                     {lastName.toUpperCase()}
@@ -62,7 +62,7 @@ const EliteHero: React.FC<{ data: HeroData }> = ({ data }) => {
               {data.description}
             </p>
           </div>
-          <div className="hidden md:block text-right">
+          <div className="mt-6 md:mt-0 text-center md:text-right">
              <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 mb-1">Status</p>
              <p className="text-white font-medium font-mono text-xs">{data.title.toUpperCase()}</p>
           </div>
