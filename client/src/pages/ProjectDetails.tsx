@@ -2,7 +2,7 @@
 import React, { useLayoutEffect, useRef, useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
-import { ArrowLeft, Github, ExternalLink, Box, ArrowRight, FileText } from 'lucide-react';
+import { ArrowLeft, Github, ExternalLink, ArrowRight, FileText } from 'lucide-react';
 import { useLenis } from '@studio-freight/react-lenis';
 import { Project } from '../types';
 
@@ -22,12 +22,13 @@ const NextProjectPortal: React.FC<{ nextProject: Project; onNavigate: () => void
         offset: ["start end", "end end"] 
     });
 
-    const progressMap = useTransform(scrollYProgress, [0.1, 0.9], [0, 100]);
-    const smoothProgress = useSpring(progressMap, { stiffness: 60, damping: 20 });
+    const progressMap = useTransform(scrollYProgress, [0, 1], [0, 100]);
+    const smoothProgress = useSpring(progressMap, { stiffness: 100, damping: 30 });
 
     useEffect(() => {
         const unsubscribe = smoothProgress.on("change", (v) => {
-            if (v >= 99 && !triggered) {
+            // Trigger slightly before 100% to ensure it feels responsive
+            if (v >= 95 && !triggered) {
                 setTriggered(true);
                 onNavigate();
             }
@@ -36,20 +37,18 @@ const NextProjectPortal: React.FC<{ nextProject: Project; onNavigate: () => void
     }, [smoothProgress, triggered, onNavigate]);
 
     return (
-        <section ref={containerRef} className="relative h-[80svh] md:h-[120vh] bg-[#050505] z-30">
-            <div className="sticky top-0 h-[100svh] w-full flex flex-col items-center justify-end pb-20 overflow-hidden pointer-events-none px-6">
-                <div className="relative flex flex-col items-center gap-8 mb-8 z-10">
-                    <M.div 
-                        style={{ opacity: useTransform(scrollYProgress, [0.2, 0.6], [0, 1]), y: useTransform(scrollYProgress, [0.2, 0.6], [20, 0]) }}
-                        className="text-center"
-                    >
-                        <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-gray-600 mb-2 block">Next Up</span>
-                        <h2 className="text-3xl md:text-6xl font-black text-white tracking-tighter uppercase break-words max-w-[90vw] mx-auto">
-                            {nextProject.title}
-                        </h2>
-                    </M.div>
-
-                    <div className="relative w-20 h-20 md:w-28 md:h-28 flex items-center justify-center">
+        <section ref={containerRef} className="relative h-[60vh] md:h-[80vh] bg-[#050505] z-30 flex items-center justify-center">
+            <div className="flex flex-col items-center justify-center w-full h-full p-8 text-center sticky top-0">
+                <M.div 
+                    style={{ opacity: useTransform(scrollYProgress, [0, 0.5], [0, 1]), y: useTransform(scrollYProgress, [0, 0.5], [20, 0]) }}
+                    className="relative z-10 flex flex-col items-center gap-6"
+                >
+                    <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-gray-500">Next Project</span>
+                    <h2 className="text-3xl md:text-5xl font-black text-white tracking-tighter uppercase mb-4">
+                        {nextProject.title}
+                    </h2>
+                    
+                    <div className="relative w-24 h-24 flex items-center justify-center">
                         <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
                             <circle cx="50" cy="50" r="45" fill="none" stroke="#222" strokeWidth="2" />
                             <M.circle 
@@ -57,13 +56,18 @@ const NextProjectPortal: React.FC<{ nextProject: Project; onNavigate: () => void
                                 style={{ strokeDashoffset: useTransform(smoothProgress, [0, 100], [100, 0]) }}
                             />
                         </svg>
-                        <ArrowRight className="text-white w-6 h-6 md:w-8 md:h-8" />
+                        <ArrowRight className="text-white w-6 h-6" />
                     </div>
-                </div>
-                
-                <M.div style={{ opacity: useTransform(scrollYProgress, [0, 1], [0, 0.2]) }} className="absolute inset-0 z-0">
+                    <p className="text-xs text-gray-600 font-mono mt-4">Keep scrolling to enter</p>
+                </M.div>
+
+                {/* Background Image Preview */}
+                <M.div 
+                    style={{ opacity: useTransform(scrollYProgress, [0, 0.8], [0, 0.3]) }} 
+                    className="absolute inset-0 z-0 pointer-events-none"
+                >
                     <img src={nextProject.imageUrl} alt="" className="w-full h-full object-cover filter grayscale blur-sm" />
-                    <div className="absolute inset-0 bg-[#050505]/60" />
+                    <div className="absolute inset-0 bg-[#050505]/70" />
                 </M.div>
             </div>
         </section>
@@ -105,7 +109,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projects, template }) =
             </nav>
 
             <M.div key={id} initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}>
-                <header className="relative w-full h-[80vh] md:h-[85vh] overflow-hidden bg-[#050505] flex flex-col justify-end">
+                <header className="relative w-full h-[70vh] md:h-[80vh] overflow-hidden bg-[#050505] flex flex-col justify-end">
                     <M.div style={{ y: imageY }} className="absolute inset-0 z-0">
                         <img src={project.imageUrl} alt={project.title} className="w-full h-[120%] object-cover opacity-60" />
                         <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent" />
@@ -120,17 +124,17 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projects, template }) =
                                     </span>
                                 ))}
                             </div>
-                            <h1 className="text-4xl md:text-8xl font-black text-white leading-tight tracking-tight uppercase">
+                            <h1 className="text-4xl md:text-7xl font-black text-white leading-tight tracking-tight uppercase">
                                 {project.title}
                             </h1>
                         </M.div>
                     </div>
                 </header>
 
-                <main className="max-w-6xl mx-auto px-6 py-20 space-y-24 md:space-y-32 relative z-20">
+                <main className="max-w-6xl mx-auto px-6 py-20 space-y-20 relative z-20">
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-10 border-b border-white/10 pb-20">
                          <div className="md:col-span-8">
-                            <p className="text-lg md:text-3xl font-light leading-relaxed text-gray-300">
+                            <p className="text-lg md:text-2xl font-light leading-relaxed text-gray-300">
                                 {project.description}
                             </p>
                          </div>
@@ -168,16 +172,16 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projects, template }) =
                         </div>
                     )}
 
-                    <section className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-20">
+                    <section className="grid grid-cols-1 md:grid-cols-2 gap-12">
                         <div className="space-y-4">
                             <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-gray-500">Core Challenge</h2>
-                            <p className="text-base md:text-lg text-gray-400 leading-relaxed">
+                            <p className="text-base text-gray-400 leading-relaxed">
                                 Solving complex performance bottlenecks while maintaining high visual fidelity. The architecture was designed to be modular and scalable across diverse platforms.
                             </p>
                         </div>
                         <div className="space-y-4">
                             <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-gray-500">Final Outcome</h2>
-                            <p className="text-base md:text-lg text-gray-400 leading-relaxed">
+                            <p className="text-base text-gray-400 leading-relaxed">
                                 Delivered a high-performance system utilizing modern frameworks and low-latency data processing, resulting in a 40% increase in user retention.
                             </p>
                         </div>
