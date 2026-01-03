@@ -1,12 +1,16 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useLenis } from '@studio-freight/react-lenis';
+import { Sun, Moon } from 'lucide-react';
 
 interface EliteHeaderProps {
     name: string;
+    isDark: boolean;
+    toggleTheme: () => void;
 }
 
-const EliteHeader: React.FC<EliteHeaderProps> = ({ name }) => {
+const EliteHeader: React.FC<EliteHeaderProps> = ({ name, isDark, toggleTheme }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const { scrollY } = useScroll();
   const lenis = useLenis();
@@ -32,10 +36,10 @@ const EliteHeader: React.FC<EliteHeaderProps> = ({ name }) => {
 
   return (
     <motion.header
-      className="fixed top-0 left-0 right-0 z-40 px-8 py-6 flex justify-between items-center mix-blend-difference text-white"
+      className="fixed top-0 left-0 right-0 z-40 px-8 py-6 flex justify-between items-center mix-blend-difference text-white dark:text-gray-200"
     >
       <motion.div 
-        className="absolute inset-0 z-[-1] pointer-events-none border-b border-white/10"
+        className="absolute inset-0 z-[-1] pointer-events-none border-b border-black/5 dark:border-white/10"
         style={{ opacity, backdropFilter: `blur(${blur}px)` }}
       />
       
@@ -46,18 +50,28 @@ const EliteHeader: React.FC<EliteHeaderProps> = ({ name }) => {
         {name || 'ARCHITECT'}
       </div>
 
-      <nav className="flex gap-8">
-        {navItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => handleScrollTo(item.id)}
-            className="text-xs uppercase tracking-widest font-medium hover:text-gray-400 transition-colors elite-interactive relative group"
-          >
-            {item.label}
-            <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-white transition-all duration-300 group-hover:w-full" />
-          </button>
-        ))}
-      </nav>
+      <div className="flex items-center gap-8">
+        <nav className="hidden md:flex gap-8">
+            {navItems.map((item) => (
+            <button
+                key={item.id}
+                onClick={() => handleScrollTo(item.id)}
+                className="text-xs uppercase tracking-widest font-medium hover:opacity-60 transition-opacity elite-interactive relative group"
+            >
+                {item.label}
+                <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-current transition-all duration-300 group-hover:w-full" />
+            </button>
+            ))}
+        </nav>
+
+        <button 
+            onClick={toggleTheme}
+            className="elite-interactive p-2 hover:opacity-60 transition-opacity"
+            aria-label="Toggle Theme"
+        >
+            {isDark ? <Sun size={16} /> : <Moon size={16} />}
+        </button>
+      </div>
     </motion.header>
   );
 };

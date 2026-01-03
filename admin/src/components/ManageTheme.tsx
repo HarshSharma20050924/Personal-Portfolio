@@ -1,3 +1,4 @@
+
 import React from 'react';
 import type { HeroData } from '../types';
 
@@ -36,6 +37,11 @@ const templates = [
     id: 'elite',
     name: 'Elite (System Architect)',
     description: 'A high-end, cinematic, and interaction-heavy dark theme. Features a terminal-style chat and sleek typography.',
+  },
+  {
+    id: 'fantasy',
+    name: 'Iron & Gold (Dark Fantasy)',
+    description: 'A cinematic 3D experience inspired by dark fantasy epics. Features atmospheric fog, metallic textures, and grand typography.',
   },
   {
     id: 'profilecard',

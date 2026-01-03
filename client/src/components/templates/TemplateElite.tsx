@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import EliteHeader from './elite/EliteHeader';
 import EliteHero from './elite/EliteHero';
 import EliteWork from './elite/EliteWork';
@@ -23,14 +23,31 @@ const TemplateElite: React.FC<TemplateProps> = ({
   socialLinks,
   articles,
 }) => {
+  // Initialize based on system preference or storage, default to dark for Elite
+  const [isDark, setIsDark] = useState(() => {
+      const saved = localStorage.getItem('elite-theme');
+      if (saved) return saved === 'dark';
+      return true; // Default to dark for Elite
+  });
+
+  const toggleTheme = () => {
+      setIsDark(prev => !prev);
+  };
   
   useEffect(() => {
-    // Force dark mode logic for this template
-    document.documentElement.classList.add('dark');
-    document.body.style.backgroundColor = '#050505';
+    const root = document.documentElement;
+    if (isDark) {
+        root.classList.add('dark');
+        localStorage.setItem('elite-theme', 'dark');
+        document.body.style.backgroundColor = '#050505';
+    } else {
+        root.classList.remove('dark');
+        localStorage.setItem('elite-theme', 'light');
+        document.body.style.backgroundColor = '#ffffff';
+    }
+    
     document.body.classList.add('elite-scroll');
     
-    // Add noise texture globally for that cinematic grain
     const noise = document.createElement('div');
     noise.classList.add('elite-noise');
     document.body.appendChild(noise);
@@ -39,20 +56,17 @@ const TemplateElite: React.FC<TemplateProps> = ({
       document.body.style.backgroundColor = '';
       document.body.classList.remove('elite-scroll');
       if (document.body.contains(noise)) document.body.removeChild(noise);
-      if (localStorage.getItem('theme') !== 'dark') {
-          document.documentElement.classList.remove('dark');
-      }
     };
-  }, []);
+  }, [isDark]);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white selection:bg-white selection:text-black overflow-x-hidden relative">
+    <div className={`min-h-screen selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black overflow-x-hidden relative transition-colors duration-500 bg-white dark:bg-[#050505] text-black dark:text-white`}>
       <EliteCursor />
       
-      <EliteHeader name={heroData.name} />
+      <EliteHeader name={heroData.name} isDark={isDark} toggleTheme={toggleTheme} />
       
       <main className="relative z-10">
-        <EliteHero data={heroData} />
+        <EliteHero data={heroData} isDark={isDark} />
         <EliteWork projects={projects} />
         <EliteThinking skills={skills} articles={articles} />
         <EliteContact data={heroData} socialLinks={socialLinks} />

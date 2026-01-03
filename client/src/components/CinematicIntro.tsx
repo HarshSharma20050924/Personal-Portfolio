@@ -142,12 +142,7 @@ const CinematicIntro: React.FC<CinematicIntroProps> = ({ name, onComplete, loade
                             </motion.h1>
                         </div>
                         
-                        <motion.div 
-                            initial={{ width: 0, opacity: 0 }}
-                            animate={{ width: "60px", opacity: 1 }}
-                            transition={{ delay: 0.6, duration: 0.6 }}
-                            className="h-1 bg-blue-500 mt-8"
-                        />
+                       
                     </motion.div>
                 )}
             </AnimatePresence>

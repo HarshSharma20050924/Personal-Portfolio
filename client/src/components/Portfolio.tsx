@@ -1,3 +1,4 @@
+
 import React from 'react';
 import type { HeroData, Skill, Project, SocialLink, Article, PlaygroundConfig } from '../types';
 import TemplateDefault from './templates/TemplateDefault';
@@ -8,6 +9,7 @@ import TemplateStarryNight from './templates/TemplateStarryNight';
 import TemplatePlayground from './templates/TemplatePlayground';
 import TemplateProfileCard from './templates/TemplateProfileCard';
 import TemplateElite from './templates/TemplateElite';
+import TemplateFantasy from './templates/TemplateFantasy';
 import ChatWidget from './ChatWidget';
 
 interface PortfolioProps {
@@ -41,6 +43,8 @@ const Portfolio: React.FC<PortfolioProps> = (props) => {
           return <TemplateProfileCard {...props} />;
         case 'elite':
           return <TemplateElite {...props} />;
+        case 'fantasy':
+          return <TemplateFantasy {...props} />;
         case 'default':
         default:
           return <TemplateDefault {...props} />;

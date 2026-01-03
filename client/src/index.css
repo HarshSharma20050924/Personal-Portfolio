@@ -1,6 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
 
 body {
   font-family: 'Inter', sans-serif;
@@ -92,4 +95,26 @@ body {
 }
 .elite-scroll ::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+/* FANTASY THEME STYLES */
+.font-fantasy {
+  font-family: 'Cinzel', serif;
+}
+
+.fantasy-text-shadow {
+  text-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
+}
+
+.fantasy-card {
+  background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+  border: 1px solid #333;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.fantasy-gold-text {
+  background: linear-gradient(to bottom, #cfc09f 22%, #634f2c 24%, #cfc09f 26%, #cfc09f 27%,#ffecb3 40%,#3a2c0f 78%); 
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #fff;
 }
