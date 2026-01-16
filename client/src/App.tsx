@@ -81,10 +81,15 @@ const ScrollToTop = () => {
 const App: React.FC = () => {
   const [data, setData] = useState<AppData | null>(null);
   
-  // Stages of loading
-  // Start with showIntro = true to ensure it covers the initial fetch
-  const [showIntro, setShowIntro] = useState(true);
-  const [isAppVisible, setIsAppVisible] = useState(false);
+  // Initialize intro state from sessionStorage to avoid showing it repeatedly on refresh
+  const [showIntro, setShowIntro] = useState(() => {
+      return !sessionStorage.getItem('introShown');
+  });
+  
+  // If intro is skipped (already shown), app is visible immediately once data loads
+  const [isAppVisible, setIsAppVisible] = useState(() => {
+      return !!sessionStorage.getItem('introShown');
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -117,6 +122,9 @@ const App: React.FC = () => {
 
   const handleIntroComplete = useCallback(() => {
     setShowIntro(false);
+    // Mark intro as shown in session storage
+    sessionStorage.setItem('introShown', 'true');
+    
     // Smooth transition to app
     setTimeout(() => setIsAppVisible(true), 100); 
   }, []);
