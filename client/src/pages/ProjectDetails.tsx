@@ -14,47 +14,49 @@ interface ProjectDetailsProps {
 }
 
 const PullUpNavigationFooter: React.FC<{ nextProject: Project; onNavigate: () => void }> = ({ nextProject, onNavigate }) => {
-    const y = useMotionValue(0);
+    const dragY = useMotionValue(0);
     const [triggered, setTriggered] = useState(false);
     
-    // Map drag distance (negative Y) to progress 0-100
-    const progress = useTransform(y, [0, -150], [0, 100]);
-    const opacity = useTransform(y, [0, -100], [0.5, 1]);
-    const scale = useTransform(y, [0, -150], [1, 1.1]);
-    const arrowY = useTransform(y, [0, -150], [0, -10]);
+    // Map drag distance to visual properties
+    const contentY = useTransform(dragY, [0, -300], [0, -60]); 
+    const progress = useTransform(dragY, [0, -200], [0, 100]);
+    const imageOpacity = useTransform(dragY, [0, -200], [0.1, 0.6]); 
+    const imageScale = useTransform(dragY, [0, -300], [1.1, 1]); 
     
     const handleDragEnd = () => {
-        if (y.get() <= -120) {
+        if (dragY.get() <= -150) {
             setTriggered(true);
             onNavigate();
         }
     };
 
     return (
-        <section className="h-[50vh] bg-[#050505] border-t border-white/5 relative overflow-hidden flex flex-col justify-end pb-12 md:pb-20 touch-none">
-            {/* Hint Text */}
-            <M.div style={{ opacity: useTransform(y, [0, -50], [1, 0]) }} className="absolute top-10 w-full text-center pointer-events-none z-10">
-                <p className="text-[10px] font-mono text-gray-600 uppercase tracking-widest animate-pulse">
-                    Pull Up to Continue
-                </p>
+        <section className="h-[50vh] bg-[#050505] border-t border-white/5 relative overflow-hidden flex flex-col justify-end">
+            {/* Background Hint - Next Project Image */}
+            <M.div 
+                style={{ opacity: imageOpacity, scale: imageScale }}
+                className="absolute inset-0 z-0 pointer-events-none"
+            >
+                <img src={nextProject.imageUrl} alt="" className="w-full h-full object-cover grayscale blur-sm" />
+                <div className="absolute inset-0 bg-black/50" />
             </M.div>
 
+            {/* Content Container */}
             <M.div 
-                className="w-full flex flex-col items-center justify-center cursor-grab active:cursor-grabbing relative z-20"
-                drag="y"
-                dragConstraints={{ top: -250, bottom: 0 }}
-                dragElastic={0.2}
-                onDragEnd={handleDragEnd}
-                style={{ y }}
+                style={{ y: contentY }}
+                className="relative z-10 w-full h-full flex flex-col items-center justify-center pointer-events-none pb-10"
             >
-                <div className="flex flex-col items-center gap-6 p-4">
-                     {/* Interactive Circle */}
-                     <div className="relative w-20 h-20 flex items-center justify-center rounded-full border border-white/10 bg-[#111] shadow-2xl">
-                        <M.div style={{ y: arrowY }}>
-                            <ArrowUp size={24} className="text-white" />
-                        </M.div>
-                        {/* Progress Ring */}
-                        <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 100 100">
+                <M.p 
+                    style={{ opacity: useTransform(dragY, [0, -50], [1, 0]) }}
+                    className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-8 animate-pulse"
+                >
+                    Pull Up to Enter Next
+                </M.p>
+
+                <div className="flex flex-col items-center gap-6">
+                     <div className="relative w-20 h-20 flex items-center justify-center rounded-full border border-white/10 bg-[#111] shadow-2xl backdrop-blur-md">
+                        <ArrowUp size={24} className="text-white" />
+                        <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
                             <M.circle 
                                 cx="50" cy="50" r="48" 
                                 stroke="#fff" strokeWidth="2" 
@@ -66,23 +68,23 @@ const PullUpNavigationFooter: React.FC<{ nextProject: Project; onNavigate: () =>
                         </svg>
                      </div>
 
-                     <M.div style={{ opacity, scale }} className="text-center space-y-2">
-                        <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block">Next Project</span>
-                        <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tighter max-w-lg leading-none">
+                     <div className="text-center space-y-2">
+                        <span className="text-[10px] font-mono text-gray-400 uppercase tracking-widest block">Next Project</span>
+                        <h2 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tight max-w-lg leading-none">
                             {nextProject.title}
                         </h2>
-                     </M.div>
+                     </div>
                 </div>
             </M.div>
-            
-            {/* Background Preview */}
-             <M.div 
-                style={{ opacity: useTransform(progress, [0, 100], [0.1, 0.5]) }}
-                className="absolute inset-0 z-0 pointer-events-none"
-            >
-                <img src={nextProject.imageUrl} alt="" className="w-full h-full object-cover grayscale opacity-50 blur-sm" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/80 to-transparent" />
-            </M.div>
+
+            <M.div
+                className="absolute inset-0 z-20 cursor-grab active:cursor-grabbing"
+                drag="y"
+                dragConstraints={{ top: -300, bottom: 0 }}
+                dragElastic={0.2}
+                onDragEnd={handleDragEnd}
+                style={{ y: dragY }}
+            />
         </section>
     );
 };
@@ -117,7 +119,6 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projects, template }) =
 
     return (
         <div className="bg-[#050505] text-white selection:bg-white selection:text-black min-h-screen overflow-x-hidden">
-            {/* Nav */}
             <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent pointer-events-none">
                 <Link to="/gallery" className="flex items-center gap-2 text-xs md:text-sm font-medium hover:opacity-70 transition-opacity group pointer-events-auto elite-interactive mix-blend-difference">
                     <ArrowLeft size={18} />
@@ -128,10 +129,10 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projects, template }) =
 
             <M.div 
                 key={id} 
-                initial={{ opacity: 0, y: -100 }} // Appears from upper head
+                initial={{ opacity: 0, y: -50 }} 
                 animate={{ opacity: 1, y: 0 }} 
-                exit={{ opacity: 0, y: 100 }} 
-                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} // Smooth easeOutExpo-like curve
+                exit={{ opacity: 0, y: 50 }} 
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }} 
             >
                 <header className="relative w-full h-[60vh] md:h-[80vh] overflow-hidden bg-[#050505] flex flex-col justify-end">
                     <M.div style={{ y: imageY }} className="absolute inset-0 z-0">
@@ -196,20 +197,44 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projects, template }) =
                         </div>
                     )}
 
-                    <section className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                        <div className="space-y-4">
-                            <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-gray-500">Core Challenge</h2>
-                            <p className="text-sm md:text-base text-gray-400 leading-relaxed">
-                                Solving complex performance bottlenecks while maintaining high visual fidelity. The architecture was designed to be modular and scalable across diverse platforms.
-                            </p>
-                        </div>
-                        <div className="space-y-4">
-                            <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-gray-500">Final Outcome</h2>
-                            <p className="text-sm md:text-base text-gray-400 leading-relaxed">
-                                Delivered a high-performance system utilizing modern frameworks and low-latency data processing, resulting in a 40% increase in user retention.
-                            </p>
-                        </div>
-                    </section>
+                    {/* Improved Challenge & Outcome Section with Visuals */}
+                    <div className="space-y-24">
+                        {/* Core Challenge */}
+                        <section className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                            <div className="order-2 md:order-1 space-y-6">
+                                <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-gray-500">Core Challenge</h2>
+                                <p className="text-lg md:text-xl text-gray-300 leading-relaxed font-light">
+                                    {project.challenge || "Solving complex performance bottlenecks while maintaining high visual fidelity. The architecture was designed to be modular and scalable across diverse platforms."}
+                                </p>
+                            </div>
+                            <div className="order-1 md:order-2 relative aspect-[4/3] rounded-lg overflow-hidden border border-white/10 group">
+                                <img 
+                                    src={project.challengeImage || project.imageUrl} 
+                                    alt="Challenge Visual" 
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                            </div>
+                        </section>
+
+                        {/* Final Outcome */}
+                        <section className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                            <div className="order-1 relative aspect-[4/3] rounded-lg overflow-hidden border border-white/10 group">
+                                <img 
+                                    src={project.outcomeImage || project.imageUrl} 
+                                    alt="Outcome Visual" 
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                            </div>
+                            <div className="order-2 space-y-6">
+                                <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-gray-500">Final Outcome</h2>
+                                <p className="text-lg md:text-xl text-gray-300 leading-relaxed font-light">
+                                    {project.outcome || "Delivered a high-performance system utilizing modern frameworks and low-latency data processing, resulting in a 40% increase in user retention."}
+                                </p>
+                            </div>
+                        </section>
+                    </div>
                 </main>
 
                 <PullUpNavigationFooter key={`next-${nextProject.id || nextIndex}`} nextProject={nextProject} onNavigate={handleNavigate} />

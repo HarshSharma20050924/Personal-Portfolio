@@ -48,14 +48,21 @@ model Project {
   title          String
   description    String
   imageUrl       String
-  videoUrl       String?  // Video showcase (YouTube/MP4)
-  docUrl         String?  // Document PDF
-  huggingFaceUrl String?  // Hugging Face links
+  videoUrl       String?   // Video showcase (YouTube/MP4)
+  docUrl         String?   // Document PDF
+  huggingFaceUrl String?   // Hugging Face links
   tags           String[]
   liveUrl        String?
   repoUrl        String?
-  featured       Boolean? @default(false) // Highlights project on Home page
+  featured       Boolean?  @default(false)
+
+  // NEW OPTIONAL FIELDS (schema parity)
+  challenge       String?
+  challengeImage  String?
+  outcome         String?
+  outcomeImage    String?
 }
+
 
 model SocialLink {
   id   Int    @id @default(autoincrement())

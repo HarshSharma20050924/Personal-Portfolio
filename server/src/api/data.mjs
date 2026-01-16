@@ -48,55 +48,54 @@ const defaultData = {
 
 // Helper function to format portfolio data as text
 const formatPortfolioData = (heroData, skills, projects, socialLinks, articles) => {
-    if (!heroData) return "No data available.";
+  if (!heroData) return "No data available.";
 
-    let content = `PORTFOLIO DATA EXPORT\nGenerated on: ${new Date().toISOString()}\n\n`;
+  let content = `PORTFOLIO DATA EXPORT\nGenerated on: ${new Date().toISOString()}\n\n`;
 
-    content += `=== PERSONAL INFORMATION ===\n`;
-    content += `Name: ${heroData.name}\n`;
-    content += `Title: ${heroData.title}\n`;
-    content += `Email: ${heroData.email}\n`;
-    content += `Phone: ${heroData.phone || 'N/A'}\n`;
-    content += `Bio/Description: ${heroData.description}\n`;
-    content += `Personal Quote: "${heroData.quote}"\n\n`;
+  content += `=== PERSONAL INFORMATION ===\n`;
+  content += `Name: ${heroData.name}\n`;
+  content += `Title: ${heroData.title}\n`;
+  content += `Email: ${heroData.email}\n`;
+  content += `Phone: ${heroData.phone || 'N/A'}\n`;
+  content += `Bio/Description: ${heroData.description}\n`;
+  content += `Personal Quote: "${heroData.quote}"\n\n`;
 
-    content += `=== SKILLS ===\n`;
-    content += `My technical skills and proficiency levels are:\n`;
-    skills.forEach(skill => {
-      content += `- ${skill.name} (Proficiency: ${skill.level}%)\n`;
-    });
-    content += `\n`;
+  content += `=== SKILLS ===\n`;
+  skills.forEach(skill => {
+    content += `- ${skill.name} (Proficiency: ${skill.level}%)\n`;
+  });
+  content += `\n`;
 
-    content += `=== PROJECTS ===\n`;
-    content += `Here are the projects I have worked on:\n`;
-    projects.forEach(project => {
-      content += `\nTitle: ${project.title}\n`;
-      content += `Description: ${project.description}\n`;
-      content += `Featured: ${project.featured ? 'Yes' : 'No'}\n`;
-      content += `Techniques/Tags: ${project.tags.join(', ')}\n`;
-      if (project.liveUrl) content += `Live Demo URL: ${project.liveUrl}\n`;
-      if (project.repoUrl) content += `Source Code URL: ${project.repoUrl}\n`;
-      if (project.videoUrl) content += `Video Showcase: ${project.videoUrl}\n`;
-      if (project.huggingFaceUrl) content += `Hugging Face: ${project.huggingFaceUrl}\n`;
-    });
-    content += `\n`;
+  content += `=== PROJECTS ===\n`;
+  projects.forEach(project => {
+    content += `\nTitle: ${project.title}\n`;
+    content += `Description: ${project.description}\n`;
+    content += `Featured: ${project.featured ? 'Yes' : 'No'}\n`;
+    content += `Techniques/Tags: ${project.tags.join(', ')}\n`;
+    if (project.liveUrl) content += `Live Demo URL: ${project.liveUrl}\n`;
+    if (project.repoUrl) content += `Source Code URL: ${project.repoUrl}\n`;
+    if (project.videoUrl) content += `Video Showcase: ${project.videoUrl}\n`;
+    if (project.huggingFaceUrl) content += `Hugging Face: ${project.huggingFaceUrl}\n`;
+    if (project.challenge) content += `Core Challenge: ${project.challenge}\n`;
+    if (project.outcome) content += `Final Outcome: ${project.outcome}\n`;
+  });
+  content += `\n`;
 
-    content += `=== BLOG ARTICLES ===\n`;
-    content += `Articles and insights I have written:\n`;
-    articles.forEach(article => {
-      content += `\nTitle: ${article.title}\n`;
-      content += `Date: ${article.date}\n`;
-      content += `Excerpt/Summary: ${article.excerpt}\n`;
-      content += `Link: ${article.url}\n`;
-    });
-    content += `\n`;
+  content += `=== BLOG ARTICLES ===\n`;
+  articles.forEach(article => {
+    content += `\nTitle: ${article.title}\n`;
+    content += `Date: ${article.date}\n`;
+    content += `Excerpt/Summary: ${article.excerpt}\n`;
+    content += `Link: ${article.url}\n`;
+  });
+  content += `\n`;
 
-    content += `=== SOCIAL LINKS ===\n`;
-    socialLinks.forEach(link => {
-      content += `- ${link.name}: ${link.url}\n`;
-    });
+  content += `=== SOCIAL LINKS ===\n`;
+  socialLinks.forEach(link => {
+    content += `- ${link.name}: ${link.url}\n`;
+  });
 
-    return content;
+  return content;
 };
 
 // GET /api/data/export
@@ -121,7 +120,6 @@ router.get('/export', async (req, res) => {
     res.setHeader('Content-Disposition', 'attachment; filename="portfolio_data.txt"');
     res.send(content);
   } catch (error) {
-    console.error('Export Error:', error);
     res.status(500).json({ message: 'Internal Server Error', error: error.message });
   }
 });
@@ -156,11 +154,10 @@ router.get('/', async (req, res) => {
         playgroundConfig: playgroundConfigWithoutId,
       };
     }
-    
+
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.status(200).json(responseData);
   } catch (error) {
-    console.error('API Error:', error);
     res.status(500).json({ message: 'Internal Server Error', error: error.message });
   }
 });
@@ -172,10 +169,9 @@ router.post('/', async (req, res) => {
     if (authHeader !== `Bearer ${process.env.ADMIN_API_KEY}`) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
-    
+
     const { heroData, skills, projects, socialLinks, articles, playgroundConfig } = req.body;
 
-    // 1. Save data to SQL Database (Prisma)
     await prisma.$transaction([
       prisma.generalInfo.upsert({
         where: { id: 1 },
@@ -193,8 +189,36 @@ router.post('/', async (req, res) => {
       }),
       prisma.project.deleteMany(),
       prisma.project.createMany({
-        data: projects.map(({ title, description, imageUrl, videoUrl, docUrl, tags, liveUrl, repoUrl, huggingFaceUrl, featured }) => ({ 
-          title, description, imageUrl, videoUrl, docUrl, tags, liveUrl, repoUrl, huggingFaceUrl, featured 
+        data: projects.map(({
+          title,
+          description,
+          imageUrl,
+          videoUrl,
+          docUrl,
+          tags,
+          liveUrl,
+          repoUrl,
+          huggingFaceUrl,
+          featured,
+          challenge,
+          challengeImage,
+          outcome,
+          outcomeImage
+        }) => ({
+          title,
+          description,
+          imageUrl,
+          videoUrl,
+          docUrl,
+          tags,
+          liveUrl,
+          repoUrl,
+          huggingFaceUrl,
+          featured,
+          challenge,
+          challengeImage,
+          outcome,
+          outcomeImage
         })),
       }),
       prisma.socialLink.deleteMany(),
@@ -207,42 +231,24 @@ router.post('/', async (req, res) => {
       }),
     ]);
 
-    // 2. Trigger Auto-Update for AI Knowledge Base (AWAITED for Vercel)
     try {
-        const textContent = formatPortfolioData(heroData, skills, projects, socialLinks, articles);
-        
-        // Construct Absolute URL using Vercel System Variables
-        const domain = process.env.VERCEL_PROJECT_PRODUCTION_URL 
-            ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` 
-            : 'http://localhost:8000'; // Fallback for local
-            
-        const ragUrl = `${domain}/api/rag/update-knowledge`;
-        
-        console.log("Triggering RAG update at:", ragUrl);
+      const textContent = formatPortfolioData(heroData, skills, projects, socialLinks, articles);
 
-        const response = await fetch(ragUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                content: textContent,
-                source: 'portfolio_live' 
-            })
-        });
+      const domain = process.env.VERCEL_PROJECT_PRODUCTION_URL
+        ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+        : 'http://localhost:8000';
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error(`RAG Service responded with ${response.status}:`, errorText);
-        } else {
-            console.log("RAG knowledge update triggered successfully.");
-        }
-    } catch (ragError) {
-        // We log the error but don't fail the 200 response since data was saved to DB
-        console.error("Failed to auto-update RAG service:", ragError.message);
-    }
-    
+      const ragUrl = `${domain}/api/rag/update-knowledge`;
+
+      await fetch(ragUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: textContent, source: 'portfolio_live' })
+      });
+    } catch {}
+
     res.status(200).json({ message: 'Data saved successfully' });
   } catch (error) {
-    console.error('API Error:', error);
     res.status(500).json({ message: 'Internal Server Error', error: error.message });
   }
 });

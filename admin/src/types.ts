@@ -29,6 +29,10 @@ export interface Project {
   repoUrl?: string;
   huggingFaceUrl?: string;
   featured?: boolean;
+  challenge?: string;
+  challengeImage?: string;
+  outcome?: string;
+  outcomeImage?: string;
 }
 
 export interface SocialLink {
