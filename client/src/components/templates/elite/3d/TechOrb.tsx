@@ -64,7 +64,7 @@ const LivingGrid = ({ isDark, interactive, enableTilt }: LivingGridProps) => {
   const groupRef = useRef<THREE.Group>(null!);
   const { mouse } = useThree();
   
-  const count = 100*10; // 120x120 = 14,400 particles (High density)
+  const count = 100*2; // 120x120 = 14,400 particles (High density)
   const size = 30;   // Large size to prevent edges showing on tilt
   
   const uniforms = useMemo(() => ({

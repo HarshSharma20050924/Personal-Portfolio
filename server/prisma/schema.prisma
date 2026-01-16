@@ -1,13 +1,10 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
 }
 
 model Admin {
@@ -16,7 +13,6 @@ model Admin {
   password String
 }
 
-// Stores authorized device tokens for biometric login
 model BiometricCredential {
   id           String   @id @default(uuid())
   credentialId String   @unique
@@ -48,21 +44,19 @@ model Project {
   title          String
   description    String
   imageUrl       String
-  videoUrl       String?   // Video showcase (YouTube/MP4)
-  docUrl         String?   // Document PDF
-  huggingFaceUrl String?   // Hugging Face links
+  videoUrl       String?
+  docUrl         String?
   tags           String[]
   liveUrl        String?
   repoUrl        String?
-  featured       Boolean?  @default(false)
+  huggingFaceUrl String?
+  featured       Boolean? @default(false)
 
-  // NEW OPTIONAL FIELDS (schema parity)
-  challenge       String?
-  challengeImage  String?
-  outcome         String?
-  outcomeImage    String?
+  challenge      String?
+  challengeImage String?
+  outcome        String?
+  outcomeImage   String?
 }
-
 
 model SocialLink {
   id   Int    @id @default(autoincrement())
@@ -72,32 +66,57 @@ model SocialLink {
 }
 
 model Article {
-  id      Int    @id @default(autoincrement())
-  title   String
-  excerpt String
-  date    String
-  url     String
+  id       Int     @id @default(autoincrement())
+  title    String
+  excerpt  String
+  content  String?
+  imageUrl String?
+  date     String
+  url      String?
+}
+
+model Experience {
+  id          Int    @id @default(autoincrement())
+  position    String
+  company     String
+  period      String
+  description String
+}
+
+model Education {
+  id          Int    @id @default(autoincrement())
+  degree      String
+  institution String
+  period      String
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  message   String
+  createdAt DateTime @default(now())
 }
 
 model PlaygroundConfig {
-  id                   Int     @id @default(autoincrement())
+  id                   Int      @id @default(autoincrement())
   heroTitle            String?
   heroSubtitle         String?
-  bgType               String  @default("solid")
-  bgColor1             String  @default("#ffffff")
-  bgColor2             String  @default("#f0f0f0")
-  textColor            String  @default("#000000")
-  primaryColor         String  @default("#3b82f6")
-  cardStyle            String  @default("solid")
-  borderRadius         String  @default("rounded-lg")
-  showHero             Boolean @default(true)
-  showSkills           Boolean @default(true)
-  showProjects         Boolean @default(true)
-  showContact          Boolean @default(true)
-  animationSpeed       String  @default("normal")
-  particleCount        Int?    @default(200)
-  particleSpread       Int?    @default(10)
-  particleBaseSize     Int?    @default(100)
+  bgType               String   @default("gradient")
+  bgColor1             String   @default("#0f172a")
+  bgColor2             String   @default("#1e293b")
+  textColor            String   @default("#f8fafc")
+  primaryColor         String   @default("#38bdf8")
+  cardStyle            String   @default("glass")
+  borderRadius         String   @default("rounded-2xl")
+  showHero             Boolean  @default(true)
+  showSkills           Boolean  @default(true)
+  showProjects         Boolean  @default(true)
+  showContact          Boolean  @default(true)
+  animationSpeed       String   @default("normal")
+  particleCount        Int?     @default(200)
+  particleSpread       Int?     @default(10)
+  particleBaseSize     Int?     @default(100)
   moveParticlesOnHover Boolean? @default(true)
   disableRotation      Boolean? @default(false)
   particleSpeed        Float?   @default(0.1)

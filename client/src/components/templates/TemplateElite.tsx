@@ -2,11 +2,13 @@
 import React, { useEffect, useState } from 'react';
 import EliteHeader from './elite/EliteHeader';
 import EliteHero from './elite/EliteHero';
+import EliteMetrics from './elite/EliteMetrics'; // New Import
 import EliteWork from './elite/EliteWork';
 import EliteThinking from './elite/EliteThinking';
+import EliteExperience from './elite/EliteExperience';
 import EliteContact from './elite/EliteContact';
 import EliteCursor from './elite/EliteCursor';
-import { HeroData, Skill, Project, SocialLink, Article } from '../../types';
+import { HeroData, Skill, Project, SocialLink, Article, Experience, Education } from '../../types';
 
 interface TemplateProps {
   heroData: HeroData;
@@ -14,6 +16,8 @@ interface TemplateProps {
   projects: Project[];
   socialLinks: SocialLink[];
   articles: Article[];
+  experience: Experience[];
+  education: Education[];
 }
 
 const TemplateElite: React.FC<TemplateProps> = ({
@@ -22,12 +26,13 @@ const TemplateElite: React.FC<TemplateProps> = ({
   projects,
   socialLinks,
   articles,
+  experience,
+  education
 }) => {
-  // Initialize based on system preference or storage, default to dark for Elite
   const [isDark, setIsDark] = useState(() => {
       const saved = localStorage.getItem('elite-theme');
       if (saved) return saved === 'dark';
-      return true; // Default to dark for Elite
+      return true; 
   });
 
   const toggleTheme = () => {
@@ -66,9 +71,12 @@ const TemplateElite: React.FC<TemplateProps> = ({
       <EliteHeader name={heroData.name} isDark={isDark} toggleTheme={toggleTheme} />
       
       <main className="relative z-10">
-        <EliteHero data={heroData} isDark={isDark} />
+        <EliteHero data={heroData} socialLinks={socialLinks} isDark={isDark} />
+        {/* Inserted Metrics here between Hero and Work */}
+        <EliteMetrics socialLinks={socialLinks} isDark={isDark} />
         <EliteWork projects={projects} />
-        <EliteThinking skills={skills} articles={articles} />
+        <EliteExperience experience={experience} education={education} />
+        <EliteThinking skills={skills} articles={articles} socialLinks={socialLinks} />
         <EliteContact data={heroData} socialLinks={socialLinks} />
       </main>
     </div>

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import type { HeroData, Skill, Project, SocialLink, Article, PlaygroundConfig } from '../types';
+import type { HeroData, Skill, Project, SocialLink, Article, Experience, Education, PlaygroundConfig } from '../types';
 import ManageHero from './ManageHero';
 import ManageSkills from './ManageSkills';
 import ManageProjects from './ManageProjects';
@@ -9,6 +9,8 @@ import ManageBlog from './ManageBlog';
 import ManageTheme from './ManageTheme';
 import ManagePlayground from './ManagePlayground';
 import ManageSecurity from './ManageSecurity';
+import ManageExperience from './ManageExperience';
+import ManageMessages from './ManageMessages';
 
 interface DashboardProps {
   onLogout: () => void;
@@ -23,11 +25,15 @@ interface DashboardProps {
   setSocialLinks: React.Dispatch<React.SetStateAction<SocialLink[]>>;
   articles: Article[];
   setArticles: React.Dispatch<React.SetStateAction<Article[]>>;
+  experience: Experience[];
+  setExperience: React.Dispatch<React.SetStateAction<Experience[]>>;
+  education: Education[];
+  setEducation: React.Dispatch<React.SetStateAction<Education[]>>;
   playgroundConfig: PlaygroundConfig;
   setPlaygroundConfig: React.Dispatch<React.SetStateAction<PlaygroundConfig>>;
 }
 
-type AdminView = 'hero' | 'theme' | 'skills' | 'projects' | 'socials' | 'blog' | 'playground' | 'security';
+type AdminView = 'hero' | 'theme' | 'skills' | 'projects' | 'socials' | 'blog' | 'experience' | 'messages' | 'playground' | 'security';
 
 const Dashboard: React.FC<DashboardProps> = (props) => {
   const [view, setView] = useState<AdminView>('hero');
@@ -39,9 +45,11 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
     { id: 'theme', label: 'Template' },
     { id: 'playground', label: 'Playground' },
     { id: 'skills', label: 'Skills' },
+    { id: 'experience', label: 'Experience & Edu' },
     { id: 'projects', label: 'Projects' },
     { id: 'socials', label: 'Social Links' },
     { id: 'blog', label: 'Blog' },
+    { id: 'messages', label: 'Inbox' },
     { id: 'security', label: 'Security' },
   ];
   
@@ -60,38 +68,6 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
     }
   };
 
-  const handleExport = async () => {
-    const apiKey = sessionStorage.getItem('apiKey');
-    if (!apiKey) {
-        alert("Not authenticated.");
-        return;
-    }
-
-    try {
-        const response = await fetch('/api/data/export', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${apiKey}`
-            }
-        });
-
-        if (!response.ok) throw new Error('Failed to export data');
-
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'portfolio_data.txt';
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-    } catch (error) {
-        console.error("Export failed:", error);
-        alert("Failed to export data. Please check console.");
-    }
-  };
-
   const renderView = () => {
     switch (view) {
       case 'hero':
@@ -102,12 +78,16 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
         return <ManagePlayground config={props.playgroundConfig} setConfig={props.setPlaygroundConfig} />;
       case 'skills':
         return <ManageSkills skills={props.skills} setSkills={props.setSkills} />;
+      case 'experience':
+        return <ManageExperience experience={props.experience} setExperience={props.setExperience} education={props.education} setEducation={props.setEducation} />;
       case 'projects':
         return <ManageProjects projects={props.projects} setProjects={props.setProjects} />;
       case 'socials':
         return <ManageSocials socialLinks={props.socialLinks} setSocialLinks={props.setSocialLinks} />;
       case 'blog':
         return <ManageBlog articles={props.articles} setArticles={props.setArticles} />;
+      case 'messages':
+        return <ManageMessages />;
       case 'security':
         return <ManageSecurity />;
       default:
@@ -158,13 +138,6 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
             {saveStatus === 'success' && <p className="text-green-500">Changes saved successfully!</p>}
             {saveStatus === 'error' && <p className="text-red-500">Failed to save changes.</p>}
             
-            <button
-                onClick={handleExport}
-                className="px-4 py-2 text-sm font-semibold text-sky-600 border border-sky-600 rounded-lg hover:bg-sky-50 dark:hover:bg-sky-900/20 transition-colors"
-            >
-                Export for AI
-            </button>
-
             <button
               onClick={handleSave}
               disabled={isSaving}

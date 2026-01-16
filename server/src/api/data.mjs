@@ -17,6 +17,8 @@ const defaultData = {
   projects: [],
   socialLinks: [],
   articles: [],
+  experience: [],
+  education: [],
   playgroundConfig: {
     heroTitle: "Playground Mode",
     heroSubtitle: "Experimenting with colors, shapes, and layouts.",
@@ -47,7 +49,7 @@ const defaultData = {
 };
 
 // Helper function to format portfolio data as text
-const formatPortfolioData = (heroData, skills, projects, socialLinks, articles) => {
+const formatPortfolioData = (heroData, skills, projects, socialLinks, articles, experience, education) => {
   if (!heroData) return "No data available.";
 
   let content = `PORTFOLIO DATA EXPORT\nGenerated on: ${new Date().toISOString()}\n\n`;
@@ -62,7 +64,7 @@ const formatPortfolioData = (heroData, skills, projects, socialLinks, articles) 
 
   content += `=== SKILLS ===\n`;
   skills.forEach(skill => {
-    content += `- ${skill.name} (Proficiency: ${skill.level}%)\n`;
+    content += `- ${skill.name} (${skill.level}%)\n`;
   });
   content += `\n`;
 
@@ -70,23 +72,29 @@ const formatPortfolioData = (heroData, skills, projects, socialLinks, articles) 
   projects.forEach(project => {
     content += `\nTitle: ${project.title}\n`;
     content += `Description: ${project.description}\n`;
-    content += `Featured: ${project.featured ? 'Yes' : 'No'}\n`;
-    content += `Techniques/Tags: ${project.tags.join(', ')}\n`;
-    if (project.liveUrl) content += `Live Demo URL: ${project.liveUrl}\n`;
-    if (project.repoUrl) content += `Source Code URL: ${project.repoUrl}\n`;
-    if (project.videoUrl) content += `Video Showcase: ${project.videoUrl}\n`;
-    if (project.huggingFaceUrl) content += `Hugging Face: ${project.huggingFaceUrl}\n`;
-    if (project.challenge) content += `Core Challenge: ${project.challenge}\n`;
-    if (project.outcome) content += `Final Outcome: ${project.outcome}\n`;
+    if (project.challenge) content += `Challenge: ${project.challenge}\n`;
+    if (project.outcome) content += `Outcome: ${project.outcome}\n`;
   });
   content += `\n`;
 
-  content += `=== BLOG ARTICLES ===\n`;
+  content += `=== EXPERIENCE ===\n`;
+  experience.forEach(exp => {
+    content += `\n${exp.position} @ ${exp.company}\n`;
+    content += `${exp.period}\n`;
+    content += `${exp.description}\n`;
+  });
+  content += `\n`;
+
+  content += `=== EDUCATION ===\n`;
+  education.forEach(edu => {
+    content += `\n${edu.degree} - ${edu.institution}\n`;
+    content += `${edu.period}\n`;
+  });
+  content += `\n`;
+
+  content += `=== ARTICLES ===\n`;
   articles.forEach(article => {
-    content += `\nTitle: ${article.title}\n`;
-    content += `Date: ${article.date}\n`;
-    content += `Excerpt/Summary: ${article.excerpt}\n`;
-    content += `Link: ${article.url}\n`;
+    content += `\n${article.title} (${article.date})\n`;
   });
   content += `\n`;
 
@@ -106,15 +114,33 @@ router.get('/export', async (req, res) => {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const [heroData, skills, projects, socialLinks, articles] = await Promise.all([
+    const [
+      heroData,
+      skills,
+      projects,
+      socialLinks,
+      articles,
+      experience,
+      education
+    ] = await Promise.all([
       prisma.generalInfo.findFirst({ where: { id: 1 } }),
       prisma.skill.findMany({ orderBy: { id: 'asc' } }),
       prisma.project.findMany({ orderBy: { id: 'asc' } }),
       prisma.socialLink.findMany({ orderBy: { id: 'asc' } }),
       prisma.article.findMany({ orderBy: { id: 'asc' } }),
+      prisma.experience.findMany({ orderBy: { id: 'desc' } }),
+      prisma.education.findMany({ orderBy: { id: 'desc' } }),
     ]);
 
-    const content = formatPortfolioData(heroData, skills, projects, socialLinks, articles);
+    const content = formatPortfolioData(
+      heroData,
+      skills,
+      projects,
+      socialLinks,
+      articles,
+      experience,
+      education
+    );
 
     res.setHeader('Content-Type', 'text/plain');
     res.setHeader('Content-Disposition', 'attachment; filename="portfolio_data.txt"');
@@ -127,36 +153,44 @@ router.get('/export', async (req, res) => {
 // GET /api/data
 router.get('/', async (req, res) => {
   try {
-    const [heroData, skills, projects, socialLinks, articles, playgroundConfig] = await Promise.all([
+    const [
+      heroData,
+      skills,
+      projects,
+      socialLinks,
+      articles,
+      experience,
+      education,
+      playgroundConfig
+    ] = await Promise.all([
       prisma.generalInfo.findFirst({ where: { id: 1 } }),
       prisma.skill.findMany({ orderBy: { id: 'asc' } }),
       prisma.project.findMany({ orderBy: { id: 'asc' } }),
       prisma.socialLink.findMany({ orderBy: { id: 'asc' } }),
       prisma.article.findMany({ orderBy: { id: 'asc' } }),
+      prisma.experience.findMany({ orderBy: { id: 'desc' } }),
+      prisma.education.findMany({ orderBy: { id: 'desc' } }),
       prisma.playgroundConfig.findFirst({ where: { id: 1 } }),
     ]);
 
-    let responseData;
-
     if (!heroData) {
-      responseData = defaultData;
-    } else {
-      const { id, ...heroDataWithoutId } = heroData;
-      const safePlaygroundConfig = playgroundConfig || defaultData.playgroundConfig;
-      const { id: pgId, ...playgroundConfigWithoutId } = safePlaygroundConfig;
-
-      responseData = {
-        heroData: heroDataWithoutId,
-        skills,
-        projects,
-        socialLinks,
-        articles,
-        playgroundConfig: playgroundConfigWithoutId,
-      };
+      return res.status(200).json(defaultData);
     }
 
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.status(200).json(responseData);
+    const { id, ...heroDataWithoutId } = heroData;
+    const safePlaygroundConfig = playgroundConfig || defaultData.playgroundConfig;
+    const { id: pgId, ...playgroundConfigWithoutId } = safePlaygroundConfig;
+
+    res.status(200).json({
+      heroData: heroDataWithoutId,
+      skills,
+      projects,
+      socialLinks,
+      articles,
+      experience,
+      education,
+      playgroundConfig: playgroundConfigWithoutId,
+    });
   } catch (error) {
     res.status(500).json({ message: 'Internal Server Error', error: error.message });
   }
@@ -170,7 +204,16 @@ router.post('/', async (req, res) => {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const { heroData, skills, projects, socialLinks, articles, playgroundConfig } = req.body;
+    const {
+      heroData,
+      skills,
+      projects,
+      socialLinks,
+      articles,
+      experience,
+      education,
+      playgroundConfig
+    } = req.body;
 
     await prisma.$transaction([
       prisma.generalInfo.upsert({
@@ -189,63 +232,25 @@ router.post('/', async (req, res) => {
       }),
       prisma.project.deleteMany(),
       prisma.project.createMany({
-        data: projects.map(({
-          title,
-          description,
-          imageUrl,
-          videoUrl,
-          docUrl,
-          tags,
-          liveUrl,
-          repoUrl,
-          huggingFaceUrl,
-          featured,
-          challenge,
-          challengeImage,
-          outcome,
-          outcomeImage
-        }) => ({
-          title,
-          description,
-          imageUrl,
-          videoUrl,
-          docUrl,
-          tags,
-          liveUrl,
-          repoUrl,
-          huggingFaceUrl,
-          featured,
-          challenge,
-          challengeImage,
-          outcome,
-          outcomeImage
-        })),
+        data: projects,
       }),
       prisma.socialLink.deleteMany(),
       prisma.socialLink.createMany({
-        data: socialLinks.map(({ name, url, icon }) => ({ name, url, icon })),
+        data: socialLinks,
       }),
       prisma.article.deleteMany(),
       prisma.article.createMany({
-        data: articles.map(({ title, excerpt, date, url }) => ({ title, excerpt, date, url })),
+        data: articles,
+      }),
+      prisma.experience.deleteMany(),
+      prisma.experience.createMany({
+        data: experience,
+      }),
+      prisma.education.deleteMany(),
+      prisma.education.createMany({
+        data: education,
       }),
     ]);
-
-    try {
-      const textContent = formatPortfolioData(heroData, skills, projects, socialLinks, articles);
-
-      const domain = process.env.VERCEL_PROJECT_PRODUCTION_URL
-        ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-        : 'http://localhost:8000';
-
-      const ragUrl = `${domain}/api/rag/update-knowledge`;
-
-      await fetch(ragUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: textContent, source: 'portfolio_live' })
-      });
-    } catch {}
 
     res.status(200).json({ message: 'Data saved successfully' });
   } catch (error) {

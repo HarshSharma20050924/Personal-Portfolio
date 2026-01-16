@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
-import { HeroData, Skill, Project, SocialLink, Article, PlaygroundConfig } from './types';
+import { HeroData, Skill, Project, SocialLink, Article, Experience, Education, PlaygroundConfig } from './types';
 
 type AppData = {
   heroData: HeroData;
@@ -9,6 +10,8 @@ type AppData = {
   projects: Project[];
   socialLinks: SocialLink[];
   articles: Article[];
+  experience: Experience[];
+  education: Education[];
   playgroundConfig: PlaygroundConfig;
 };
 
@@ -17,10 +20,9 @@ const App: React.FC = () => {
   const [data, setData] = useState<AppData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch initial data for editing when authenticated
   useEffect(() => {
     if (!isAuthenticated) {
-      setData(null); // Clear data on logout
+      setData(null);
       return;
     }
 
@@ -100,6 +102,10 @@ const App: React.FC = () => {
       setSocialLinks={(sl) => setData(prev => ({ ...prev!, socialLinks: typeof sl === 'function' ? sl(prev!.socialLinks) : sl }))}
       articles={data.articles}
       setArticles={(a) => setData(prev => ({...prev!, articles: typeof a === 'function' ? a(prev!.articles) : a }))}
+      experience={data.experience}
+      setExperience={(e) => setData(prev => ({ ...prev!, experience: typeof e === 'function' ? e(prev!.experience) : e }))}
+      education={data.education}
+      setEducation={(ed) => setData(prev => ({ ...prev!, education: typeof ed === 'function' ? ed(prev!.education) : ed }))}
       playgroundConfig={data.playgroundConfig}
       setPlaygroundConfig={(pc) => setData(prev => ({...prev!, playgroundConfig: typeof pc === 'function' ? pc(prev!.playgroundConfig) : pc }))}
     />

@@ -1,9 +1,21 @@
+
 import React from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { HeroData } from '../../../types';
+import { HeroData, SocialLink } from '../../../types';
 import TechOrb from './3d/TechOrb';
+import Magnet from '../../Magnet';
+import { Github, Linkedin, Twitter, Instagram, Globe, Code } from 'lucide-react';
 
-const EliteHero: React.FC<{ data: HeroData; isDark: boolean }> = ({ data, isDark }) => {
+const iconMap: { [key: string]: any } = {
+  github: Github,
+  linkedin: Linkedin,
+  twitter: Twitter,
+  instagram: Instagram,
+  leetcode: Code,
+  default: Globe
+};
+
+const EliteHero: React.FC<{ data: HeroData; socialLinks: SocialLink[]; isDark: boolean }> = ({ data, socialLinks, isDark }) => {
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 500], [0, 150]);
   const opacity = useTransform(scrollY, [0, 300], [1, 0]);
@@ -15,7 +27,7 @@ const EliteHero: React.FC<{ data: HeroData; isDark: boolean }> = ({ data, isDark
   const lastName = rest.join(' ');
 
   return (
-    <section id="hero" className="relative h-[100svh] w-full flex flex-col justify-center items-center px-4 overflow-hidden pt-24 md:pt-10 bg-white dark:bg-[#050505] transition-colors duration-500">
+    <section id="hero" className="relative min-h-[100svh] w-full flex flex-col justify-center items-center px-4 overflow-hidden bg-white dark:bg-[#050505] transition-colors duration-500 pb-20 pt-40 md:pt-0">
       
       {/* 3D Orb Background */}
       <TechOrb isDark={isDark} />
@@ -24,14 +36,15 @@ const EliteHero: React.FC<{ data: HeroData; isDark: boolean }> = ({ data, isDark
         style={{ y, opacity }}
         className="relative z-10 w-full flex flex-col items-center pointer-events-none"
       >
-        <div className="flex flex-col items-center justify-center leading-[0.8] select-none text-center w-full mix-blend-difference">
+        {/* Name Container - Pushed down further with mt-20 md:mt-32 */}
+        <div className="flex flex-col items-center justify-center leading-[0.85] select-none text-center w-full mix-blend-difference mt-20 md:mt-32">
             
             {/* First Name */}
             <motion.h1
                initial={{ y: 30, opacity: 0 }}
                animate={{ y: 0, opacity: 1 }}
                transition={{ duration: 1, ease: "easeOut" }}
-               className="text-[13vw] md:text-[13vw] font-heading font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-black to-gray-500 dark:from-white dark:to-gray-500 select-none z-10"
+               className="text-[15vw] md:text-[13vw] font-heading font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-black to-gray-500 dark:from-white dark:to-gray-500 select-none z-10"
             >
                 {firstName.toUpperCase()}
             </motion.h1>
@@ -42,7 +55,7 @@ const EliteHero: React.FC<{ data: HeroData; isDark: boolean }> = ({ data, isDark
                     initial={{ y: 30, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 1, delay: 0.1, ease: "easeOut" }}
-                    className="text-[13vw] md:text-[13vw] font-heading font-black tracking-tighter text-black/5 dark:text-white/5 select-none relative mt-2 md:-mt-[3vw] z-0"
+                    className="text-[15vw] md:text-[13vw] font-heading font-black tracking-tighter text-black/5 dark:text-white/5 select-none relative -mt-[2vw] md:-mt-[3vw] z-0"
                     style={{ WebkitTextStroke: isDark ? '1px rgba(255,255,255,0.4)' : '1px rgba(0,0,0,0.4)' }}
                 >
                     {lastName.toUpperCase()}
@@ -50,14 +63,15 @@ const EliteHero: React.FC<{ data: HeroData; isDark: boolean }> = ({ data, isDark
             )}
         </div>
 
+        {/* Description & Status */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 1 }}
-          className="flex flex-col md:flex-row justify-between items-center md:items-end mt-12 md:mt-20 w-full max-w-4xl border-t border-black/10 dark:border-white/10 pt-8 px-4"
+          className="flex flex-col md:flex-row justify-between items-center md:items-end mt-12 w-full max-w-4xl border-t border-black/10 dark:border-white/10 pt-6 px-4"
         >
-          <div className="max-w-md text-center md:text-left">
-            <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base leading-relaxed tracking-wide font-light">
+          <div className="max-w-xs md:max-w-md text-center md:text-left">
+            <p className="text-gray-600 dark:text-gray-400 text-xs md:text-base leading-relaxed tracking-wide font-light">
               {data.description}
             </p>
           </div>
@@ -66,6 +80,34 @@ const EliteHero: React.FC<{ data: HeroData; isDark: boolean }> = ({ data, isDark
              <p className="text-black dark:text-white font-medium font-mono text-xs">{data.title.toUpperCase()}</p>
           </div>
         </motion.div>
+
+        {/* Social Icons - Interactive Magnet */}
+        <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.8 }}
+            className="flex gap-8 mt-12 pointer-events-auto z-20"
+        >
+            {socialLinks && socialLinks.map((link) => {
+                const Icon = iconMap[link.icon.toLowerCase()] || iconMap.default;
+                return (
+                    <Magnet key={link.name} padding={20} magnetStrength={3}>
+                        <a 
+                            href={link.url} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            className="group flex flex-col items-center gap-2 text-gray-500 hover:text-black dark:hover:text-white transition-colors elite-interactive"
+                            title={link.name}
+                        >
+                            <div className="p-3 rounded-full border border-transparent group-hover:border-black/10 dark:group-hover:border-white/10 group-hover:bg-black/5 dark:group-hover:bg-white/5 transition-all duration-300">
+                                <Icon size={24} className="group-hover:text-orange-500 transition-colors" />
+                            </div>
+                        </a>
+                    </Magnet>
+                )
+            })}
+        </motion.div>
+
       </motion.div>
 
       {/* Scroll Indicator */}

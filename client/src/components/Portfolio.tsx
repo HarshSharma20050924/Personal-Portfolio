@@ -1,6 +1,6 @@
 
 import React from 'react';
-import type { HeroData, Skill, Project, SocialLink, Article, PlaygroundConfig } from '../types';
+import type { HeroData, Skill, Project, SocialLink, Article, Experience, Education, PlaygroundConfig } from '../types';
 import TemplateDefault from './templates/TemplateDefault';
 import TemplateMinimalist from './templates/TemplateMinimalist';
 import TemplateDotGrid from './templates/TemplateDotGrid';
@@ -18,6 +18,8 @@ interface PortfolioProps {
   projects: Project[];
   socialLinks: SocialLink[];
   articles: Article[];
+  experience: Experience[];
+  education: Education[];
   playgroundConfig?: PlaygroundConfig;
 }
 
