@@ -64,11 +64,7 @@ const EliteMetrics: React.FC<EliteMetricsProps> = ({ socialLinks, isDark }) => {
                                 <img 
                                     src={`https://ghchart.rshah.org/fd8c00/${githubUsername}`} 
                                     alt="GitHub Contribution" 
-                                    className="min-w-[700px] w-full h-auto object-contain filter hover:brightness-110 transition-all duration-500"
-                                    style={{ 
-                                        opacity: isDark ? 0.9 : 1,
-                                        // Invert colors slightly for light mode if needed, but ghchart handles transparency well
-                                    }}
+                                    className="min-w-[700px] w-full h-auto object-contain filter grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-700 ease-in-out"
                                 />
                             </div>
                             
