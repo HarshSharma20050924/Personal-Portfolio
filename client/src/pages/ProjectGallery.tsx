@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
@@ -12,8 +13,8 @@ interface ProjectGalleryProps {
     template?: string;
 }
 
-// Card Component - Clean & Smooth
-const CinematicCard: React.FC<{ project: Project; index: number }> = ({ project, index }) => {
+// Clean Card Component - No swipe, just click
+const GalleryCard: React.FC<{ project: Project; index: number }> = ({ project, index }) => {
     return (
         <M.div 
             initial={{ opacity: 0, y: 50 }}
@@ -60,7 +61,7 @@ const CinematicCard: React.FC<{ project: Project; index: number }> = ({ project,
     );
 };
 
-// Auto-Loop Footer Component
+// Auto-Loop Footer Component (Vertical Scroll Reset)
 const LoopBackPortal: React.FC = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [triggered, setTriggered] = useState(false);
@@ -139,7 +140,8 @@ const ProjectGallery: React.FC<ProjectGalleryProps> = ({ projects, template }) =
                 <h1 className="text-[10px] uppercase tracking-[0.3em] font-mono text-gray-400 dark:text-white/50">Full Archive</h1>
             </nav>
 
-            <div className="pt-32 md:pt-40 pb-0 px-4 md:px-6">
+            {/* Increased padding-top for mobile to clear header */}
+            <div className="pt-28 md:pt-40 pb-0 px-4 md:px-6">
                 <M.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -162,10 +164,10 @@ const ProjectGallery: React.FC<ProjectGalleryProps> = ({ projects, template }) =
                     </div>
                 </M.div>
 
-                {/* Render Projects ONCE - No Duplication */}
+                {/* Render Projects */}
                 <div className="flex flex-col gap-8 md:gap-12 min-h-[50vh]">
                     {projects.map((project, idx) => (
-                        <CinematicCard key={project.id || idx} project={project} index={idx} />
+                        <GalleryCard key={project.id || idx} project={project} index={idx} />
                     ))}
                 </div>
                 

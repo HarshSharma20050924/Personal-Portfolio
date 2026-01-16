@@ -1,7 +1,8 @@
+
 import React, { useLayoutEffect, useRef, useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
-import { ArrowLeft, Github, ExternalLink, ArrowRight, FileText } from 'lucide-react';
+import { motion, useScroll, useTransform, useSpring, useMotionValue } from 'framer-motion';
+import { ArrowLeft, Github, ExternalLink, ArrowUp, FileText } from 'lucide-react';
 import { useLenis } from '@studio-freight/react-lenis';
 import { Project } from '../types';
 
@@ -12,74 +13,76 @@ interface ProjectDetailsProps {
     template?: string;
 }
 
-const NextProjectPortal: React.FC<{ nextProject: Project; onNavigate: () => void }> = ({ nextProject, onNavigate }) => {
-    const containerRef = useRef<HTMLDivElement>(null);
+const PullUpNavigationFooter: React.FC<{ nextProject: Project; onNavigate: () => void }> = ({ nextProject, onNavigate }) => {
+    const y = useMotionValue(0);
     const [triggered, setTriggered] = useState(false);
-
-    const { scrollYProgress } = useScroll({
-        target: containerRef,
-        offset: ["start end", "end end"] 
-    });
-
-    // Updated: Only start filling when 85% through the footer scroll area (near the "limit")
-    const progressMap = useTransform(scrollYProgress, [0.85, 1], [0, 100]);
     
-    // Spring for smooth filling
-    const smoothProgress = useSpring(progressMap, { stiffness: 200, damping: 20 });
-
-    useEffect(() => {
-        const unsubscribe = smoothProgress.on("change", (v) => {
-            // Trigger navigation only when fully complete
-            if (v >= 99 && !triggered) {
-                setTriggered(true);
-                onNavigate();
-            }
-        });
-        return () => unsubscribe();
-    }, [smoothProgress, triggered, onNavigate]);
+    // Map drag distance (negative Y) to progress 0-100
+    const progress = useTransform(y, [0, -150], [0, 100]);
+    const opacity = useTransform(y, [0, -100], [0.5, 1]);
+    const scale = useTransform(y, [0, -150], [1, 1.1]);
+    const arrowY = useTransform(y, [0, -150], [0, -10]);
+    
+    const handleDragEnd = () => {
+        if (y.get() <= -120) {
+            setTriggered(true);
+            onNavigate();
+        }
+    };
 
     return (
-        // Adjusted height slightly for better feel
-        <section ref={containerRef} className="relative h-[80vh] bg-[#050505] z-30 flex items-center justify-center border-t border-white/5">
-            <div className="flex flex-col items-center justify-center w-full h-full p-8 text-center sticky top-0 h-[80vh]">
-                <M.div 
-                    style={{ 
-                        opacity: useTransform(scrollYProgress, [0, 0.5], [0, 1]), 
-                        // Removed 'y' transform to keep it steady as requested
-                    }}
-                    className="relative z-10 flex flex-col items-center gap-6"
-                >
-                    <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-gray-500">Incoming Transmission</span>
-                    <h2 className="text-3xl md:text-6xl font-black text-white tracking-tighter uppercase mb-4">
-                        {nextProject.title}
-                    </h2>
-                    
-                    <div className="relative w-32 h-32 flex items-center justify-center cursor-pointer elite-interactive" onClick={onNavigate}>
-                        {/* Static Track */}
-                        <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
-                            <circle cx="50" cy="50" r="45" fill="none" stroke="#222" strokeWidth="2" />
-                            {/* Dynamic Fill - Matched strokeWidth to 2 (not thicker) */}
+        <section className="h-[50vh] bg-[#050505] border-t border-white/5 relative overflow-hidden flex flex-col justify-end pb-12 md:pb-20 touch-none">
+            {/* Hint Text */}
+            <M.div style={{ opacity: useTransform(y, [0, -50], [1, 0]) }} className="absolute top-10 w-full text-center pointer-events-none z-10">
+                <p className="text-[10px] font-mono text-gray-600 uppercase tracking-widest animate-pulse">
+                    Pull Up to Continue
+                </p>
+            </M.div>
+
+            <M.div 
+                className="w-full flex flex-col items-center justify-center cursor-grab active:cursor-grabbing relative z-20"
+                drag="y"
+                dragConstraints={{ top: -250, bottom: 0 }}
+                dragElastic={0.2}
+                onDragEnd={handleDragEnd}
+                style={{ y }}
+            >
+                <div className="flex flex-col items-center gap-6 p-4">
+                     {/* Interactive Circle */}
+                     <div className="relative w-20 h-20 flex items-center justify-center rounded-full border border-white/10 bg-[#111] shadow-2xl">
+                        <M.div style={{ y: arrowY }}>
+                            <ArrowUp size={24} className="text-white" />
+                        </M.div>
+                        {/* Progress Ring */}
+                        <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 100 100">
                             <M.circle 
-                                cx="50" cy="50" r="45" fill="none" stroke="#fff" strokeWidth="2" pathLength="100" strokeDasharray="100 100"
-                                style={{ strokeDashoffset: useTransform(smoothProgress, [0, 100], [100, 0]) }}
+                                cx="50" cy="50" r="48" 
+                                stroke="#fff" strokeWidth="2" 
+                                fill="none"
+                                pathLength="100"
+                                strokeDasharray="100 100"
+                                style={{ strokeDashoffset: useTransform(progress, p => 100 - p) }}
                             />
                         </svg>
-                        <ArrowRight className="text-white w-8 h-8" />
-                    </div>
-                    <p className="text-xs text-gray-600 font-mono mt-4 uppercase tracking-widest">
-                        Drag Down To Initiate
-                    </p>
-                </M.div>
+                     </div>
 
-                {/* Background Image Preview */}
-                <M.div 
-                    style={{ opacity: useTransform(scrollYProgress, [0, 0.8], [0, 0.4]) }} 
-                    className="absolute inset-0 z-0 pointer-events-none"
-                >
-                    <img src={nextProject.imageUrl} alt="" className="w-full h-full object-cover blur-sm" />
-                    <div className="absolute inset-0 bg-black/60" />
-                </M.div>
-            </div>
+                     <M.div style={{ opacity, scale }} className="text-center space-y-2">
+                        <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block">Next Project</span>
+                        <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tighter max-w-lg leading-none">
+                            {nextProject.title}
+                        </h2>
+                     </M.div>
+                </div>
+            </M.div>
+            
+            {/* Background Preview */}
+             <M.div 
+                style={{ opacity: useTransform(progress, [0, 100], [0.1, 0.5]) }}
+                className="absolute inset-0 z-0 pointer-events-none"
+            >
+                <img src={nextProject.imageUrl} alt="" className="w-full h-full object-cover grayscale opacity-50 blur-sm" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/80 to-transparent" />
+            </M.div>
         </section>
     );
 };
@@ -103,7 +106,9 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projects, template }) =
 
     const handleNavigate = () => {
         const nextId = nextProject.id !== undefined ? nextProject.id : nextIndex;
-        navigate(`/project/${nextId}`);
+        setTimeout(() => {
+            navigate(`/project/${nextId}`);
+        }, 100);
     };
 
     if (!project) return <div className="min-h-screen bg-[#050505] flex items-center justify-center text-white">Loading Signal...</div>;
@@ -112,24 +117,24 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projects, template }) =
 
     return (
         <div className="bg-[#050505] text-white selection:bg-white selection:text-black min-h-screen overflow-x-hidden">
-            <nav className="fixed top-0 left-0 w-full z-50 px-4 md:px-8 py-6 pt-10 md:pt-6 flex justify-between items-center mix-blend-difference text-white pointer-events-none">
-                <Link to="/gallery" className="flex items-center gap-2 text-xs md:text-sm font-medium hover:opacity-70 transition-opacity group pointer-events-auto elite-interactive">
+            {/* Nav */}
+            <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent pointer-events-none">
+                <Link to="/gallery" className="flex items-center gap-2 text-xs md:text-sm font-medium hover:opacity-70 transition-opacity group pointer-events-auto elite-interactive mix-blend-difference">
                     <ArrowLeft size={18} />
                     Gallery
                 </Link>
-                <span className="text-[10px] font-mono opacity-50 uppercase tracking-widest hidden sm:block">Detailed Log</span>
+                <span className="text-[10px] font-mono opacity-50 uppercase tracking-widest hidden sm:block mix-blend-difference">Detailed Log</span>
             </nav>
 
             <M.div 
                 key={id} 
-                initial={{ opacity: 0, y: -50 }} 
+                initial={{ opacity: 0, y: -100 }} // Appears from upper head
                 animate={{ opacity: 1, y: 0 }} 
-                exit={{ opacity: 0 }} 
-                transition={{ duration: 0.8, ease: "easeOut" }}
+                exit={{ opacity: 0, y: 100 }} 
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} // Smooth easeOutExpo-like curve
             >
                 <header className="relative w-full h-[60vh] md:h-[80vh] overflow-hidden bg-[#050505] flex flex-col justify-end">
                     <M.div style={{ y: imageY }} className="absolute inset-0 z-0">
-                        {/* Image is colorful now (removed grayscale class) */}
                         <img src={project.imageUrl} alt={project.title} className="w-full h-[120%] object-cover opacity-80" />
                         <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent" />
                     </M.div>
@@ -150,8 +155,8 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projects, template }) =
                     </div>
                 </header>
 
-                <main className="max-w-6xl mx-auto px-6 py-20 space-y-20 relative z-20">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-10 border-b border-white/10 pb-20">
+                <main className="max-w-6xl mx-auto px-6 py-16 md:py-24 space-y-20 relative z-20">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-10 border-b border-white/10 pb-16 md:pb-20">
                          <div className="md:col-span-8">
                             <p className="text-lg md:text-2xl font-light leading-relaxed text-gray-300">
                                 {project.description}
@@ -194,20 +199,20 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projects, template }) =
                     <section className="grid grid-cols-1 md:grid-cols-2 gap-12">
                         <div className="space-y-4">
                             <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-gray-500">Core Challenge</h2>
-                            <p className="text-base text-gray-400 leading-relaxed">
+                            <p className="text-sm md:text-base text-gray-400 leading-relaxed">
                                 Solving complex performance bottlenecks while maintaining high visual fidelity. The architecture was designed to be modular and scalable across diverse platforms.
                             </p>
                         </div>
                         <div className="space-y-4">
                             <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-gray-500">Final Outcome</h2>
-                            <p className="text-base text-gray-400 leading-relaxed">
+                            <p className="text-sm md:text-base text-gray-400 leading-relaxed">
                                 Delivered a high-performance system utilizing modern frameworks and low-latency data processing, resulting in a 40% increase in user retention.
                             </p>
                         </div>
                     </section>
                 </main>
 
-                <NextProjectPortal key={`next-${nextProject.id || nextIndex}`} nextProject={nextProject} onNavigate={handleNavigate} />
+                <PullUpNavigationFooter key={`next-${nextProject.id || nextIndex}`} nextProject={nextProject} onNavigate={handleNavigate} />
             </M.div>
         </div>
     );
