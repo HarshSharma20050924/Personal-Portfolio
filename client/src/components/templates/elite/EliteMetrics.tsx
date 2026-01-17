@@ -10,6 +10,9 @@ interface EliteMetricsProps {
 }
 
 const EliteMetrics: React.FC<EliteMetricsProps> = ({ socialLinks, isDark }) => {
+    // Safety check: Ensure socialLinks is an array before attempting to find
+    if (!Array.isArray(socialLinks)) return null;
+
     // Extract usernames
     const githubLink = socialLinks.find(s => s.icon.toLowerCase() === 'github');
     const githubUsername = githubLink ? githubLink.url.split('/').pop() : null;

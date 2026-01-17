@@ -46,8 +46,26 @@ export interface Article {
   id?: number;
   title: string;
   excerpt: string;
+  content?: string;
+  imageUrl?: string;
   date: string;
   url: string;
+  featured?: boolean;
+}
+
+export interface Experience {
+  id?: number;
+  position: string;
+  company: string;
+  period: string;
+  description: string;
+}
+
+export interface Education {
+  id?: number;
+  degree: string;
+  institution: string;
+  period: string;
 }
 
 export interface PlaygroundConfig {

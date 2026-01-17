@@ -4,6 +4,7 @@ import { motion, useSpring, useMotionValue } from 'framer-motion';
 
 const EliteCursor: React.FC = () => {
   const [isHovered, setIsHovered] = useState(false);
+  const [isVisible, setIsVisible] = useState(false); // Hidden by default
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
   
@@ -16,6 +17,17 @@ const EliteCursor: React.FC = () => {
   const scale = useSpring(1, springConfig);
 
   useEffect(() => {
+    // Only show custom cursor on fine pointer devices (mouse)
+    const checkPointer = () => {
+        const isTouch = window.matchMedia("(pointer: coarse)").matches;
+        setIsVisible(!isTouch);
+    };
+    
+    checkPointer();
+    window.addEventListener('resize', checkPointer);
+
+    if (!isVisible) return;
+
     const moveCursor = (e: MouseEvent) => {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
@@ -44,10 +56,13 @@ const EliteCursor: React.FC = () => {
     window.addEventListener('mouseover', handleMouseOver);
 
     return () => {
+      window.removeEventListener('resize', checkPointer);
       window.removeEventListener('mousemove', moveCursor);
       window.removeEventListener('mouseover', handleMouseOver);
     };
-  }, [cursorX, cursorY, scale]);
+  }, [cursorX, cursorY, scale, isVisible]);
+
+  if (!isVisible) return null;
 
   return (
     <motion.div

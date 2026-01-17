@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import type { Article } from '../types';
-import { Upload, Image as ImageIcon } from 'lucide-react';
+import { Upload, Image as ImageIcon, Star } from 'lucide-react';
 
 interface ManageBlogProps {
   articles: Article[];
@@ -9,7 +9,7 @@ interface ManageBlogProps {
 }
 
 const ManageBlog: React.FC<ManageBlogProps> = ({ articles, setArticles }) => {
-  const blankForm: Article = { title: '', excerpt: '', content: '', date: '', url: '', imageUrl: '' };
+  const blankForm: Article = { title: '', excerpt: '', content: '', date: '', url: '', imageUrl: '', featured: false };
   const [isEditing, setIsEditing] = useState<number | null>(null);
   const [form, setForm] = useState<Article>(blankForm);
   const [isUploading, setIsUploading] = useState(false);
@@ -21,8 +21,14 @@ const ManageBlog: React.FC<ManageBlogProps> = ({ articles, setArticles }) => {
   }, [articles, isEditing]);
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    const newForm = { ...form, [name]: value };
+    const { name, value, type } = e.target;
+    
+    let updatedValue: any = value;
+    if (type === 'checkbox') {
+        updatedValue = (e.target as HTMLInputElement).checked;
+    }
+
+    const newForm = { ...form, [name]: updatedValue };
     setForm(newForm);
 
     if (isEditing !== null) {
@@ -109,6 +115,23 @@ const ManageBlog: React.FC<ManageBlogProps> = ({ articles, setArticles }) => {
                 <textarea name="excerpt" value={currentForm.excerpt} onChange={handleFormChange} placeholder="Brief summary for the card view..." rows={2} className="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600" />
              </div>
 
+             {/* Featured Toggle */}
+             <div className="md:col-span-2">
+                <label className="flex items-center gap-2 p-3 bg-sky-50 dark:bg-sky-900/20 rounded-lg border border-sky-100 dark:border-sky-800 cursor-pointer">
+                    <input 
+                        type="checkbox" 
+                        name="featured" 
+                        checked={currentForm.featured || false} 
+                        onChange={handleFormChange}
+                        className="w-5 h-5 text-sky-600 rounded focus:ring-sky-500"
+                    />
+                    <span className="text-sm font-semibold flex items-center gap-2">
+                        <div title="Featured"><Star size={16} className={currentForm.featured ? "fill-sky-500 text-sky-500" : "text-slate-400"} /></div>
+                        Highlight this article on the Home Page
+                    </span>
+                </label>
+             </div>
+
              {/* Main Content Area */}
              <div className="md:col-span-2">
                 <div className="flex justify-between items-center mb-1">
@@ -162,7 +185,10 @@ const ManageBlog: React.FC<ManageBlogProps> = ({ articles, setArticles }) => {
             <div className="flex items-center gap-4">
                {article.imageUrl && <img src={article.imageUrl} className="w-12 h-12 rounded object-cover" />}
                <div>
-                  <h4 className="font-bold">{article.title}</h4>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-bold">{article.title}</h4>
+                    {article.featured && <Star size={12} className="fill-sky-500 text-sky-500" />}
+                  </div>
                   <p className="text-sm text-slate-500 dark:text-slate-400">{article.date}</p>
                </div>
             </div>

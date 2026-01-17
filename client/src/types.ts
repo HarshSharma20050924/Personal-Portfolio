@@ -50,6 +50,7 @@ export interface Article {
   imageUrl?: string;
   date: string;
   url?: string;
+  featured?: boolean;
 }
 
 export interface Experience {

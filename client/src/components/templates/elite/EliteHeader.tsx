@@ -64,20 +64,15 @@ const EliteHeader: React.FC<EliteHeaderProps> = ({ name, isDark, toggleTheme }) 
                 {name || 'ARCHITECT'}
             </div>
             {/* AI Trigger Tab */}
-            <button
+           <button
   onClick={openChatbot}
-  className="flex items-start gap-3 px-3 py-2 border border-white/20 rounded-md text-left hover:border-blue-400 hover:text-blue-400 transition-all elite-interactive hover:scale-[1.03]"
+  className="flex items-center gap-3 px-2 py-1 text-[13px] font-mono uppercase tracking-wide text-white/80 hover:text-blue-400 transition-all elite-interactive hover:scale-[1.05]"
 >
-  <Terminal size={14} className="mt-0.5" />
-  <div className="flex flex-col leading-tight">
-    <span className="text-[13px] font-mono uppercase tracking-wide text-white/90">
-      Portfolio AI
-    </span>
-    <span className="text-[10px] tracking-wide text-white/50">
-      Know more about my portfolio
-    </span>
-  </div>
+  <Terminal size={14} />
+  Portfolio AI
 </button>
+
+
 
 
 

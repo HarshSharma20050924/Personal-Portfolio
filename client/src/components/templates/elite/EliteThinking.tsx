@@ -10,6 +10,11 @@ const M = motion as any;
 const EliteThinking: React.FC<{ skills: Skill[]; articles: Article[]; socialLinks: SocialLink[] }> = ({ skills = [], articles = [], socialLinks = [] }) => {
   const safeSkills = skills || [];
   const safeArticles = articles || [];
+  
+  // Filter for featured articles only
+  const featuredArticles = safeArticles.filter(article => article.featured);
+  // Fallback: If no featured articles, show the latest 3, otherwise show featured ones.
+  const displayArticles = featuredArticles.length > 0 ? featuredArticles.slice(0, 3) : safeArticles.slice(0, 3);
 
   return (
     <section id="philosophy" className="py-32 px-6 bg-gray-50 dark:bg-[#080808] transition-colors duration-500">
@@ -51,16 +56,18 @@ const EliteThinking: React.FC<{ skills: Skill[]; articles: Article[]; socialLink
         <div className="flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-12">
-                <h3 className="text-sm font-mono text-gray-500 uppercase tracking-widest">Latest Transmissions</h3>
+                <h3 className="text-sm font-mono text-gray-500 uppercase tracking-widest">
+                    {featuredArticles.length > 0 ? "Featured Transmissions" : "Latest Transmissions"}
+                </h3>
                 {safeArticles.length > 0 && (
                     <Link to="/blogs" className="text-[10px] font-mono uppercase tracking-widest text-black dark:text-white border-b border-current hover:opacity-60 transition-opacity">
-                        View All
+                        View Archive
                     </Link>
                 )}
             </div>
             
             <div className="space-y-6">
-               {safeArticles.length > 0 ? safeArticles.slice(0, 3).map((article, idx) => (
+               {displayArticles.length > 0 ? displayArticles.map((article, idx) => (
                  <M.div
                    key={article.title}
                    initial={{ opacity: 0, x: 20 }}

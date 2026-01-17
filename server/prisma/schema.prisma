@@ -51,7 +51,6 @@ model Project {
   repoUrl        String?
   huggingFaceUrl String?
   featured       Boolean? @default(false)
-
   challenge      String?
   challengeImage String?
   outcome        String?
@@ -73,6 +72,7 @@ model Article {
   imageUrl String?
   date     String
   url      String?
+  featured Boolean? @default(false)
 }
 
 model Experience {

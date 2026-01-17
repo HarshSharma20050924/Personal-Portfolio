@@ -48,9 +48,17 @@ const defaultData = {
   }
 };
 
-// Helper function to format portfolio data as text
-const formatPortfolioData = (heroData, skills, projects, socialLinks, articles, experience, education) => {
-  if (!heroData) return "No data available.";
+/* ---------- EXPORT FORMATTER (ADDED) ---------- */
+const formatPortfolioData = (
+  heroData,
+  skills,
+  projects,
+  socialLinks,
+  articles,
+  experience,
+  education
+) => {
+  if (!heroData) return 'No data available.';
 
   let content = `PORTFOLIO DATA EXPORT\nGenerated on: ${new Date().toISOString()}\n\n`;
 
@@ -59,54 +67,54 @@ const formatPortfolioData = (heroData, skills, projects, socialLinks, articles, 
   content += `Title: ${heroData.title}\n`;
   content += `Email: ${heroData.email}\n`;
   content += `Phone: ${heroData.phone || 'N/A'}\n`;
-  content += `Bio/Description: ${heroData.description}\n`;
-  content += `Personal Quote: "${heroData.quote}"\n\n`;
+  content += `Description: ${heroData.description}\n`;
+  content += `Quote: "${heroData.quote}"\n\n`;
 
   content += `=== SKILLS ===\n`;
-  skills.forEach(skill => {
-    content += `- ${skill.name} (${skill.level}%)\n`;
+  skills.forEach(s => {
+    content += `- ${s.name} (${s.level}%)\n`;
   });
   content += `\n`;
 
   content += `=== PROJECTS ===\n`;
-  projects.forEach(project => {
-    content += `\nTitle: ${project.title}\n`;
-    content += `Description: ${project.description}\n`;
-    if (project.challenge) content += `Challenge: ${project.challenge}\n`;
-    if (project.outcome) content += `Outcome: ${project.outcome}\n`;
+  projects.forEach(p => {
+    content += `\n${p.title}\n`;
+    content += `${p.description}\n`;
+    if (p.challenge) content += `Challenge: ${p.challenge}\n`;
+    if (p.outcome) content += `Outcome: ${p.outcome}\n`;
   });
   content += `\n`;
 
   content += `=== EXPERIENCE ===\n`;
-  experience.forEach(exp => {
-    content += `\n${exp.position} @ ${exp.company}\n`;
-    content += `${exp.period}\n`;
-    content += `${exp.description}\n`;
+  experience.forEach(e => {
+    content += `\n${e.position} @ ${e.company}\n`;
+    content += `${e.period}\n`;
+    content += `${e.description}\n`;
   });
   content += `\n`;
 
   content += `=== EDUCATION ===\n`;
-  education.forEach(edu => {
-    content += `\n${edu.degree} - ${edu.institution}\n`;
-    content += `${edu.period}\n`;
+  education.forEach(e => {
+    content += `\n${e.degree} - ${e.institution}\n`;
+    content += `${e.period}\n`;
   });
   content += `\n`;
 
   content += `=== ARTICLES ===\n`;
-  articles.forEach(article => {
-    content += `\n${article.title} (${article.date})\n`;
+  articles.forEach(a => {
+    content += `\n${a.title} (${a.date})\n`;
   });
   content += `\n`;
 
   content += `=== SOCIAL LINKS ===\n`;
-  socialLinks.forEach(link => {
-    content += `- ${link.name}: ${link.url}\n`;
+  socialLinks.forEach(l => {
+    content += `- ${l.name}: ${l.url}\n`;
   });
 
   return content;
 };
 
-// GET /api/data/export
+/* ---------- GET /api/data/export (ADDED) ---------- */
 router.get('/export', async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
@@ -150,7 +158,7 @@ router.get('/export', async (req, res) => {
   }
 });
 
-// GET /api/data
+/* ---------- GET /api/data ---------- */
 router.get('/', async (req, res) => {
   try {
     const [
@@ -173,30 +181,35 @@ router.get('/', async (req, res) => {
       prisma.playgroundConfig.findFirst({ where: { id: 1 } }),
     ]);
 
+    let responseData;
+
     if (!heroData) {
-      return res.status(200).json(defaultData);
+      responseData = defaultData;
+    } else {
+      const { id, ...heroDataWithoutId } = heroData;
+      const safePlaygroundConfig = playgroundConfig || defaultData.playgroundConfig;
+      const { id: pgId, ...playgroundConfigWithoutId } = safePlaygroundConfig;
+
+      responseData = {
+        heroData: heroDataWithoutId,
+        skills,
+        projects,
+        socialLinks,
+        articles,
+        experience,
+        education,
+        playgroundConfig: playgroundConfigWithoutId,
+      };
     }
 
-    const { id, ...heroDataWithoutId } = heroData;
-    const safePlaygroundConfig = playgroundConfig || defaultData.playgroundConfig;
-    const { id: pgId, ...playgroundConfigWithoutId } = safePlaygroundConfig;
-
-    res.status(200).json({
-      heroData: heroDataWithoutId,
-      skills,
-      projects,
-      socialLinks,
-      articles,
-      experience,
-      education,
-      playgroundConfig: playgroundConfigWithoutId,
-    });
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.status(200).json(responseData);
   } catch (error) {
     res.status(500).json({ message: 'Internal Server Error', error: error.message });
   }
 });
 
-// POST /api/data
+/* ---------- POST /api/data ---------- */
 router.post('/', async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
