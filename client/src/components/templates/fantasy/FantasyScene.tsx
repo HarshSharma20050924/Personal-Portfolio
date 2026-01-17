@@ -1,23 +1,22 @@
 
-import React, { useRef, useState, useEffect, Suspense } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { 
-    useGLTF, 
     Float, 
     Stars, 
     Sparkles, 
     Cloud, 
     CameraControls, 
     Html, 
+    Text, 
+    MeshDistortMaterial,
     MeshTransmissionMaterial,
-    useCursor,
-    Environment,
-    ContactShadows,
-    Clone
+    Trail,
+    useCursor
 } from '@react-three/drei';
-import { EffectComposer, Bloom, Vignette, Noise, BrightnessContrast, TiltShift2 } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import { HeroData, Project, Skill, SocialLink } from '../../../types';
+import { motion } from 'framer-motion-3d'; 
 
 // --- Types ---
 type ViewState = 'intro' | 'overview' | 'projects' | 'skills' | 'contact';
@@ -31,206 +30,182 @@ interface SceneProps {
     socialLinks: SocialLink[];
 }
 
-// --- GENERIC MODEL LOADER ---
-const Model = ({ url, scale = 1, position = [0,0,0], rotation = [0,0,0], onClick, onPointerOver, onPointerOut, emissiveIntensity = 1 }: any) => {
-    const { scene } = useGLTF(url);
-    
-    // Clone the scene so we can reuse the same asset multiple times
-    // and apply specific materials or shadows
-    return (
-        <group 
-            position={position} 
-            rotation={rotation} 
-            scale={scale} 
-            onClick={(e) => { 
-                if(onClick) {
-                    e.stopPropagation(); 
-                    onClick(); 
-                }
-            }}
-            onPointerOver={onPointerOver}
-            onPointerOut={onPointerOut}
-        >
-            <Clone object={scene} traverse={(child) => {
-                if ((child as THREE.Mesh).isMesh) {
-                    child.castShadow = true;
-                    child.receiveShadow = true;
-                    // Boost emission for "glowy" game assets
-                    if ((child as THREE.Mesh).material) {
-                        const mat = (child as THREE.Mesh).material as THREE.MeshStandardMaterial;
-                        if (mat.emissive) {
-                            mat.emissiveIntensity = emissiveIntensity;
-                        }
-                    }
-                }
-            }} />
-        </group>
-    );
-};
+// --- Components ---
 
-// Preload your models for instant loading
-// useGLTF.preload('/models/the_throne_of_the_viking_king.glb');
-useGLTF.preload('/models/knight_artorias.glb');
-useGLTF.preload('/models/dark_souls_bonfire.glb');
-useGLTF.preload('/models/a_fantasy_tree.glb');
-
-// --- Interactive Components ---
-
-const SkillsThrone = ({ position, onClick }: { position: [number, number, number], onClick: () => void }) => {
+// 1. The Ancient Tree (Skills Section)
+const AncientTree = ({ position, onClick }: { position: [number, number, number], onClick: () => void }) => {
+    const group = useRef<THREE.Group>(null);
     const [hovered, setHover] = useState(false);
     useCursor(hovered);
 
     return (
-        <group position={position}>
-            {/* The Throne Model */}
-            <Model 
-                url="/models/dark_souls_bonfire.glb" 
-                scale={hovered ? 1.1 : 1} // Gentle hover scale
-                position={[0, 0, 0]}
-                rotation={[0, -0.5, 0]} 
-                onClick={onClick}
-                onPointerOver={() => setHover(true)}
-                onPointerOut={() => setHover(false)}
-            />
-            
-            {/* Hover Indicator */}
-            {hovered && <pointLight position={[0, 2, 0]} color="#fbbf24" intensity={2} distance={3} />}
-            
-            <Html position={[0, 4, 0]} center distanceFactor={12} style={{ pointerEvents: 'none' }}>
-                <div className={`transition-all duration-500 ${hovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'} text-amber-100 font-fantasy text-sm tracking-widest drop-shadow-[0_0_10px_rgba(251,191,36,0.8)] whitespace-nowrap`}>
-                    THE ARSENAL (SKILLS)
-                </div>
-            </Html>
-        </group>
-    );
-};
-
-const ProjectsKnight = ({ position, onClick }: { position: [number, number, number], onClick: () => void }) => {
-    const [hovered, setHover] = useState(false);
-    useCursor(hovered);
-
-    return (
-        <group position={position}>
-            {/* The Knight Model */}
-            <Model 
-                url="/models/knight_artorias.glb" 
-                scale={hovered ? 1.55 : 1.5} 
-                position={[0, 0, 0]}
-                rotation={[0, -0.5, 0]}
-                onClick={onClick}
-                onPointerOver={() => setHover(true)}
-                onPointerOut={() => setHover(false)}
-            />
-
-            {/* Blue mystical glow for Artorias */}
-            <pointLight position={[0, 2, 1]} color="#60a5fa" intensity={hovered ? 3 : 1} distance={4} />
-
-            <Html position={[0, 5, 0]} center distanceFactor={12} style={{ pointerEvents: 'none' }}>
-                <div className={`transition-all duration-500 ${hovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'} text-blue-200 font-fantasy text-sm tracking-widest drop-shadow-[0_0_10px_rgba(96,165,250,0.8)] whitespace-nowrap`}>
-                    THE CONQUEST (PROJECTS)
-                </div>
-            </Html>
-        </group>
-    );
-};
-
-const ContactBonfire = ({ position, onClick }: { position: [number, number, number], onClick: () => void }) => {
-    const [hovered, setHover] = useState(false);
-    useCursor(hovered);
-
-    return (
-        <group position={position}>
-            {/* The Bonfire Model */}
-            <Model 
-                url="/models/dark_souls_bonfire.glb" 
-                scale={1.2} 
-                position={[0, 0, 0]}
-                rotation={[0, 0, 0]}
-                onClick={onClick}
-                onPointerOver={() => setHover(true)}
-                onPointerOut={() => setHover(false)}
-                emissiveIntensity={2}
-            />
-
-            {/* Fire particles */}
-            <Sparkles count={40} scale={2} size={15} speed={0.8} opacity={0.8} color="#ff5500" position={[0, 1, 0]} />
-            <pointLight position={[0, 1.5, 0]} color="#ff5500" intensity={hovered ? 4 : 2} distance={8} decay={2} />
-            
-            <Html position={[0, 3.5, 0]} center distanceFactor={12} style={{ pointerEvents: 'none' }}>
-                <div className={`transition-all duration-500 ${hovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'} text-orange-300 font-fantasy text-sm tracking-widest drop-shadow-[0_0_10px_rgba(251,146,60,0.8)] whitespace-nowrap`}>
-                    IGNITE BONFIRE (CONTACT)
-                </div>
-            </Html>
-        </group>
-    );
-};
-
-const ProceduralIsland = () => {
-    return (
-        <group>
-            {/* Main Platform - Low Poly Dark Rock */}
-            <mesh position={[0, -2, 0]} receiveShadow>
-                <cylinderGeometry args={[11, 4, 6, 7]} /> {/* 7 segments = jagged 7-sided polygon */}
-                <meshStandardMaterial 
-                    color="#b1a399ff" 
-                    roughness={0.9} 
-                    flatShading={true}
-                />
+        <group position={position} ref={group} onClick={(e) => { e.stopPropagation(); onClick(); }} onPointerOver={() => setHover(true)} onPointerOut={() => setHover(false)}>
+            {/* Trunk */}
+            <mesh position={[0, 2, 0]}>
+                <cylinderGeometry args={[0.8, 1.2, 4, 8]} />
+                <meshStandardMaterial color="#3e2723" roughness={0.9} />
             </mesh>
-            
-            {/* Grass/Moss Layer */}
-            <mesh position={[0, 1.05, 0]} receiveShadow rotation={[0, 0.2, 0]}>
-                <cylinderGeometry args={[11.2, 10, 0.5, 7]} />
-                <meshStandardMaterial color="#42b476ff" roughness={1} flatShading={true} />
-            </mesh>
-
-            {/* Jagged Rocks under the island */}
-            <mesh position={[4, -4, 2]} rotation={[0.5, 0.2, 0.4]} scale={2}>
-                <dodecahedronGeometry args={[1, 0]} />
-                <meshStandardMaterial color="#d38d7bff" flatShading={true} />
-            </mesh>
-            <mesh position={[-5, -3, -3]} rotation={[0.2, 0.5, 0.1]} scale={1.5}>
-                <dodecahedronGeometry args={[1, 0]} />
-                <meshStandardMaterial color="#292524" flatShading={true} />
-            </mesh>
-             <mesh position={[0, -5.5, 0]} rotation={[0, 0, 0]} scale={[3, 5, 3]}>
-                <dodecahedronGeometry args={[1, 0]} />
-                <meshStandardMaterial color="#d4a7a7ff" flatShading={true} />
-            </mesh>
-        </group>
-    );
-}
-
-const FloatingWorld = ({ setView }: { setView: (v: ViewState) => void }) => {
-    return (
-        <group>
-            <ProceduralIsland />
-
-            {/* -- PLACEMENT OF USER MODELS -- */}
-
-            {/* 1. Skills: The Viking Throne (Left side) */}
-            <SkillsThrone position={[-5, 1.2, 2]} onClick={() => setView('skills')} />
-
-            {/* 2. Projects: Knight Artorias (Right side, facing center) */}
-            <ProjectsKnight position={[5, 1.2, 2]} onClick={() => setView('projects')} />
-
-            {/* 3. Contact: Bonfire (Center back, high visibility) */}
-            <ContactBonfire position={[0, 1.2, -4]} onClick={() => setView('contact')} />
-
-            {/* -- DECORATION -- */}
-            
-            {/* Decorative Trees (Using your a_fantasy_tree.glb) */}
-            <Model url="/models/a_fantasy_tree.glb" position={[-8, 1, -2]} scale={0.001} rotation={[0, 1, 0]} />
-            <Model url="/models/a_fantasy_tree.glb" position={[7, 1, -5]} scale={0.001} rotation={[0, 2, 0]} />
-            <Model url="/models/a_fantasy_tree.glb" position={[-2, 1, 6]} scale={0.001} rotation={[0, 0.5, 0]} />
-
-            {/* Floating Debris / Magic */}
-            <Float speed={2} rotationIntensity={0.5} floatIntensity={1}>
+            {/* Leaves (Purple Fantasy Style) */}
+            <Float speed={2} rotationIntensity={0.1} floatIntensity={0.2}>
                 <mesh position={[0, 5, 0]}>
-                    <octahedronGeometry args={[0.2]} />
-                    <meshBasicMaterial color="#fff" wireframe />
+                    <dodecahedronGeometry args={[2.5, 0]} />
+                    <meshStandardMaterial color={hovered ? "#d500f9" : "#aa00ff"} emissive="#4a148c" emissiveIntensity={0.2} roughness={0.8} />
+                </mesh>
+                <Sparkles count={20} scale={6} size={4} speed={0.4} opacity={0.5} color="#d500f9" position={[0, 5, 0]} />
+            </Float>
+            {/* Label */}
+            <Html position={[0, 8, 0]} center distanceFactor={15} style={{ pointerEvents: 'none' }}>
+                <div className={`transition-opacity duration-300 ${hovered ? 'opacity-100' : 'opacity-0'} text-white font-fantasy text-sm tracking-widest drop-shadow-lg`}>
+                    THE ARTIFACTS (SKILLS)
+                </div>
+            </Html>
+        </group>
+    );
+};
+
+// 2. The Ruins (Projects Section)
+const Ruins = ({ position, onClick }: { position: [number, number, number], onClick: () => void }) => {
+    const [hovered, setHover] = useState(false);
+    useCursor(hovered);
+
+    return (
+        <group position={position} onClick={(e) => { e.stopPropagation(); onClick(); }} onPointerOver={() => setHover(true)} onPointerOut={() => setHover(false)}>
+            {/* Pillars */}
+            <mesh position={[-1.5, 1.5, 0]} castShadow>
+                <boxGeometry args={[0.5, 3, 0.5]} />
+                <meshStandardMaterial color="#546e7a" />
+            </mesh>
+            <mesh position={[1.5, 1, 0.5]} rotation={[0.2, 0, 0.1]} castShadow>
+                <boxGeometry args={[0.5, 2, 0.5]} />
+                <meshStandardMaterial color="#546e7a" />
+            </mesh>
+            {/* Floating Crystal */}
+            <Float speed={4} rotationIntensity={0.5} floatIntensity={1}>
+                <mesh position={[0, 2.5, 0]}>
+                    <octahedronGeometry args={[0.8]} />
+                    <MeshTransmissionMaterial 
+                        distortion={0.5} 
+                        color={hovered ? "#00e5ff" : "#00bcd4"} 
+                        thickness={2} 
+                        roughness={0} 
+                        transmission={1}
+                        ior={1.5}
+                        chromaticAberration={1}
+                    />
+                </mesh>
+                <pointLight position={[0, 2.5, 0]} color="#00e5ff" intensity={hovered ? 2 : 1} distance={5} />
+            </Float>
+             <Html position={[0, 5, 0]} center distanceFactor={15} style={{ pointerEvents: 'none' }}>
+                <div className={`transition-opacity duration-300 ${hovered ? 'opacity-100' : 'opacity-0'} text-white font-fantasy text-sm tracking-widest drop-shadow-lg`}>
+                    THE ARCHIVES (PROJECTS)
+                </div>
+            </Html>
+        </group>
+    );
+};
+
+// 3. The Campfire (Contact Section)
+const Campfire = ({ position, onClick }: { position: [number, number, number], onClick: () => void }) => {
+    const [hovered, setHover] = useState(false);
+    useCursor(hovered);
+
+    return (
+        <group position={position} onClick={(e) => { e.stopPropagation(); onClick(); }} onPointerOver={() => setHover(true)} onPointerOut={() => setHover(false)}>
+            {/* Logs */}
+            <mesh position={[0, 0.2, 0]} rotation={[0, 0, 0.5]}>
+                <cylinderGeometry args={[0.1, 0.1, 1.5]} />
+                <meshStandardMaterial color="#3e2723" />
+            </mesh>
+            <mesh position={[0, 0.2, 0]} rotation={[0, 1.5, -0.5]}>
+                <cylinderGeometry args={[0.1, 0.1, 1.5]} />
+                <meshStandardMaterial color="#3e2723" />
+            </mesh>
+            {/* Fire Particle Simulation (Simple Meshes) */}
+            <Float speed={10} rotationIntensity={0} floatIntensity={0.5}>
+                <mesh position={[0, 0.8, 0]}>
+                    <dodecahedronGeometry args={[0.4]} />
+                    <meshBasicMaterial color="#ff3d00" transparent opacity={0.8} />
                 </mesh>
             </Float>
+            <pointLight position={[0, 1, 0]} color="#ff6d00" intensity={2} distance={8} decay={2} />
+            <Html position={[0, 3, 0]} center distanceFactor={15} style={{ pointerEvents: 'none' }}>
+                <div className={`transition-opacity duration-300 ${hovered ? 'opacity-100' : 'opacity-0'} text-white font-fantasy text-sm tracking-widest drop-shadow-lg`}>
+                    SEND RAVEN (CONTACT)
+                </div>
+            </Html>
+        </group>
+    );
+};
+
+// 4. Main Island
+const FloatingIsland = ({ setView }: { setView: (v: ViewState) => void }) => {
+    return (
+        <group>
+            {/* Landmass */}
+            <mesh position={[0, -2, 0]} receiveShadow>
+                <cylinderGeometry args={[12, 4, 6, 6]} />
+                <meshStandardMaterial color="#263238" flatShading />
+            </mesh>
+            {/* Grass Top */}
+            <mesh position={[0, 1.1, 0]} receiveShadow>
+                <cylinderGeometry args={[12.2, 12, 0.5, 6]} />
+                <meshStandardMaterial color="#1b5e20" flatShading />
+            </mesh>
+
+            {/* Waterfall */}
+            <mesh position={[8, -1, 4]} rotation={[0, 0, 0.2]}>
+                <boxGeometry args={[2, 12, 0.5]} />
+                <MeshTransmissionMaterial 
+                    color="#4fc3f7" 
+                    transmission={0.8} 
+                    opacity={0.8} 
+                    transparent 
+                    distortion={2} 
+                    distortionScale={0.5} 
+                    roughness={0.1}
+                />
+            </mesh>
+            <Sparkles count={50} position={[8, -6, 4]} scale={[2, 4, 2]} color="#e1f5fe" speed={2} />
+
+            {/* Interactive Areas */}
+            <AncientTree position={[-5, 1.2, -3]} onClick={() => setView('skills')} />
+            <Ruins position={[5, 1.2, -2]} onClick={() => setView('projects')} />
+            <Campfire position={[0, 1.2, 6]} onClick={() => setView('contact')} />
+
+            {/* Decorative Rocks */}
+            <mesh position={[-8, 0, 4]} rotation={[0.5, 0.5, 0]}>
+                <dodecahedronGeometry args={[1]} />
+                <meshStandardMaterial color="#546e7a" />
+            </mesh>
+        </group>
+    );
+};
+
+// 5. Navigation Points (The "Dots")
+const NavPoint = ({ position, label, onClick, isActive }: { position: [number, number, number], label: string, onClick: () => void, isActive: boolean }) => {
+    const [hovered, setHover] = useState(false);
+    useCursor(hovered);
+
+    return (
+        <group position={position}>
+            <Html center zIndexRange={[100, 0]}>
+                <div 
+                    className={`relative cursor-pointer group flex flex-col items-center transition-all duration-300 ${isActive ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+                    onClick={(e) => { e.stopPropagation(); onClick(); }}
+                    onMouseEnter={() => setHover(true)}
+                    onMouseLeave={() => setHover(false)}
+                >
+                    <div className={`w-4 h-4 rounded-full border-2 border-white transition-all duration-300 ${hovered ? 'bg-white scale-150' : 'bg-transparent'}`} />
+                    <div className={`absolute top-6 whitespace-nowrap text-white font-fantasy text-xs tracking-widest transition-all duration-300 ${hovered ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}`}>
+                        {label}
+                    </div>
+                </div>
+            </Html>
+            {/* 3D Ring visual */}
+            <mesh rotation={[Math.PI / 2, 0, 0]}>
+                <ringGeometry args={[0.3, 0.35, 32]} />
+                <meshBasicMaterial color="white" transparent opacity={0.5} />
+            </mesh>
         </group>
     );
 };
@@ -240,26 +215,28 @@ const CameraController = ({ view }: { view: ViewState }) => {
 
     useEffect(() => {
         if (!controls.current) return;
-        const transitionConfig = true;
 
+        // Smoothly transition camera based on view state
         switch (view) {
             case 'intro':
-                controls.current.setLookAt(0, 5, 50, 0, 5, 0, transitionConfig);
+                // Far away looking at clouds/title
+                controls.current.setLookAt(0, 10, 40, 0, 10, 0, true);
                 break;
             case 'overview':
-                controls.current.setLookAt(0, 25, 30, 0, 0, 0, transitionConfig);
+                // Bird's eye view of island
+                controls.current.setLookAt(0, 20, 25, 0, 0, 0, true);
                 break;
             case 'skills':
-                // Look at Throne
-                controls.current.setLookAt(-8, 6, 8, -5, 2, 2, transitionConfig);
+                // Close up on Tree
+                controls.current.setLookAt(-8, 5, 8, -5, 4, -3, true);
                 break;
             case 'projects':
-                // Look at Knight
-                controls.current.setLookAt(8, 6, 8, 5, 3, 2, transitionConfig);
+                // Close up on Ruins
+                controls.current.setLookAt(8, 6, 10, 5, 3, -2, true);
                 break;
             case 'contact':
-                // Look at Bonfire
-                controls.current.setLookAt(0, 6, 4, 0, 1, -4, transitionConfig);
+                // Close up on Campfire
+                controls.current.setLookAt(0, 4, 12, 0, 1, 6, true);
                 break;
         }
     }, [view]);
@@ -267,62 +244,51 @@ const CameraController = ({ view }: { view: ViewState }) => {
     return (
         <CameraControls 
             ref={controls} 
-            maxPolarAngle={Math.PI / 2 - 0.05} 
+            maxPolarAngle={Math.PI / 2 - 0.1} // Don't go below ground
             minDistance={5}
-            maxDistance={60}
-            smoothTime={1.2}
-            dollySpeed={0.5}
+            maxDistance={50}
+            smoothTime={1.5}
         />
     );
 };
 
 const FantasyScene: React.FC<SceneProps> = ({ view, setView }) => {
   return (
-    <Canvas shadows camera={{ position: [0, 5, 50], fov: 35 }} gl={{ antialias: false, toneMapping: THREE.ReinhardToneMapping, toneMappingExposure: 1.2 }} className="bg-[#020205]">
-        <fog attach="fog" args={['#5151b4ff', 10, 60]} />
+    <Canvas shadows camera={{ position: [0, 10, 40], fov: 45 }} gl={{ antialias: true }} className="bg-[#050011]">
+        <fog attach="fog" args={['#050011', 10, 90]} />
         
-        {/* POST PROCESSING - DARK FANTASY LOOK */}
-        <EffectComposer disableNormalPass>
-            <Bloom luminanceThreshold={0.5} mipmapBlur intensity={1.2} radius={0.5} />
-            <Noise opacity={0.05} />
-            <Vignette eskil={false} offset={0.1} darkness={1.1} />
-            <BrightnessContrast brightness={-0.05} contrast={0.1} />
-            <TiltShift2 blur={0.1} />
-        </EffectComposer>
-
         <CameraController view={view} />
 
-        {/* LIGHTING - MOODY & DRAMATIC */}
-        <Environment preset="night" background={false} blur={0.8} />
-        <ambientLight intensity={0.2} color="#4c1d95" />
-        
-        {/* Moon light (Blue/Cool) */}
-        <spotLight 
-            position={[20, 40, 20]} 
-            angle={0.5} 
-            penumbra={0.5} 
-            intensity={2} 
+        {/* Lighting */}
+        <ambientLight intensity={0.4} color="#4a148c" />
+        <directionalLight 
+            position={[10, 20, 10]} 
+            intensity={1.5} 
             castShadow 
-            shadow-bias={-0.0001}
-            color="#a3b8ff"
+            color="#b39ddb"
+            shadow-mapSize={[1024, 1024]}
         />
-        
-        {/* Fire/Warm fill light from center */}
-        <pointLight position={[0, 5, 0]} intensity={0.5} color="#fbbf24" distance={20} />
+        <pointLight position={[-10, 5, -10]} intensity={0.5} color="#29b6f6" />
 
-        {/* BACKGROUND ELEMENTS */}
-        <Stars radius={100} depth={50} count={3000} factor={4} saturation={0} fade speed={0.2} />
-        <Cloud position={[0, -10, 0]} args={[15, 4]} opacity={0.1} speed={0.1} color="#000" segments={20} />
-        <Cloud position={[-15, 10, -15]} args={[6, 3]} opacity={0.1} speed={0.05} color="#1a1025" />
+        {/* Environment */}
+        <Stars radius={100} depth={50} count={2000} factor={4} saturation={0} fade speed={0.5} />
+        <Cloud position={[0, -10, 0]} args={[10, 2]} opacity={0.3} speed={0.2} color="#311b92" segments={20} />
+        <Cloud position={[-20, 10, -20]} args={[5, 2]} opacity={0.2} speed={0.1} color="#4527a0" />
+        <Cloud position={[20, 5, -10]} args={[5, 2]} opacity={0.2} speed={0.15} color="#4527a0" />
 
-        {/* THE WORLD */}
-        <Suspense fallback={<Html center><div className="text-white font-mono animate-pulse">SUMMONING ASSETS...</div></Html>}>
-            <Float speed={1} rotationIntensity={0.02} floatIntensity={0.1} floatingRange={[-0.2, 0.2]}>
-                <FloatingWorld setView={setView} />
-            </Float>
-        </Suspense>
+        {/* The World */}
+        <Float speed={1} rotationIntensity={0.05} floatIntensity={0.1}>
+            <FloatingIsland setView={setView} />
+        </Float>
 
-        <ContactShadows position={[0, -6, 0]} opacity={0.5} scale={40} blur={2.5} far={10} color="#000" />
+        {/* Navigation Dots (Only visible in overview) */}
+        {view === 'overview' && (
+            <>
+                <NavPoint position={[-5, 6, -3]} label="ARSENAL" onClick={() => setView('skills')} isActive={view === 'skills'} />
+                <NavPoint position={[5, 6, -2]} label="CONQUESTS" onClick={() => setView('projects')} isActive={view === 'projects'} />
+                <NavPoint position={[0, 4, 6]} label="RAVEN" onClick={() => setView('contact')} isActive={view === 'contact'} />
+            </>
+        )}
 
     </Canvas>
   );

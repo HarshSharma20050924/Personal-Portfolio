@@ -5,13 +5,16 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Clock, Calendar } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Article } from '../types';
+import { Article, Project, HeroData } from '../types';
 
 const M = motion as any;
 
 interface BlogDetailsProps {
     articles: Article[];
     template?: string;
+    // Optional props added to be permissive of parent component passing them, fixing the reported TS error.
+    projects?: Project[];
+    heroData?: HeroData;
 }
 
 const BlogDetails: React.FC<BlogDetailsProps> = ({ articles, template }) => {
@@ -25,7 +28,8 @@ const BlogDetails: React.FC<BlogDetailsProps> = ({ articles, template }) => {
         setIsDark(storedTheme === 'dark' || !storedTheme);
 
         // Fallback: try to find by ID (if numeric) or index
-        const found = articles.find(a => String(a.id) === id) || articles[Number(id)];
+        const safeArticles = articles || [];
+        const found = safeArticles.find(a => String(a.id) === id) || safeArticles[Number(id)];
         if (found) {
             setArticle(found);
         }
