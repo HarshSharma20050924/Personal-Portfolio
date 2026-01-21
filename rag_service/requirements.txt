@@ -1,10 +1,10 @@
-
 fastapi
 uvicorn
 pydantic
-google-generativeai
-python-dotenv
-chromadb
-pysqlite3-binary
-python-multipart
+supabase
+google-genai
 groq
+python-dotenv
+PyPDF2
+langchain-text-splitters
+python-multipart
