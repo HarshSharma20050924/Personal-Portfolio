@@ -10,14 +10,20 @@ interface EliteMetricsProps {
 }
 
 const EliteMetrics: React.FC<EliteMetricsProps> = ({ socialLinks, isDark }) => {
-    // Safety check: Ensure socialLinks is an array before attempting to find
+    // Safety check
     if (!Array.isArray(socialLinks)) return null;
 
-    // Extract usernames
-    const githubLink = socialLinks.find(s => s.icon.toLowerCase() === 'github');
+    // Robust extraction: check both icon key AND url content
+    const githubLink = socialLinks.find(s => 
+        (s.icon && s.icon.toLowerCase().includes('github')) || 
+        (s.url && s.url.toLowerCase().includes('github.com'))
+    );
     const githubUsername = githubLink ? githubLink.url.split('/').pop() : null;
 
-    const leetcodeLink = socialLinks.find(s => s.icon.toLowerCase() === 'leetcode' || s.url.includes('leetcode.com'));
+    const leetcodeLink = socialLinks.find(s => 
+        (s.icon && s.icon.toLowerCase().includes('leetcode')) || 
+        (s.url && s.url.toLowerCase().includes('leetcode.com'))
+    );
     const leetcodeUsername = leetcodeLink ? leetcodeLink.url.split('leetcode.com/').pop()?.replace(/\/$/, '') : null;
 
     if (!githubUsername && !leetcodeUsername) return null;

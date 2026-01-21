@@ -1,21 +1,18 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { Github, Linkedin, Twitter, Instagram, Phone, Mail } from 'lucide-react';
+import { Phone, Mail } from 'lucide-react';
 import type { SocialLink, HeroData } from '../types';
 import Magnet from './Magnet';
+import { getSocialIcon } from '../utils/socialIcons';
+
+const M = motion as any;
 
 interface ContactProps {
   socialLinks: SocialLink[];
   heroData: HeroData;
 }
-
-const iconMap: { [key: string]: React.ComponentType<{ className?: string }> } = {
-  github: Github,
-  linkedin: Linkedin,
-  twitter: Twitter,
-  instagram: Instagram,
-};
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -41,7 +38,7 @@ const Contact: React.FC<ContactProps> = ({ socialLinks, heroData }) => {
   });
 
   return (
-    <motion.section
+    <M.section
       id="contact"
       className="py-24 text-center"
       ref={ref}
@@ -50,16 +47,16 @@ const Contact: React.FC<ContactProps> = ({ socialLinks, heroData }) => {
       animate={inView ? 'visible' : 'hidden'}
     >
       <div className="max-w-4xl mx-auto bg-white dark:bg-dark-off-black/50 rounded-3xl p-10 md:p-16 border border-gray-100 dark:border-gray-800 shadow-sm dark:shadow-none">
-        <motion.div variants={itemVariants}>
+        <M.div variants={itemVariants}>
             <h2 className="font-heading text-4xl md:text-5xl font-extrabold mb-6 tracking-tight text-text dark:text-dark-text">
             Let’s build something <br /> <span className="text-primary dark:text-dark-primary">incredible</span> together.
             </h2>
             <p className="text-lg text-secondary dark:text-dark-secondary mb-10 max-w-2xl mx-auto">
                 Whether you have a project in mind or just want to say hi, I'm always open to discussing new ideas and opportunities.
             </p>
-        </motion.div>
+        </M.div>
 
-        <motion.div
+        <M.div
           className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12 mb-12"
           variants={itemVariants}
         >
@@ -84,18 +81,17 @@ const Contact: React.FC<ContactProps> = ({ socialLinks, heroData }) => {
               {heroData.phone}
             </div>
           )}
-        </motion.div>
+        </M.div>
 
-        <motion.div
-          className="flex justify-center gap-6"
+        <M.div
+          className="flex justify-center gap-6 flex-wrap"
           variants={itemVariants}
         >
           {socialLinks.map(({ name, url, icon }) => {
-            const IconComponent = iconMap[icon.toLowerCase()];
-            if (!IconComponent) return null;
+            const IconComponent = getSocialIcon(icon);
             return (
               <Magnet key={name} padding={20} magnetStrength={5} wrapperClassName="block">
-                <motion.a
+                <M.a
                   href={url}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -105,13 +101,13 @@ const Contact: React.FC<ContactProps> = ({ socialLinks, heroData }) => {
                   whileTap={{ scale: 0.95 }}
                 >
                   <IconComponent className="w-6 h-6" />
-                </motion.a>
+                </M.a>
               </Magnet>
             )
           })}
-        </motion.div>
+        </M.div>
       </div>
-    </motion.section>
+    </M.section>
   );
 };
 

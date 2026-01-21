@@ -1,11 +1,15 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import type { HeroData, Skill, Project, SocialLink, Article, PlaygroundConfig } from '../../types';
-import { Github, Linkedin, Twitter, Instagram, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import DotGrid from '../DotGrid';
 import StarryNight from '../StarryNight';
 import Particles from '../Particles';
 import FloatingLines from '../FloatingLines';
+import { getSocialIcon } from '../../utils/socialIcons';
+
+const M = motion as any;
 
 interface TemplateProps {
   heroData: HeroData;
@@ -16,13 +20,6 @@ interface TemplateProps {
   config: PlaygroundConfig;
 }
 
-const iconMap: { [key: string]: any } = {
-  github: Github,
-  linkedin: Linkedin,
-  twitter: Twitter,
-  instagram: Instagram,
-};
-
 const TemplatePlayground: React.FC<TemplateProps> = ({
   heroData,
   skills,
@@ -32,7 +29,7 @@ const TemplatePlayground: React.FC<TemplateProps> = ({
 }) => {
   
   // Dynamic styles based on config
-  const bgStyle: React.CSSProperties = {
+  const bgStyle: any = {
     backgroundColor: config.bgColor1,
     color: config.textColor,
   };
@@ -116,7 +113,7 @@ const TemplatePlayground: React.FC<TemplateProps> = ({
             
             {/* Header / Hero */}
             {config.showHero && (
-                <motion.section 
+                <M.section 
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration }}
@@ -141,7 +138,7 @@ const TemplatePlayground: React.FC<TemplateProps> = ({
                             Contact Me
                         </a>
                     </div>
-                </motion.section>
+                </M.section>
             )}
 
             {/* Skills */}
@@ -150,7 +147,7 @@ const TemplatePlayground: React.FC<TemplateProps> = ({
                     <h2 className="text-3xl font-bold mb-12 text-center">Skills</h2>
                     <div className="flex flex-wrap justify-center gap-4">
                         {skills.map((skill, i) => (
-                            <motion.div 
+                            <M.div 
                                 key={skill.name}
                                 initial={{ opacity: 0, scale: 0.8 }}
                                 whileInView={{ opacity: 1, scale: 1 }}
@@ -159,7 +156,7 @@ const TemplatePlayground: React.FC<TemplateProps> = ({
                                 className={`${config.cardStyle === 'neobrutalism' ? 'border-2 border-black bg-white text-black px-6 py-3 font-bold' : 'px-6 py-3 bg-white/10 backdrop-blur border border-white/10' } ${config.borderRadius}`}
                             >
                                 {skill.name}
-                            </motion.div>
+                            </M.div>
                         ))}
                     </div>
                 </section>
@@ -171,7 +168,7 @@ const TemplatePlayground: React.FC<TemplateProps> = ({
                      <h2 className="text-3xl font-bold mb-12 text-center">Projects</h2>
                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {projects.map((project, i) => (
-                            <motion.div 
+                            <M.div 
                                 key={project.title}
                                 initial={{ opacity: 0, y: 30 }}
                                 whileInView={{ opacity: 1, y: 0 }}
@@ -186,9 +183,9 @@ const TemplatePlayground: React.FC<TemplateProps> = ({
                                 <p className="text-sm opacity-80 mb-4">{project.description}</p>
                                 <div className="flex gap-4 mt-auto">
                                     {project.liveUrl && <a href={project.liveUrl} target="_blank" rel="noreferrer" className="hover:opacity-70"><ExternalLink size={20} /></a>}
-                                    {project.repoUrl && <a href={project.repoUrl} target="_blank" rel="noreferrer" className="hover:opacity-70"><Github size={20} /></a>}
+                                    {project.repoUrl && <a href={project.repoUrl} target="_blank" rel="noreferrer" className="hover:opacity-70"><ExternalLink size={20} /></a>}
                                 </div>
-                            </motion.div>
+                            </M.div>
                         ))}
                      </div>
                 </section>
@@ -200,9 +197,9 @@ const TemplatePlayground: React.FC<TemplateProps> = ({
                     <div className={cardClassName + " max-w-2xl mx-auto"}>
                         <h2 className="text-3xl font-bold mb-6">Get In Touch</h2>
                         <p className="opacity-80 mb-8">Let's build something amazing together.</p>
-                        <div className="flex justify-center gap-6">
+                        <div className="flex justify-center gap-6 flex-wrap">
                             {socialLinks.map(link => {
-                                const Icon = iconMap[link.icon] || ExternalLink;
+                                const Icon = getSocialIcon(link.icon);
                                 return (
                                     <a key={link.name} href={link.url} target="_blank" rel="noreferrer" className="hover:text-[var(--primary)] transition-colors" style={{ '--primary': config.primaryColor } as any}>
                                         <Icon size={32} />

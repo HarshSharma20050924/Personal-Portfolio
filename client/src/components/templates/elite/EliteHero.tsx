@@ -4,16 +4,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { HeroData, SocialLink } from '../../../types';
 import TechOrb from './3d/TechOrb';
 import Magnet from '../../Magnet';
-import { Github, Linkedin, Twitter, Instagram, Globe, Code } from 'lucide-react';
-
-const iconMap: { [key: string]: any } = {
-  github: Github,
-  linkedin: Linkedin,
-  twitter: Twitter,
-  instagram: Instagram,
-  leetcode: Code,
-  default: Globe
-};
+import { getSocialIcon } from '../../../utils/socialIcons';
 
 const EliteHero: React.FC<{ data: HeroData; socialLinks: SocialLink[]; isDark: boolean }> = ({ data, socialLinks, isDark }) => {
   const { scrollY } = useScroll();
@@ -86,10 +77,10 @@ const EliteHero: React.FC<{ data: HeroData; socialLinks: SocialLink[]; isDark: b
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.8 }}
-            className="flex gap-8 mt-12 pointer-events-auto z-20"
+            className="flex gap-8 mt-12 pointer-events-auto z-20 flex-wrap justify-center"
         >
             {socialLinks && socialLinks.map((link) => {
-                const Icon = iconMap[link.icon.toLowerCase()] || iconMap.default;
+                const Icon = getSocialIcon(link.icon);
                 return (
                     <Magnet key={link.name} padding={20} magnetStrength={3}>
                         <a 
