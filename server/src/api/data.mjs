@@ -1,3 +1,4 @@
+
 import { Router } from 'express';
 import prisma from '../prisma.mjs';
 
@@ -60,53 +61,61 @@ const formatPortfolioData = (
 ) => {
   if (!heroData) return 'No data available.';
 
-  let content = `PORTFOLIO DATA EXPORT\nGenerated on: ${new Date().toISOString()}\n\n`;
+  let content = `# PORTFOLIO KNOWLEDGE BASE\nGenerated on: ${new Date().toISOString()}\n\n`;
 
-  content += `=== PERSONAL INFORMATION ===\n`;
-  content += `Name: ${heroData.name}\n`;
-  content += `Title: ${heroData.title}\n`;
-  content += `Email: ${heroData.email}\n`;
-  content += `Phone: ${heroData.phone || 'N/A'}\n`;
-  content += `Description: ${heroData.description}\n`;
-  content += `Quote: "${heroData.quote}"\n\n`;
+  content += `## PERSONAL INFORMATION\n`;
+  content += `- Name: ${heroData.name}\n`;
+  content += `- Title: ${heroData.title}\n`;
+  content += `- Email: ${heroData.email}\n`;
+  content += `- Phone: ${heroData.phone || 'N/A'}\n`;
+  content += `- Description: ${heroData.description}\n`;
+  content += `- Quote: "${heroData.quote}"\n\n`;
 
-  content += `=== SKILLS ===\n`;
+  content += `## SKILLS\n`;
   skills.forEach(s => {
-    content += `- ${s.name} (${s.level}%)\n`;
+    content += `- ${s.name} (Proficiency: ${s.level}%)\n`;
   });
   content += `\n`;
 
-  content += `=== PROJECTS ===\n`;
+  content += `## PROJECTS\n`;
   projects.forEach(p => {
-    content += `\n${p.title}\n`;
-    content += `${p.description}\n`;
+    content += `### Project: ${p.title}\n`;
+    content += `Description: ${p.description}\n`;
     if (p.challenge) content += `Challenge: ${p.challenge}\n`;
     if (p.outcome) content += `Outcome: ${p.outcome}\n`;
+    content += `Tags: ${p.tags.join(', ')}\n`;
+    if (p.liveUrl) content += `Live URL: ${p.liveUrl}\n`;
+    if (p.repoUrl) content += `Repository URL: ${p.repoUrl}\n`;
+    content += `\n`;
   });
   content += `\n`;
 
-  content += `=== EXPERIENCE ===\n`;
+  content += `## EXPERIENCE\n`;
   experience.forEach(e => {
-    content += `\n${e.position} @ ${e.company}\n`;
-    content += `${e.period}\n`;
-    content += `${e.description}\n`;
+    content += `### Position: ${e.position}\n`;
+    content += `Company: ${e.company}\n`;
+    content += `Period: ${e.period}\n`;
+    content += `Details: ${e.description}\n\n`;
   });
   content += `\n`;
 
-  content += `=== EDUCATION ===\n`;
+  content += `## EDUCATION\n`;
   education.forEach(e => {
-    content += `\n${e.degree} - ${e.institution}\n`;
-    content += `${e.period}\n`;
+    content += `- Degree: ${e.degree} at ${e.institution} (${e.period})\n`;
   });
   content += `\n`;
 
-  content += `=== ARTICLES ===\n`;
+  content += `## BLOG ARTICLES\n`;
   articles.forEach(a => {
-    content += `\n${a.title} (${a.date})\n`;
+    content += `### Article: ${a.title}\n`;
+    content += `Date: ${a.date}\n`;
+    content += `Excerpt: ${a.excerpt}\n`;
+    if (a.url) content += `Link: ${a.url}\n`;
+    content += `\n`;
   });
   content += `\n`;
 
-  content += `=== SOCIAL LINKS ===\n`;
+  content += `## SOCIAL LINKS\n`;
   socialLinks.forEach(l => {
     content += `- ${l.name}: ${l.url}\n`;
   });
@@ -150,8 +159,8 @@ router.get('/export', async (req, res) => {
       education
     );
 
+    // Return as plain text for easy copy-pasting in Admin
     res.setHeader('Content-Type', 'text/plain');
-    res.setHeader('Content-Disposition', 'attachment; filename="portfolio_data.txt"');
     res.send(content);
   } catch (error) {
     res.status(500).json({ message: 'Internal Server Error', error: error.message });

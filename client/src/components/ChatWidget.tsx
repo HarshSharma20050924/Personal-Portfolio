@@ -1,7 +1,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Send, Maximize2, Minimize2, Trash2, Terminal } from 'lucide-react';
+import { MessageSquare, X, Send, Maximize2, Minimize2, Trash2, Terminal, User } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import './ChatWidget.css';
 
 const M = motion as any;
@@ -9,17 +11,55 @@ const M = motion as any;
 interface Message {
   role: 'user' | 'ai';
   content: string;
+  hasAnimated?: boolean;
 }
 
 interface ChatWidgetProps {
     template?: string;
 }
 
+// Component for AI Message to handle its own typing state
+const AIMessage: React.FC<{ 
+    content: string; 
+    shouldAnimate: boolean;
+    onAnimationComplete?: () => void;
+}> = ({ content, shouldAnimate, onAnimationComplete }) => {
+    const [text, setText] = useState(shouldAnimate ? '' : content);
+    
+    useEffect(() => {
+        if (!shouldAnimate) {
+            setText(content);
+            return;
+        }
+        
+        let i = 0;
+        const interval = setInterval(() => {
+            if (i < content.length) {
+                setText(content.slice(0, i + 1));
+                i++;
+            } else {
+                clearInterval(interval);
+                if (onAnimationComplete) onAnimationComplete();
+            }
+        }, 15); // Fast typing speed
+
+        return () => clearInterval(interval);
+    }, [content, shouldAnimate, onAnimationComplete]);
+
+    return (
+        <div className="prose prose-sm dark:prose-invert max-w-none text-sm leading-relaxed prose-a:text-blue-400 prose-a:underline hover:prose-a:text-blue-300">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {text}
+            </ReactMarkdown>
+        </div>
+    );
+};
+
 const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'ai', content: "System online. How may I assist you with this portfolio data?" }
+    { role: 'ai', content: "System online. Accessing portfolio archives... How may I assist you?", hasAnimated: false }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -48,7 +88,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
 
     const userMsg = inputValue;
     setInputValue('');
-    setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
+    setMessages(prev => [...prev, { role: 'user', content: userMsg, hasAnimated: true }]);
     setIsLoading(true);
 
     try {
@@ -64,14 +104,18 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
       if (!response.ok) throw new Error('Failed to fetch response');
       
       const data = await response.json();
-      setMessages(prev => [...prev, { role: 'ai', content: data.reply }]);
+      setMessages(prev => [...prev, { role: 'ai', content: data.reply, hasAnimated: false }]);
 
     } catch (error) {
       console.error(error);
-      setMessages(prev => [...prev, { role: 'ai', content: "Connection interrupted. Retry recommended." }]);
+      setMessages(prev => [...prev, { role: 'ai', content: "Connection interrupted. Neural link unstable. Please try again.", hasAnimated: false }]);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const markMessageAsAnimated = (index: number) => {
+      setMessages(prev => prev.map((msg, i) => i === index ? { ...msg, hasAnimated: true } : msg));
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -81,7 +125,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
   };
 
   const handleClearChat = () => {
-    setMessages([{ role: 'ai', content: "Memory buffer cleared. Ready for input." }]);
+    setMessages([{ role: 'ai', content: "Memory buffer flushed. Awaiting new input.", hasAnimated: false }]);
   };
 
   if (isElite) {
@@ -105,15 +149,15 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
                         exit={{ opacity: 0, scale: 0.95, y: 10 }}
                         className={`
                             pointer-events-auto flex flex-col overflow-hidden
-                            bg-black border border-white/20 shadow-[0_0_30px_rgba(255,255,255,0.1)]
-                            mb-4
+                            bg-black/90 backdrop-blur-md border border-white/20 shadow-[0_0_30px_rgba(255,255,255,0.1)]
+                            mb-4 rounded-lg
                         `}
                     >
                         {/* Elite Header */}
-                        <div className="flex items-center justify-between px-4 py-3 border-b border-white/20 bg-black">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-white/20 bg-black/50">
                             <div className="flex items-center gap-3">
-                                <div className="w-2 h-2 bg-white animate-pulse" />
-                                <h3 className="text-xs uppercase tracking-widest text-white">System.AI</h3>
+                                <div className="w-2 h-2 bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
+                                <h3 className="text-xs uppercase tracking-widest text-white">System.AI_Core</h3>
                             </div>
                             <div className="flex items-center gap-4 text-white/50">
                                 <button onClick={handleClearChat} className="hover:text-white transition-colors" title="Clear Chat"><Trash2 size={14} /></button>
@@ -125,36 +169,56 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
                         </div>
 
                         {/* Elite Messages */}
-                        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-black scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-black">
+                        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-black/40 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
                             {messages.map((msg, idx) => (
                                 <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                                    <span className="text-[10px] text-white/30 uppercase tracking-widest mb-1">
-                                        {msg.role === 'user' ? 'USER' : 'SYSTEM'}
+                                    <span className="text-[9px] text-white/30 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                                        {msg.role === 'user' ? (
+                                            <>USER <User size={8} /></>
+                                        ) : (
+                                            <><Terminal size={8} /> SYSTEM_RESPONSE</>
+                                        )}
                                     </span>
                                     <div className={`
-                                        max-w-[90%] text-sm leading-relaxed
-                                        ${msg.role === 'user' ? 'text-white text-right' : 'text-gray-400 text-left border-l border-white/20 pl-3'}
+                                        max-w-[95%] p-3 rounded-md border
+                                        ${msg.role === 'user' 
+                                            ? 'bg-white/10 border-white/20 text-white text-right' 
+                                            : 'bg-black/60 border-white/10 text-gray-300 text-left shadow-[inset_0_0_20px_rgba(255,255,255,0.02)]'
+                                        }
                                     `}>
-                                        {msg.content}
+                                        {msg.role === 'ai' ? (
+                                            <AIMessage 
+                                                content={msg.content} 
+                                                shouldAnimate={!msg.hasAnimated} 
+                                                onAnimationComplete={() => markMessageAsAnimated(idx)}
+                                            />
+                                        ) : (
+                                            <div className="text-sm">{msg.content}</div>
+                                        )}
                                     </div>
                                 </div>
                             ))}
                              {isLoading && (
-                                <div className="flex justify-start">
-                                    <span className="text-[10px] text-white/30 uppercase tracking-widest animate-pulse">Processing...</span>
+                                <div className="flex flex-col items-start gap-1">
+                                    <span className="text-[9px] text-white/30 uppercase tracking-[0.2em]">PROCESSING</span>
+                                    <div className="flex gap-1 h-1">
+                                        <motion.div animate={{ height: [2, 10, 2] }} transition={{ repeat: Infinity, duration: 0.5 }} className="w-1 bg-white/50" />
+                                        <motion.div animate={{ height: [2, 10, 2] }} transition={{ repeat: Infinity, duration: 0.5, delay: 0.1 }} className="w-1 bg-white/50" />
+                                        <motion.div animate={{ height: [2, 10, 2] }} transition={{ repeat: Infinity, duration: 0.5, delay: 0.2 }} className="w-1 bg-white/50" />
+                                    </div>
                                 </div>
                              )}
                              <div ref={messagesEndRef} />
                         </div>
 
                         {/* Elite Input */}
-                        <div className="p-4 border-t border-white/20 bg-black">
-                             <div className="flex items-center gap-2">
-                                <span className="text-white/50">{'>'}</span>
+                        <div className="p-4 border-t border-white/20 bg-black/80">
+                             <div className="flex items-center gap-3">
+                                <span className="text-green-500 animate-pulse">{'>'}</span>
                                 <input
                                     type="text"
-                                    className="flex-1 bg-transparent border-none outline-none text-white text-sm font-mono placeholder-white/20"
-                                    placeholder="Execute command..."
+                                    className="flex-1 bg-transparent border-none outline-none text-white text-sm font-mono placeholder-white/20 focus:ring-0"
+                                    placeholder="Input command..."
                                     value={inputValue}
                                     onChange={(e) => setInputValue(e.target.value)}
                                     onKeyPress={handleKeyPress}
@@ -164,9 +228,9 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
                                 <button 
                                     onClick={handleSendMessage}
                                     disabled={!inputValue.trim() || isLoading}
-                                    className="text-white/50 hover:text-white disabled:opacity-30 transition-colors uppercase text-xs tracking-widest"
+                                    className="text-white hover:text-green-400 disabled:opacity-30 transition-colors"
                                 >
-                                    SEND
+                                    <Send size={16} />
                                 </button>
                              </div>
                         </div>
@@ -177,10 +241,10 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
             <M.button
                 className={`
                     pointer-events-auto w-12 h-12 flex items-center justify-center transition-all
-                    bg-black border border-white/20 text-white hover:bg-white hover:text-black hover:border-white
+                    bg-black border border-white/20 text-white hover:bg-white hover:text-black hover:border-white shadow-[0_0_15px_rgba(255,255,255,0.2)]
                 `}
                 onClick={() => setIsOpen(!isOpen)}
-                whileHover={{ scale: 1.0 }}
+                whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
             >
                 {isOpen ? <X size={20} /> : <Terminal size={20} />}
@@ -200,7 +264,6 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
               opacity: 1, 
               scale: 1, 
               y: 0,
-              // Responsive logic
               width: isMobile ? '90vw' : (isExpanded ? '480px' : '400px'),
               height: isMobile ? '60vh' : (isExpanded ? '85vh' : '600px'),
               marginBottom: '1rem',
@@ -224,33 +287,17 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
                   <div className="absolute inset-0 bg-green-500 rounded-full animate-ping opacity-75" />
                 </div>
                 <div>
-                  <h3 className="font-heading font-semibold text-gray-800 dark:text-gray-100 text-sm">AI Assistant</h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Powered by Llama 3</p>
+                  <h3 className="font-heading font-semibold text-gray-800 dark:text-gray-100 text-sm">Portfolio AI</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Assistant Online</p>
                 </div>
               </div>
               
               <div className="flex items-center gap-1">
-                <button 
-                  onClick={handleClearChat}
-                  className="p-2 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-white/5"
-                  title="Clear Chat"
-                >
-                  <Trash2 size={16} />
-                </button>
-                <button 
-                  onClick={() => setIsExpanded(!isExpanded)}
-                  className="p-2 text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-white/5"
-                  title={isExpanded ? "Minimize" : "Maximize"}
-                >
+                <button onClick={handleClearChat} className="p-2 text-gray-500 hover:text-red-500 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5"><Trash2 size={16} /></button>
+                <button onClick={() => setIsExpanded(!isExpanded)} className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
                   {isExpanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
                 </button>
-                <button 
-                  onClick={() => setIsOpen(false)} 
-                  className="p-2 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-white/5"
-                  title="Close"
-                >
-                  <X size={18} />
-                </button>
+                <button onClick={() => setIsOpen(false)} className="p-2 text-gray-500 hover:text-gray-800 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5"><X size={18} /></button>
               </div>
             </div>
 
@@ -270,7 +317,15 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
                       }
                     `}
                   >
-                    {msg.content}
+                    {msg.role === 'ai' ? (
+                        <AIMessage 
+                            content={msg.content} 
+                            shouldAnimate={!msg.hasAnimated} 
+                            onAnimationComplete={() => markMessageAsAnimated(idx)}
+                        />
+                    ) : (
+                        msg.content
+                    )}
                   </div>
                 </div>
               ))}

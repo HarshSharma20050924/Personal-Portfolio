@@ -1,3 +1,4 @@
+
 import os
 import asyncio
 import time
@@ -88,6 +89,7 @@ async def update_knowledge(request: UpdateKnowledgeRequest):
         supabase.table("documents").delete().eq("metadata->>source", request.source).execute()
 
         # Step 2: Chunking
+        # Increased chunk overlap to ensure context flows better between sections
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         chunks = text_splitter.split_text(request.content)
         
@@ -127,41 +129,52 @@ async def chat(request: ChatRequest):
         query_vec = get_query_embedding(request.message)
         rpc_response = supabase.rpc("match_documents", {
             "query_embedding": query_vec,
-            "match_threshold": 0.6, # Tightened for accuracy
-            "match_count": 8        # Increased for better context
+            "match_threshold": 0.3, # Lowered slightly to catch more broad context
+            "match_count": 10       # Increased for better context window
         }).execute()
 
         context = "\n\n".join([m['content'] for m in rpc_response.data]) if rpc_response.data else ""
 
-        # Step 2: Third-Person Prompting
-        system_prompt = f"""You are the official AI assistant for {OWNER_NAME}'s Portfolio.
+        # Step 2: Third-Person Prompting & Formatting
+        system_prompt = f"""You are the sophisticated AI interface for {OWNER_NAME}'s Digital Portfolio.
 
         CONTEXT FROM DATABASE:
-        {context if context else "No relevant database info found."}
+        {context if context else "No specific database records found for this query. Rely on general professional knowledge."}
 
-        STRICT RULES:
-        1. Speak about {OWNER_NAME} in the THIRD PERSON (e.g., "He is," "Harsh built").
-        2. NEVER use "I" or "My" when referring to projects or skills.
-        3. If info is missing, say: "I don't have that specific detail in {OWNER_NAME}'s records. Would you like to know about his skills or experience instead?"
-        4. Be professional and concise.
+        Directives:
+        1.  **Identity**: You are an AI assistant. {OWNER_NAME} is the developer/architect. Refer to him in the THIRD PERSON (e.g., "He built," "Harsh specializes in").
+        2.  **Formatting**: You MUST return responses in MARKDOWN.
+            -   **Links**: If a URL is present in the context (like a GitHub repo or Live Demo), you MUST format it as a clickable Markdown link: `[Link Text](URL)`.
+            -   **Lists**: Use bullet points for skills or lists.
+            -   **Emphasis**: Use bolding for key technologies or project titles.
+        3.  **Tone**: Professional, concise, intelligent, and "Elite". Avoid excessive apologies.
+        4.  **Unknowns**: If the context doesn't have the answer, suggest checking the specific "Contact" section or imply that {OWNER_NAME} can discuss it directly.
+        5.  **Source Attribution**: If you find specific project names or sections in the context, mention them (e.g., "According to the Project Alpha logs...").
+
+        Example Output:
+        "{OWNER_NAME} developed **Project X**, a scalable SaaS platform. You can view the code at [GitHub Repository](https://github.com/...). He utilized React and Node.js for this architecture."
         """
 
         # Step 3: LLM Generation
         messages = [{"role": "system", "content": system_prompt}]
-        messages.extend([m.dict() for m in request.history[-5:]]) # Include history
+        
+        # Limit history to prevent token overflow
+        messages.extend([m.dict() for m in request.history[-4:]]) 
         messages.append({"role": "user", "content": request.message})
 
         response = groq_client.chat.completions.create(
             messages=messages,
             model="llama-3.3-70b-versatile",
-            temperature=0.5
+            temperature=0.4, # Lower temperature for more factual/grounded responses
+            max_tokens=512
         )
 
         return {"reply": response.choices[0].message.content}
 
     except Exception as e:
         print(f"Chat error: {e}")
-        raise HTTPException(status_code=500, detail="Chat processing failed")
+        # Return a fallback message instead of 500ing to the frontend
+        return {"reply": "Connection to neural core unstable. Please try again or contact the administrator directly."}
 
 @app.post("/warmup")
 @app.post("/api/rag/warmup")

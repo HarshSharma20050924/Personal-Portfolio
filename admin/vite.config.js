@@ -1,3 +1,4 @@
+
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -9,6 +10,11 @@ export default defineConfig({
   server: {
     port: 5174, // Different port from the client app
     proxy: {
+      '/api/rag': {
+        target: 'http://localhost:8000', // Python RAG Service
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/rag/, '')
+      },
       '/api': {
         target: 'http://localhost:3001',
         changeOrigin: true,
