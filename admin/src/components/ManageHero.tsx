@@ -1,6 +1,7 @@
-// FIX: Removed unnecessary Vite client type reference that was causing an error.
+
 import React, { useState } from 'react';
 import type { HeroData } from '../types';
+import { Loader2 } from 'lucide-react';
 
 interface ManageHeroProps {
   data: HeroData;
@@ -131,23 +132,32 @@ const ManageHero: React.FC<ManageHeroProps> = ({ data, setData }) => {
             </div>
           </div>
 
-          <div className="text-center">
+          <div className="text-center flex flex-col items-center">
             <label className="block text-sm font-medium mb-2">Profile Image</label>
-            <img 
-              src={profileImage} 
-              alt="Profile Preview" 
-              className="w-32 h-32 rounded-full object-cover mx-auto mb-4 border-2 border-slate-300 dark:border-slate-600"
-            />
-            <input 
-              type="file" 
-              id="profileImage" 
-              name="profileImage"
-              accept="image/*"
-              onChange={handleImageUpload}
-              disabled={isUploading}
-              className="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 disabled:opacity-50"
-            />
-            {isUploading && <p className="text-sm text-slate-500 mt-2">Uploading...</p>}
+            <div className="relative mb-4">
+              <img 
+                src={profileImage} 
+                alt="Profile Preview" 
+                className="w-32 h-32 rounded-full object-cover border-2 border-slate-300 dark:border-slate-600"
+              />
+              {isUploading && (
+                <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                  <Loader2 className="animate-spin text-white" size={24} />
+                </div>
+              )}
+            </div>
+            <label className={`cursor-pointer px-4 py-2 rounded-full bg-sky-50 text-sky-700 text-sm font-semibold hover:bg-sky-100 transition-colors ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                Upload New
+                <input 
+                  type="file" 
+                  id="profileImage" 
+                  name="profileImage"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  disabled={isUploading}
+                  className="hidden"
+                />
+            </label>
             {uploadError && <p className="text-sm text-red-500 mt-2 max-w-xs mx-auto">{uploadError}</p>}
           </div>
         </div>
@@ -180,16 +190,19 @@ const ManageHero: React.FC<ManageHeroProps> = ({ data, setData }) => {
         <div className="pt-6 border-t border-slate-200 dark:border-slate-700">
           <label htmlFor="resume" className="block text-sm font-medium mb-2">Resume (PDF)</label>
           <div className="flex items-center gap-4">
-            <input 
-              type="file" 
-              id="resume" 
-              name="resume"
-              accept="application/pdf"
-              onChange={handleResumeUpload}
-              disabled={isUploadingResume}
-              className="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 disabled:opacity-50"
-            />
-            {isUploadingResume && <p className="text-sm text-slate-500">Uploading...</p>}
+            <label className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${isUploadingResume ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                {isUploadingResume ? <Loader2 className="animate-spin" size={16} /> : null}
+                <span className="text-sm text-slate-700 dark:text-slate-300">{isUploadingResume ? 'Uploading...' : 'Choose PDF'}</span>
+                <input 
+                  type="file" 
+                  id="resume" 
+                  name="resume"
+                  accept="application/pdf"
+                  onChange={handleResumeUpload}
+                  disabled={isUploadingResume}
+                  className="hidden"
+                />
+            </label>
           </div>
           {uploadResumeError && <p className="text-sm text-red-500 mt-2">{uploadResumeError}</p>}
           {data.resumeUrl && data.resumeUrl !== '#' && (

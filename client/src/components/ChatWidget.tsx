@@ -58,9 +58,22 @@ const AIMessage: React.FC<{
 const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'ai', content: "System online. Accessing portfolio archives... How may I assist you?", hasAnimated: false }
-  ]);
+  
+  // Initialize from localStorage
+  const [messages, setMessages] = useState<Message[]>(() => {
+      try {
+          const saved = localStorage.getItem('portfolio_chat_history');
+          if (saved) {
+              const parsed = JSON.parse(saved);
+              // Ensure loaded messages don't re-animate
+              return parsed.map((m: Message) => ({ ...m, hasAnimated: true }));
+          }
+      } catch (e) {
+          console.error("Failed to load chat history", e);
+      }
+      return [{ role: 'ai', content: "System online. Accessing portfolio archives... How may I assist you?", hasAnimated: false }];
+  });
+
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -74,6 +87,11 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Save to localStorage whenever messages change
+  useEffect(() => {
+      localStorage.setItem('portfolio_chat_history', JSON.stringify(messages));
+  }, [messages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -126,6 +144,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
 
   const handleClearChat = () => {
     setMessages([{ role: 'ai', content: "Memory buffer flushed. Awaiting new input.", hasAnimated: false }]);
+    localStorage.removeItem('portfolio_chat_history');
   };
 
   if (isElite) {

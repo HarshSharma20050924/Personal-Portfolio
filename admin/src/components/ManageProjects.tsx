@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import type { Project } from '../types';
-import { Star, Upload, ImageIcon } from 'lucide-react';
+import { Star, Upload, ImageIcon, Loader2 } from 'lucide-react';
 
 interface ManageProjectsProps {
   projects: Project[];
@@ -160,19 +160,20 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects }
               <label className="text-xs font-semibold text-slate-500 mb-1">Main Cover Image</label>
               <div className="flex items-center space-x-4 border p-2 rounded dark:border-slate-600">
                 {currentForm.imageUrl && <img src={currentForm.imageUrl} alt="preview" className="w-16 h-10 object-cover rounded" />}
-                <label className="cursor-pointer bg-slate-100 dark:bg-slate-700 px-3 py-1.5 rounded text-xs font-medium flex items-center gap-2 hover:bg-slate-200">
-                    <Upload size={12} /> Upload
+                <label className={`cursor-pointer bg-slate-100 dark:bg-slate-700 px-3 py-1.5 rounded text-xs font-medium flex items-center gap-2 hover:bg-slate-200 ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                    {isUploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                    {isUploading ? 'Uploading...' : 'Upload'}
                     <input type="file" onChange={(e) => handleFileUpload(e, 'imageUrl', setIsUploading)} disabled={isUploading} className="hidden"/>
                 </label>
               </div>
-              {isUploading && <p className="text-[10px] text-slate-500 mt-1">Uploading...</p>}
             </div>
 
             <div className="flex flex-col">
                 <label className="text-xs font-semibold text-slate-500 mb-1">Project Document (PDF)</label>
                 <div className="flex items-center space-x-4 border p-2 rounded dark:border-slate-600">
-                    <label className="cursor-pointer bg-slate-100 dark:bg-slate-700 px-3 py-1.5 rounded text-xs font-medium flex items-center gap-2 hover:bg-slate-200">
-                        <Upload size={12} /> Upload Doc
+                    <label className={`cursor-pointer bg-slate-100 dark:bg-slate-700 px-3 py-1.5 rounded text-xs font-medium flex items-center gap-2 hover:bg-slate-200 ${isUploadingDoc ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                        {isUploadingDoc ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                        {isUploadingDoc ? 'Uploading...' : 'Upload Doc'}
                         <input type="file" onChange={(e) => handleFileUpload(e, 'docUrl', setIsUploadingDoc)} disabled={isUploadingDoc} accept=".pdf,.doc,.docx" className="hidden"/>
                     </label>
                     {currentForm.docUrl && <span className="text-xs text-green-500 font-bold">Doc Attached</span>}
@@ -192,7 +193,7 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects }
                         <div className="flex items-center gap-2">
                             {currentForm.challengeImage && <div className="text-[10px] text-green-500">Img Set</div>}
                             <label className="cursor-pointer text-sky-500 hover:text-sky-600" title="Upload Challenge Image">
-                                <ImageIcon size={16} />
+                                {isUploadingChallengeImg ? <Loader2 size={16} className="animate-spin" /> : <ImageIcon size={16} />}
                                 <input type="file" onChange={(e) => handleFileUpload(e, 'challengeImage', setIsUploadingChallengeImg)} disabled={isUploadingChallengeImg} className="hidden"/>
                             </label>
                         </div>
@@ -220,7 +221,7 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects }
                         <div className="flex items-center gap-2">
                             {currentForm.outcomeImage && <div className="text-[10px] text-green-500">Img Set</div>}
                             <label className="cursor-pointer text-sky-500 hover:text-sky-600" title="Upload Outcome Image">
-                                <ImageIcon size={16} />
+                                {isUploadingOutcomeImg ? <Loader2 size={16} className="animate-spin" /> : <ImageIcon size={16} />}
                                 <input type="file" onChange={(e) => handleFileUpload(e, 'outcomeImage', setIsUploadingOutcomeImg)} disabled={isUploadingOutcomeImg} className="hidden"/>
                             </label>
                         </div>

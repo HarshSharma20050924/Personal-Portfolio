@@ -12,7 +12,7 @@ import ManageSecurity from './ManageSecurity';
 import ManageExperience from './ManageExperience';
 import ManageMessages from './ManageMessages';
 import ManageAI from './ManageAI';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Loader2 } from 'lucide-react';
 
 interface DashboardProps {
   onLogout: () => void;
@@ -148,8 +148,9 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
             <button
               onClick={handleSave}
               disabled={isSaving}
-              className="px-6 py-2 font-semibold text-white bg-sky-500 rounded-lg hover:bg-sky-600 transition-colors disabled:bg-sky-400 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-6 py-2 font-semibold text-white bg-sky-500 rounded-lg hover:bg-sky-600 transition-colors disabled:bg-sky-400 disabled:cursor-not-allowed"
             >
+              {isSaving ? <Loader2 size={18} className="animate-spin" /> : null}
               {isSaving ? 'Saving...' : 'Save All Changes'}
             </button>
           </div>

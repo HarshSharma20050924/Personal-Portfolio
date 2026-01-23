@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { BrainCircuit, Download, UploadCloud, CheckCircle, AlertCircle } from 'lucide-react';
+import { BrainCircuit, Download, UploadCloud, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 const ManageAI: React.FC = () => {
     const [portfolioData, setPortfolioData] = useState<string>('');
@@ -103,7 +103,7 @@ const ManageAI: React.FC = () => {
                             `}
                         >
                             {status === 'loading' ? (
-                                'Training...'
+                                <><Loader2 size={20} className="animate-spin" /> Training...</>
                             ) : (
                                 <><UploadCloud size={20} /> Update Knowledge Base</>
                             )}

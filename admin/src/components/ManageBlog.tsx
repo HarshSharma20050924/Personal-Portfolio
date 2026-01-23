@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import type { Article } from '../types';
-import { Upload, Image as ImageIcon, Star } from 'lucide-react';
+import { Upload, Image as ImageIcon, Star, Loader2 } from 'lucide-react';
 
 interface ManageBlogProps {
   articles: Article[];
@@ -136,8 +136,9 @@ const ManageBlog: React.FC<ManageBlogProps> = ({ articles, setArticles }) => {
              <div className="md:col-span-2">
                 <div className="flex justify-between items-center mb-1">
                     <label className="block text-xs font-bold text-slate-500">Full Content (Markdown Supported)</label>
-                    <label className="cursor-pointer flex items-center gap-1 text-xs text-sky-500 hover:text-sky-600">
-                        <ImageIcon size={14} /> Insert Image
+                    <label className={`cursor-pointer flex items-center gap-1 text-xs text-sky-500 hover:text-sky-600 ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                        {isUploading ? <Loader2 size={14} className="animate-spin" /> : <ImageIcon size={14} />}
+                        Insert Image
                         <input type="file" onChange={(e) => handleImageUpload(e, 'content')} disabled={isUploading} className="hidden" />
                     </label>
                 </div>
@@ -155,8 +156,8 @@ const ManageBlog: React.FC<ManageBlogProps> = ({ articles, setArticles }) => {
                 <label className="block text-xs font-bold text-slate-500 mb-1">Cover Image</label>
                 <div className="flex items-center gap-4">
                     <input name="imageUrl" value={currentForm.imageUrl || ''} onChange={handleFormChange} placeholder="Image URL" className="flex-1 p-2 border rounded dark:bg-slate-700 dark:border-slate-600" />
-                    <label className="cursor-pointer bg-slate-100 dark:bg-slate-700 p-2 rounded hover:bg-slate-200">
-                        <Upload size={16} />
+                    <label className={`cursor-pointer bg-slate-100 dark:bg-slate-700 p-2 rounded hover:bg-slate-200 ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                        {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
                         <input type="file" onChange={(e) => handleImageUpload(e, 'imageUrl')} disabled={isUploading} className="hidden" />
                     </label>
                 </div>
@@ -171,7 +172,7 @@ const ManageBlog: React.FC<ManageBlogProps> = ({ articles, setArticles }) => {
 
           <div className="flex items-center space-x-2 pt-4">
             {isEditing === null ? (
-              <button type="submit" disabled={isUploading} className="px-6 py-2 font-semibold text-white bg-sky-500 rounded-lg hover:bg-sky-600">Publish Article</button>
+              <button type="submit" disabled={isUploading} className="px-6 py-2 font-semibold text-white bg-sky-500 rounded-lg hover:bg-sky-600 disabled:bg-sky-300">Publish Article</button>
             ): (
               <button type="button" onClick={handleDoneEditing} className="px-6 py-2 font-semibold bg-slate-200 dark:bg-slate-600 rounded-lg">Done Editing</button>
             )}
