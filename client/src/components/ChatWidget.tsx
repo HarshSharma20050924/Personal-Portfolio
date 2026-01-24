@@ -47,7 +47,7 @@ const AIMessage: React.FC<{
     }, [content, shouldAnimate, onAnimationComplete]);
 
     return (
-        <div className="prose prose-sm dark:prose-invert max-w-none text-sm leading-relaxed prose-a:text-blue-400 prose-a:underline hover:prose-a:text-blue-300">
+        <div className="prose prose-sm prose-slate dark:prose-invert max-w-none text-sm leading-relaxed prose-a:text-blue-500 hover:prose-a:text-blue-600 dark:prose-a:text-blue-400 dark:hover:prose-a:text-blue-300">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {text}
             </ReactMarkdown>
@@ -168,30 +168,32 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
                         exit={{ opacity: 0, scale: 0.95, y: 10 }}
                         className={`
                             pointer-events-auto flex flex-col overflow-hidden
-                            bg-black/90 backdrop-blur-md border border-white/20 shadow-[0_0_30px_rgba(255,255,255,0.1)]
-                            mb-4 rounded-lg
+                            bg-white/90 dark:bg-black/90 backdrop-blur-md 
+                            border border-gray-200 dark:border-white/20 
+                            shadow-2xl dark:shadow-[0_0_30px_rgba(255,255,255,0.1)]
+                            mb-4 rounded-lg text-slate-800 dark:text-gray-200
                         `}
                     >
                         {/* Elite Header */}
-                        <div className="flex items-center justify-between px-4 py-3 border-b border-white/20 bg-black/50">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-white/20 bg-gray-50 dark:bg-black/50">
                             <div className="flex items-center gap-3">
-                                <div className="w-2 h-2 bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
-                                <h3 className="text-xs uppercase tracking-widest text-white">System.AI_Core</h3>
+                                <div className="w-2 h-2 bg-blue-500 dark:bg-green-500 animate-pulse shadow-sm" />
+                                <h3 className="text-xs uppercase tracking-widest font-bold text-slate-700 dark:text-white">System.AI_Core</h3>
                             </div>
-                            <div className="flex items-center gap-4 text-white/50">
-                                <button onClick={handleClearChat} className="hover:text-white transition-colors" title="Clear Chat"><Trash2 size={14} /></button>
-                                <button onClick={() => setIsExpanded(!isExpanded)} className="hover:text-white transition-colors" title={isExpanded ? "Minimize" : "Expand"}>
+                            <div className="flex items-center gap-4 text-slate-400 dark:text-white/50">
+                                <button onClick={handleClearChat} className="hover:text-slate-900 dark:hover:text-white transition-colors" title="Clear Chat"><Trash2 size={14} /></button>
+                                <button onClick={() => setIsExpanded(!isExpanded)} className="hover:text-slate-900 dark:hover:text-white transition-colors" title={isExpanded ? "Minimize" : "Expand"}>
                                     {isExpanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
                                 </button>
-                                <button onClick={() => setIsOpen(false)} className="hover:text-white transition-colors" title="Close"><X size={14} /></button>
+                                <button onClick={() => setIsOpen(false)} className="hover:text-slate-900 dark:hover:text-white transition-colors" title="Close"><X size={14} /></button>
                             </div>
                         </div>
 
                         {/* Elite Messages */}
-                        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-black/40 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+                        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-white dark:bg-black/40 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-white/20 scrollbar-track-transparent">
                             {messages.map((msg, idx) => (
                                 <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                                    <span className="text-[9px] text-white/30 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                                    <span className="text-[9px] text-slate-400 dark:text-white/30 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
                                         {msg.role === 'user' ? (
                                             <>USER <User size={8} /></>
                                         ) : (
@@ -201,8 +203,8 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
                                     <div className={`
                                         max-w-[95%] p-3 rounded-md border
                                         ${msg.role === 'user' 
-                                            ? 'bg-white/10 border-white/20 text-white text-right' 
-                                            : 'bg-black/60 border-white/10 text-gray-300 text-left shadow-[inset_0_0_20px_rgba(255,255,255,0.02)]'
+                                            ? 'bg-slate-100 dark:bg-white/10 border-slate-200 dark:border-white/20 text-slate-800 dark:text-white text-right' 
+                                            : 'bg-white dark:bg-black/60 border-slate-200 dark:border-white/10 text-slate-600 dark:text-gray-300 text-left shadow-sm'
                                         }
                                     `}>
                                         {msg.role === 'ai' ? (
@@ -219,11 +221,11 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
                             ))}
                              {isLoading && (
                                 <div className="flex flex-col items-start gap-1">
-                                    <span className="text-[9px] text-white/30 uppercase tracking-[0.2em]">PROCESSING</span>
+                                    <span className="text-[9px] text-slate-400 dark:text-white/30 uppercase tracking-[0.2em]">PROCESSING</span>
                                     <div className="flex gap-1 h-1">
-                                        <motion.div animate={{ height: [2, 10, 2] }} transition={{ repeat: Infinity, duration: 0.5 }} className="w-1 bg-white/50" />
-                                        <motion.div animate={{ height: [2, 10, 2] }} transition={{ repeat: Infinity, duration: 0.5, delay: 0.1 }} className="w-1 bg-white/50" />
-                                        <motion.div animate={{ height: [2, 10, 2] }} transition={{ repeat: Infinity, duration: 0.5, delay: 0.2 }} className="w-1 bg-white/50" />
+                                        <motion.div animate={{ height: [2, 10, 2] }} transition={{ repeat: Infinity, duration: 0.5 }} className="w-1 bg-slate-300 dark:bg-white/50" />
+                                        <motion.div animate={{ height: [2, 10, 2] }} transition={{ repeat: Infinity, duration: 0.5, delay: 0.1 }} className="w-1 bg-slate-300 dark:bg-white/50" />
+                                        <motion.div animate={{ height: [2, 10, 2] }} transition={{ repeat: Infinity, duration: 0.5, delay: 0.2 }} className="w-1 bg-slate-300 dark:bg-white/50" />
                                     </div>
                                 </div>
                              )}
@@ -231,12 +233,12 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
                         </div>
 
                         {/* Elite Input */}
-                        <div className="p-4 border-t border-white/20 bg-black/80">
+                        <div className="p-4 border-t border-gray-200 dark:border-white/20 bg-gray-50 dark:bg-black/80">
                              <div className="flex items-center gap-3">
-                                <span className="text-green-500 animate-pulse">{'>'}</span>
+                                <span className="text-blue-500 dark:text-green-500 animate-pulse">{'>'}</span>
                                 <input
                                     type="text"
-                                    className="flex-1 bg-transparent border-none outline-none text-white text-sm font-mono placeholder-white/20 focus:ring-0"
+                                    className="flex-1 bg-transparent border-none outline-none text-slate-800 dark:text-white text-sm font-mono placeholder-slate-400 dark:placeholder-white/20 focus:ring-0"
                                     placeholder="Input command..."
                                     value={inputValue}
                                     onChange={(e) => setInputValue(e.target.value)}
@@ -247,7 +249,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
                                 <button 
                                     onClick={handleSendMessage}
                                     disabled={!inputValue.trim() || isLoading}
-                                    className="text-white hover:text-green-400 disabled:opacity-30 transition-colors"
+                                    className="text-slate-600 dark:text-white hover:text-blue-500 dark:hover:text-green-400 disabled:opacity-30 transition-colors"
                                 >
                                     <Send size={16} />
                                 </button>
@@ -260,7 +262,9 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
             <M.button
                 className={`
                     pointer-events-auto w-12 h-12 flex items-center justify-center transition-all
-                    bg-black border border-white/20 text-white hover:bg-white hover:text-black hover:border-white shadow-[0_0_15px_rgba(255,255,255,0.2)]
+                    bg-white dark:bg-black border border-gray-200 dark:border-white/20 
+                    text-slate-800 dark:text-white hover:bg-slate-100 dark:hover:bg-white dark:hover:text-black dark:hover:border-white 
+                    shadow-lg dark:shadow-[0_0_15px_rgba(255,255,255,0.2)]
                 `}
                 onClick={() => setIsOpen(!isOpen)}
                 whileHover={{ scale: 1.1 }}
@@ -275,6 +279,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
   // Default Chat Widget Style
   return (
     <div className="chat-widget-container">
+      {/* ... Default UI code remains unchanged ... */}
       <AnimatePresence>
         {isOpen && (
           <M.div

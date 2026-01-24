@@ -19,6 +19,16 @@ const templates = [
     description: 'A clean, focused layout with a centered content column, ideal for a minimalist aesthetic.',
   },
   {
+    id: 'corporate',
+    name: 'Corporate / CV',
+    description: 'A clean, high-density professional CV layout inspired by big tech companies. Prioritizes readability and structure.',
+  },
+  {
+    id: 'elite',
+    name: 'Elite (System Architect)',
+    description: 'A high-end, cinematic, and interaction-heavy dark theme. Features a terminal-style chat and sleek typography.',
+  },
+  {
     id: 'dotgrid',
     name: 'Interactive Dot Grid',
     description: 'A dynamic template featuring an interactive dot grid background that reacts to mouse movement.',
@@ -32,11 +42,6 @@ const templates = [
     id: 'starrynight',
     name: 'Starry Night',
     description: 'An elegant dark theme with an animated starry sky background and glowing interactive elements.',
-  },
-  {
-    id: 'elite',
-    name: 'Elite (System Architect)',
-    description: 'A high-end, cinematic, and interaction-heavy dark theme. Features a terminal-style chat and sleek typography.',
   },
   {
     id: 'fantasy',
