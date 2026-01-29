@@ -3,7 +3,8 @@ const CACHE_NAME = 'admin-cache-v1';
 const urlsToCache = [
   '/admin/',
   '/admin/index.html',
-  '/favicon.svg'
+  '/admin/favicon.svg',
+  '/admin/manifest.json'
 ];
 
 self.addEventListener('install', event => {

@@ -64,6 +64,18 @@
       "dest": "/admin/assets/$1"
     },
     {
+      "src": "/admin/sw.js",
+      "dest": "/admin/sw.js"
+    },
+    {
+      "src": "/admin/manifest.json",
+      "dest": "/admin/manifest.json"
+    },
+    {
+      "src": "/admin/favicon.svg",
+      "dest": "/admin/favicon.svg"
+    },
+    {
       "src": "/assets/(.*)",
       "dest": "/client/assets/$1"
     },
