@@ -12,7 +12,7 @@ import ManageSecurity from './ManageSecurity';
 import ManageExperience from './ManageExperience';
 import ManageMessages from './ManageMessages';
 import ManageAI from './ManageAI';
-import { AlertTriangle, Loader2, Menu, X, Bell, BellOff, Download, MonitorDown } from 'lucide-react';
+import { AlertTriangle, Loader2, Menu, X, Bell, BellOff, MonitorDown } from 'lucide-react';
 
 interface DashboardProps {
   onLogout: () => void;
@@ -50,12 +50,36 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
   const lastMessageCount = useRef<number | null>(null);
   const [messageUpdateTrigger, setMessageUpdateTrigger] = useState(0);
 
+  // Helper: Play a subtle notification sound
+  const playNotificationSound = () => {
+    try {
+        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(500, ctx.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(1000, ctx.currentTime + 0.1);
+        
+        gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+        
+        oscillator.start();
+        oscillator.stop(ctx.currentTime + 0.5);
+    } catch (e) {
+        console.error("Audio play failed", e);
+    }
+  };
+
   // PWA Install Event Listener
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
-      // Prevent the mini-infobar from appearing on mobile
       e.preventDefault();
-      // Stash the event so it can be triggered later.
       setInstallPrompt(e);
     };
 
@@ -71,7 +95,6 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
       setNotificationPermission(Notification.permission);
     }
 
-    // Initial check for message count
     const checkMessages = async () => {
         try {
             const apiKey = sessionStorage.getItem('apiKey');
@@ -84,11 +107,8 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
                 
                 // If count increased, show notification
                 if (lastMessageCount.current !== null && count > lastMessageCount.current) {
-                    // Trigger child update for ManageMessages
                     setMessageUpdateTrigger(prev => prev + 1);
 
-                    // Get the newest message (assuming API returns sorted by date desc, or we sort it)
-                    // The API in messages.mjs uses `orderBy: { createdAt: 'desc' }`, so data[0] is newest.
                     const newestMessage = data[0];
                     const senderName = newestMessage?.name || "Visitor";
                     const messagePreview = newestMessage?.message?.substring(0, 60) + (newestMessage?.message?.length > 60 ? "..." : "") || "New message received.";
@@ -97,18 +117,22 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
                         const title = `New Message from ${senderName}`;
                         const options: NotificationOptions = {
                             body: messagePreview,
-                            icon: '/admin/favicon.svg', // Ensure path matches PWA manifest
+                            icon: '/favicon.svg', // Used '/favicon.svg' as it worked for your test
                             tag: 'new-message',
-                            data: { url: '/admin/' } // Meta data for click handling
+                            requireInteraction: true // Keeps notification visible until clicked
                         };
 
-                        // Use service worker registration to show notification if available, else standard API
-                        if (navigator.serviceWorker && navigator.serviceWorker.ready) {
-                             navigator.serviceWorker.ready.then(registration => {
-                                registration.showNotification(title, options);
-                             });
-                        } else {
-                            new Notification(title, options);
+                        // Use standard Notification API as it's more reliable for active tabs
+                        try {
+                            const notification = new Notification(title, options);
+                            notification.onclick = () => {
+                                window.focus();
+                                setView('messages');
+                                notification.close();
+                            };
+                            playNotificationSound();
+                        } catch (err) {
+                            console.error("Notification creation failed", err);
                         }
                     }
                 }
@@ -120,7 +144,7 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
     };
 
     checkMessages();
-    // Poll every 5 seconds for faster response
+    // Poll every 5 seconds
     const interval = setInterval(checkMessages, 5000); 
     return () => clearInterval(interval);
   }, []);
@@ -129,6 +153,13 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
     if (!('Notification' in window)) return;
     const permission = await Notification.requestPermission();
     setNotificationPermission(permission);
+    if (permission === 'granted') {
+        new Notification("Notifications Enabled", {
+            body: "You will now receive alerts for new messages.",
+            icon: '/favicon.svg'
+        });
+        playNotificationSound();
+    }
   };
 
   const handleInstallClick = () => {
@@ -264,8 +295,22 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
 
             {/* Notification Permission Toggle */}
             {notificationPermission === 'granted' ? (
-                <div className="flex items-center gap-2 text-xs text-green-500">
-                    <Bell size={12} /> Notifications On
+                <div>
+                    <div className="flex items-center gap-2 text-xs text-green-500 mb-2">
+                        <Bell size={12} /> Notifications On
+                    </div>
+                    <button 
+                        onClick={() => {
+                            new Notification('Test Notification', {
+                                body: 'This confirms your browser allows notifications.',
+                                icon: '/favicon.svg'
+                            });
+                            playNotificationSound();
+                        }}
+                        className="text-[10px] text-sky-500 hover:underline"
+                    >
+                        Test Alert
+                    </button>
                 </div>
             ) : (
                 <button 
