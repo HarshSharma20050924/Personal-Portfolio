@@ -117,23 +117,31 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
                         const title = `New Message from ${senderName}`;
                         const options: NotificationOptions = {
                             body: messagePreview,
-                            icon: '/favicon.svg', // Used '/favicon.svg' as it worked for your test
+                            icon: '/favicon.svg', 
                             tag: 'new-message',
-                            requireInteraction: true // Keeps notification visible until clicked
+                            requireInteraction: true,
+                            data: { url: '/admin/' }
                         };
 
-                        // Use standard Notification API as it's more reliable for active tabs
-                        try {
-                            const notification = new Notification(title, options);
-                            notification.onclick = () => {
-                                window.focus();
-                                setView('messages');
-                                notification.close();
-                            };
-                            playNotificationSound();
-                        } catch (err) {
-                            console.error("Notification creation failed", err);
+                        // Use Service Worker if available (Critical for Mobile)
+                        if ('serviceWorker' in navigator && navigator.serviceWorker.ready) {
+                            navigator.serviceWorker.ready.then(registration => {
+                                registration.showNotification(title, options);
+                            });
+                        } else {
+                            // Fallback for Desktop if SW not ready
+                            try {
+                                const notification = new Notification(title, options);
+                                notification.onclick = () => {
+                                    window.focus();
+                                    setView('messages');
+                                    notification.close();
+                                };
+                            } catch (err) {
+                                console.error("Notification creation failed", err);
+                            }
                         }
+                        playNotificationSound();
                     }
                 }
                 lastMessageCount.current = count;
@@ -154,10 +162,20 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
     const permission = await Notification.requestPermission();
     setNotificationPermission(permission);
     if (permission === 'granted') {
-        new Notification("Notifications Enabled", {
+        // Trigger a test notification immediately to confirm permissions
+        const title = "Notifications Enabled";
+        const options = {
             body: "You will now receive alerts for new messages.",
             icon: '/favicon.svg'
-        });
+        };
+        
+        if ('serviceWorker' in navigator && navigator.serviceWorker.ready) {
+             navigator.serviceWorker.ready.then(registration => {
+                 registration.showNotification(title, options);
+             });
+        } else {
+            new Notification(title, options);
+        }
         playNotificationSound();
     }
   };
@@ -301,10 +319,16 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
                     </div>
                     <button 
                         onClick={() => {
-                            new Notification('Test Notification', {
+                            const title = 'Test Notification';
+                            const options = {
                                 body: 'This confirms your browser allows notifications.',
                                 icon: '/favicon.svg'
-                            });
+                            };
+                            if ('serviceWorker' in navigator && navigator.serviceWorker.ready) {
+                                navigator.serviceWorker.ready.then(reg => reg.showNotification(title, options));
+                            } else {
+                                new Notification(title, options);
+                            }
                             playNotificationSound();
                         }}
                         className="text-[10px] text-sky-500 hover:underline"
