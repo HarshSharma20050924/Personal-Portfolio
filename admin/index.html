@@ -3,8 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#0f172a" />
     <title>Portfolio Admin Panel</title>
+    <link rel="manifest" href="/admin/manifest.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,5 +15,24 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/index.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/admin/sw.js', { scope: '/admin/' })
+            .then(registration => {
+              console.log('✓ Service Worker registered successfully:', registration);
+              console.log('  - Scope:', registration.scope);
+              console.log('  - Installing:', registration.installing);
+              console.log('  - Waiting:', registration.waiting);
+              console.log('  - Active:', registration.active);
+            })
+            .catch(registrationError => {
+              console.error('✗ Service Worker registration failed:', registrationError);
+            });
+        });
+      } else {
+        console.warn('Service Worker not supported in this browser');
+      }
+    </script>
   </body>
 </html>

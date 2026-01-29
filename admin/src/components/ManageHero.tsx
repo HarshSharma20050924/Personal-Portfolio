@@ -83,9 +83,9 @@ const ManageHero: React.FC<ManageHeroProps> = ({ data, setData }) => {
   return (
     <div>
       <h2 className="text-3xl font-bold mb-6">Manage Hero Section</h2>
-      <div className="p-6 bg-white dark:bg-slate-800/50 rounded-lg shadow-md space-y-6 max-w-2xl">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2 space-y-4">
+      <div className="p-4 md:p-6 bg-white dark:bg-slate-800/50 rounded-lg shadow-md space-y-6 max-w-full md:max-w-2xl">
+        <div className="flex flex-col md:flex-row gap-6">
+          <div className="md:flex-1 space-y-4 order-2 md:order-1">
              <div>
               <label htmlFor="name" className="block text-sm font-medium mb-1">Name</label>
               <input
@@ -132,7 +132,7 @@ const ManageHero: React.FC<ManageHeroProps> = ({ data, setData }) => {
             </div>
           </div>
 
-          <div className="text-center flex flex-col items-center">
+          <div className="order-1 md:order-2 text-center flex flex-col items-center justify-center">
             <label className="block text-sm font-medium mb-2">Profile Image</label>
             <div className="relative mb-4">
               <img 
@@ -189,7 +189,7 @@ const ManageHero: React.FC<ManageHeroProps> = ({ data, setData }) => {
         
         <div className="pt-6 border-t border-slate-200 dark:border-slate-700">
           <label htmlFor="resume" className="block text-sm font-medium mb-2">Resume (PDF)</label>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
             <label className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${isUploadingResume ? 'opacity-50 cursor-not-allowed' : ''}`}>
                 {isUploadingResume ? <Loader2 className="animate-spin" size={16} /> : null}
                 <span className="text-sm text-slate-700 dark:text-slate-300">{isUploadingResume ? 'Uploading...' : 'Choose PDF'}</span>
@@ -203,13 +203,13 @@ const ManageHero: React.FC<ManageHeroProps> = ({ data, setData }) => {
                   className="hidden"
                 />
             </label>
+            {data.resumeUrl && data.resumeUrl !== '#' && (
+                <a href={data.resumeUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-sky-500 hover:underline">
+                    View uploaded resume
+                </a>
+            )}
           </div>
           {uploadResumeError && <p className="text-sm text-red-500 mt-2">{uploadResumeError}</p>}
-          {data.resumeUrl && data.resumeUrl !== '#' && (
-            <p className="text-sm text-slate-500 mt-2">
-              Current: <a href={data.resumeUrl} target="_blank" rel="noopener noreferrer" className="text-sky-500 hover:underline">View uploaded resume</a>
-            </p>
-          )}
         </div>
 
       </div>

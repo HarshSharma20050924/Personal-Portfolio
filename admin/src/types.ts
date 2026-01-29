@@ -1,4 +1,5 @@
 
+
 export interface HeroData {
   name: string;
   title: string;
@@ -66,6 +67,14 @@ export interface Education {
   degree: string;
   institution: string;
   period: string;
+}
+
+export interface Message {
+  id: number;
+  name: string;
+  email: string;
+  message: string;
+  createdAt: string;
 }
 
 export interface PlaygroundConfig {

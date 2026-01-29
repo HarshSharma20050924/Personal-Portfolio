@@ -65,7 +65,6 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
           const saved = localStorage.getItem('portfolio_chat_history');
           if (saved) {
               const parsed = JSON.parse(saved);
-              // Ensure loaded messages don't re-animate
               return parsed.map((m: Message) => ({ ...m, hasAnimated: true }));
           }
       } catch (e) {
@@ -77,24 +76,26 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
 
   const isElite = template === 'elite';
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
-    handleResize(); // Check on mount
+    handleResize(); 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Save to localStorage whenever messages change
   useEffect(() => {
       localStorage.setItem('portfolio_chat_history', JSON.stringify(messages));
   }, [messages]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (scrollAreaRef.current) {
+        scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+    }
   };
 
   useEffect(() => {
@@ -147,9 +148,14 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
     localStorage.removeItem('portfolio_chat_history');
   };
 
+  // Prevent scroll propagation to body
+  const stopPropagation = (e: React.WheelEvent | React.TouchEvent) => {
+      e.stopPropagation();
+  };
+
   if (isElite) {
     return (
-        <div className="chat-widget-container font-mono">
+        <div className="chat-widget-container font-mono" onWheel={stopPropagation} onTouchMove={stopPropagation} data-lenis-prevent>
             <AnimatePresence>
                 {isOpen && (
                     <M.div
@@ -158,7 +164,6 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
                             opacity: 1, 
                             scale: 1, 
                             y: 0,
-                            // Responsive width/height logic
                             width: isMobile ? '90vw' : (isExpanded ? '500px' : '400px'),
                             height: isMobile ? '60vh' : (isExpanded ? '85vh' : '550px'),
                             marginBottom: '1rem', 
@@ -174,8 +179,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
                             mb-4 rounded-lg text-slate-800 dark:text-gray-200
                         `}
                     >
-                        {/* Elite Header */}
-                        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-white/20 bg-gray-50 dark:bg-black/50">
+                        <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-white/20 bg-gray-50 dark:bg-black/50">
                             <div className="flex items-center gap-3">
                                 <div className="w-2 h-2 bg-blue-500 dark:bg-green-500 animate-pulse shadow-sm" />
                                 <h3 className="text-xs uppercase tracking-widest font-bold text-slate-700 dark:text-white">System.AI_Core</h3>
@@ -189,16 +193,15 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
                             </div>
                         </div>
 
-                        {/* Elite Messages */}
-                        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-white dark:bg-black/40 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-white/20 scrollbar-track-transparent">
+                        <div 
+                            ref={scrollAreaRef}
+                            className="flex-1 overflow-y-auto p-6 space-y-6 bg-white dark:bg-black/40 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-white/20 scrollbar-track-transparent overscroll-contain"
+                            data-lenis-prevent // Important for stopping Lenis scroll hijacking
+                        >
                             {messages.map((msg, idx) => (
                                 <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                                     <span className="text-[9px] text-slate-400 dark:text-white/30 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
-                                        {msg.role === 'user' ? (
-                                            <>USER <User size={8} /></>
-                                        ) : (
-                                            <><Terminal size={8} /> SYSTEM_RESPONSE</>
-                                        )}
+                                        {msg.role === 'user' ? <><User size={8} /> USER</> : <><Terminal size={8} /> SYSTEM_RESPONSE</>}
                                     </span>
                                     <div className={`
                                         max-w-[95%] p-3 rounded-md border
@@ -232,8 +235,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
                              <div ref={messagesEndRef} />
                         </div>
 
-                        {/* Elite Input */}
-                        <div className="p-4 border-t border-gray-200 dark:border-white/20 bg-gray-50 dark:bg-black/80">
+                        <div className="flex-shrink-0 p-4 border-t border-gray-200 dark:border-white/20 bg-gray-50 dark:bg-black/80">
                              <div className="flex items-center gap-3">
                                 <span className="text-blue-500 dark:text-green-500 animate-pulse">{'>'}</span>
                                 <input
@@ -276,10 +278,8 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
     );
   }
 
-  // Default Chat Widget Style
   return (
-    <div className="chat-widget-container">
-      {/* ... Default UI code remains unchanged ... */}
+    <div className="chat-widget-container" onWheel={stopPropagation} onTouchMove={stopPropagation} data-lenis-prevent>
       <AnimatePresence>
         {isOpen && (
           <M.div
@@ -303,8 +303,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
               rounded-2xl
             `}
           >
-            {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-slate-800/50">
+            <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-slate-800/50">
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse" />
@@ -325,31 +324,17 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
               </div>
             </div>
 
-            {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50 dark:bg-black/20 scroll-smooth">
+            <div 
+                ref={scrollAreaRef}
+                className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50 dark:bg-black/20 scroll-smooth overscroll-contain"
+                data-lenis-prevent
+            >
               {messages.map((msg, idx) => (
-                <div 
-                  key={idx} 
-                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div 
-                    className={`
-                      max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm
-                      ${msg.role === 'user' 
-                        ? 'bg-primary text-white rounded-br-none' 
-                        : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 border border-gray-100 dark:border-gray-700 rounded-bl-none'
-                      }
-                    `}
-                  >
+                <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.role === 'user' ? 'bg-primary text-white rounded-br-none' : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 border border-gray-100 dark:border-gray-700 rounded-bl-none'}`}>
                     {msg.role === 'ai' ? (
-                        <AIMessage 
-                            content={msg.content} 
-                            shouldAnimate={!msg.hasAnimated} 
-                            onAnimationComplete={() => markMessageAsAnimated(idx)}
-                        />
-                    ) : (
-                        msg.content
-                    )}
+                        <AIMessage content={msg.content} shouldAnimate={!msg.hasAnimated} onAnimationComplete={() => markMessageAsAnimated(idx)} />
+                    ) : msg.content}
                   </div>
                 </div>
               ))}
@@ -365,8 +350,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Area */}
-            <div className="p-4 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-gray-800">
+            <div className="flex-shrink-0 p-4 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-gray-800">
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -377,17 +361,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
                   onKeyPress={handleKeyPress}
                   disabled={isLoading}
                 />
-                <button 
-                  className={`
-                    p-3 rounded-xl flex items-center justify-center transition-all
-                    ${inputValue.trim() && !isLoading
-                      ? 'bg-primary hover:bg-blue-600 text-white shadow-lg shadow-primary/30' 
-                      : 'bg-gray-200 dark:bg-slate-800 text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                    }
-                  `}
-                  onClick={handleSendMessage}
-                  disabled={!inputValue.trim() || isLoading}
-                >
+                <button className={`p-3 rounded-xl flex items-center justify-center transition-all ${inputValue.trim() && !isLoading ? 'bg-primary hover:bg-blue-600 text-white shadow-lg shadow-primary/30' : 'bg-gray-200 dark:bg-slate-800 text-gray-400 dark:text-gray-600 cursor-not-allowed'}`} onClick={handleSendMessage} disabled={!inputValue.trim() || isLoading}>
                   <Send size={20} />
                 </button>
               </div>
@@ -397,11 +371,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
       </AnimatePresence>
 
       <M.button
-        className={`
-          pointer-events-auto w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all
-          bg-primary hover:bg-blue-600 text-white
-          border-4 border-white dark:border-slate-800
-        `}
+        className={`pointer-events-auto w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all bg-primary hover:bg-blue-600 text-white border-4 border-white dark:border-slate-800`}
         onClick={() => setIsOpen(!isOpen)}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}

@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import type { HeroData, Skill, Project, SocialLink, Article, Experience, Education, PlaygroundConfig } from '../types';
+import React, { useState, useEffect, useRef } from 'react';
+import type { HeroData, Skill, Project, SocialLink, Article, Experience, Education, PlaygroundConfig, Message } from '../types';
 import ManageHero from './ManageHero';
 import ManageSkills from './ManageSkills';
 import ManageProjects from './ManageProjects';
@@ -12,7 +12,7 @@ import ManageSecurity from './ManageSecurity';
 import ManageExperience from './ManageExperience';
 import ManageMessages from './ManageMessages';
 import ManageAI from './ManageAI';
-import { AlertTriangle, Loader2 } from 'lucide-react';
+import { AlertTriangle, Loader2, Menu, X, Bell, BellOff, Download, MonitorDown } from 'lucide-react';
 
 interface DashboardProps {
   onLogout: () => void;
@@ -42,6 +42,104 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'success' | 'error' | null>(null);
   const [showUpdateReminder, setShowUpdateReminder] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  
+  // Notification Logic
+  const lastMessageCount = useRef<number | null>(null);
+  const [messageUpdateTrigger, setMessageUpdateTrigger] = useState(0);
+
+  // PWA Install Event Listener
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Stash the event so it can be triggered later.
+      setInstallPrompt(e);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  useEffect(() => {
+    if ('Notification' in window) {
+      setNotificationPermission(Notification.permission);
+    }
+
+    // Initial check for message count
+    const checkMessages = async () => {
+        try {
+            const apiKey = sessionStorage.getItem('apiKey');
+            const res = await fetch('/api/messages', {
+                headers: { 'Authorization': `Bearer ${apiKey}` }
+            });
+            if (res.ok) {
+                const data: Message[] = await res.json();
+                const count = data.length;
+                
+                // If count increased, show notification
+                if (lastMessageCount.current !== null && count > lastMessageCount.current) {
+                    // Trigger child update for ManageMessages
+                    setMessageUpdateTrigger(prev => prev + 1);
+
+                    // Get the newest message (assuming API returns sorted by date desc, or we sort it)
+                    // The API in messages.mjs uses `orderBy: { createdAt: 'desc' }`, so data[0] is newest.
+                    const newestMessage = data[0];
+                    const senderName = newestMessage?.name || "Visitor";
+                    const messagePreview = newestMessage?.message?.substring(0, 60) + (newestMessage?.message?.length > 60 ? "..." : "") || "New message received.";
+
+                    if (Notification.permission === 'granted') {
+                        const title = `New Message from ${senderName}`;
+                        const options: NotificationOptions = {
+                            body: messagePreview,
+                            icon: '/admin/favicon.svg', // Ensure path matches PWA manifest
+                            tag: 'new-message',
+                            data: { url: '/admin/' } // Meta data for click handling
+                        };
+
+                        // Use service worker registration to show notification if available, else standard API
+                        if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+                             navigator.serviceWorker.ready.then(registration => {
+                                registration.showNotification(title, options);
+                             });
+                        } else {
+                            new Notification(title, options);
+                        }
+                    }
+                }
+                lastMessageCount.current = count;
+            }
+        } catch (e) {
+            console.error("Failed to check messages", e);
+        }
+    };
+
+    checkMessages();
+    // Poll every 5 seconds for faster response
+    const interval = setInterval(checkMessages, 5000); 
+    return () => clearInterval(interval);
+  }, []);
+
+  const requestNotificationPermission = async () => {
+    if (!('Notification' in window)) return;
+    const permission = await Notification.requestPermission();
+    setNotificationPermission(permission);
+  };
+
+  const handleInstallClick = () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    installPrompt.userChoice.then((choiceResult: any) => {
+      if (choiceResult.outcome === 'accepted') {
+        setInstallPrompt(null);
+      }
+    });
+  };
 
   const navItems: { id: AdminView; label: string }[] = [
     { id: 'hero', label: 'Hero Section' },
@@ -63,7 +161,7 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
     try {
       await props.onSave();
       setSaveStatus('success');
-      setShowUpdateReminder(true); // Trigger the reminder
+      setShowUpdateReminder(true);
     } catch (error) {
       console.error("Save failed:", error);
       setSaveStatus('error');
@@ -71,6 +169,11 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
       setIsSaving(false);
       setTimeout(() => setSaveStatus(null), 3000);
     }
+  };
+
+  const handleNavClick = (id: AdminView) => {
+      setView(id);
+      setSidebarOpen(false); // Close sidebar on mobile after click
   };
 
   const renderView = () => {
@@ -92,7 +195,7 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
       case 'blog':
         return <ManageBlog articles={props.articles} setArticles={props.setArticles} />;
       case 'messages':
-        return <ManageMessages />;
+        return <ManageMessages refreshTrigger={messageUpdateTrigger} />;
       case 'ai':
         return <ManageAI />;
       case 'security':
@@ -104,29 +207,77 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
   
   return (
     <div className="flex min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200">
-      <aside className="w-64 bg-white dark:bg-slate-800/50 p-6 shadow-lg flex flex-col fixed h-full overflow-y-auto">
-        <div>
-          <h1 className="text-2xl font-bold mb-8">Admin Panel</h1>
-          <nav>
-            <ul>
-              {navItems.map((item) => (
-                 <li key={item.id} className="mb-2">
-                  <button
-                    onClick={() => setView(item.id)}
-                    className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${
-                      view === item.id
-                        ? 'bg-sky-500 text-white'
-                        : 'hover:bg-slate-200 dark:hover:bg-slate-700'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </nav>
+      
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div 
+            className="fixed inset-0 bg-black/50 z-30 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={`
+        fixed top-0 left-0 h-full w-64 bg-white dark:bg-slate-800 p-6 shadow-lg z-40 transition-transform duration-300 ease-in-out overflow-y-auto
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
+        md:translate-x-0
+      `}>
+        <div className="flex justify-between items-center mb-8">
+            <h1 className="text-2xl font-bold">Admin Panel</h1>
+            <button onClick={() => setSidebarOpen(false)} className="md:hidden text-slate-500">
+                <X size={24} />
+            </button>
         </div>
-        <div className="mt-auto pt-8 pb-6">
+        
+        <nav>
+          <ul>
+            {navItems.map((item) => (
+               <li key={item.id} className="mb-2">
+                <button
+                  onClick={() => handleNavClick(item.id)}
+                  className={`w-full text-left px-4 py-2 rounded-lg transition-colors flex justify-between items-center ${
+                    view === item.id
+                      ? 'bg-sky-500 text-white'
+                      : 'hover:bg-slate-200 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  {item.label}
+                  {item.id === 'messages' && lastMessageCount.current !== null && lastMessageCount.current > 0 && (
+                      <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full">{lastMessageCount.current}</span>
+                  )}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        
+        <div className="mt-6 px-2 space-y-3">
+            {/* Install PWA Button */}
+            {installPrompt && (
+                <button
+                    onClick={handleInstallClick}
+                    className="flex items-center gap-2 text-xs w-full px-3 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors animate-pulse"
+                >
+                    <MonitorDown size={14} /> Install App
+                </button>
+            )}
+
+            {/* Notification Permission Toggle */}
+            {notificationPermission === 'granted' ? (
+                <div className="flex items-center gap-2 text-xs text-green-500">
+                    <Bell size={12} /> Notifications On
+                </div>
+            ) : (
+                <button 
+                    onClick={requestNotificationPermission}
+                    className="flex items-center gap-2 text-xs text-slate-500 hover:text-sky-500 transition-colors w-full"
+                >
+                    <BellOff size={12} /> Enable Alerts
+                </button>
+            )}
+        </div>
+
+        <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-700 pb-6">
            <a href="/" target="_blank" rel="noopener noreferrer" className="block w-full text-center text-sm mb-4 px-4 py-2 rounded-lg transition-colors hover:bg-slate-200 dark:hover:bg-slate-700">
             View Live Site
           </a>
@@ -138,40 +289,53 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
           </button>
         </div>
       </aside>
-      <main className="flex-1 p-8 ml-64 overflow-auto">
-        <header className="flex justify-between items-center mb-6">
-          <div/>
-          <div className="flex items-center space-x-4">
-            {saveStatus === 'success' && <p className="text-green-500">Changes saved successfully!</p>}
-            {saveStatus === 'error' && <p className="text-red-500">Failed to save changes.</p>}
-            
-            <button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="flex items-center gap-2 px-6 py-2 font-semibold text-white bg-sky-500 rounded-lg hover:bg-sky-600 transition-colors disabled:bg-sky-400 disabled:cursor-not-allowed"
-            >
-              {isSaving ? <Loader2 size={18} className="animate-spin" /> : null}
-              {isSaving ? 'Saving...' : 'Save All Changes'}
-            </button>
-          </div>
-        </header>
 
-        {showUpdateReminder && view !== 'ai' && (
-            <div className="mb-6 p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg flex items-center justify-between animate-fadeIn">
-                <div className="flex items-center gap-3 text-purple-800 dark:text-purple-200">
-                    <AlertTriangle size={20} />
-                    <span><strong>Content Updated.</strong> Remember to update the AI Knowledge Base so the chatbot knows about these changes.</span>
-                </div>
-                <button 
-                    onClick={() => { setView('ai'); setShowUpdateReminder(false); }}
-                    className="text-sm px-4 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors"
+      {/* Main Content */}
+      <main className="flex-1 w-full md:ml-64 flex flex-col h-screen overflow-hidden">
+        
+        {/* Mobile Header */}
+        <header className="flex-shrink-0 bg-white dark:bg-slate-800 md:bg-transparent md:dark:bg-transparent p-4 flex justify-between items-center shadow-sm md:shadow-none z-20">
+            <div className="flex items-center gap-4">
+                <button onClick={() => setSidebarOpen(true)} className="md:hidden p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg">
+                    <Menu size={24} />
+                </button>
+                <h2 className="text-lg font-bold md:hidden">{navItems.find(i => i.id === view)?.label}</h2>
+            </div>
+
+            <div className="flex items-center space-x-4">
+                {saveStatus === 'success' && <span className="text-green-500 text-sm hidden sm:inline">Saved!</span>}
+                {saveStatus === 'error' && <span className="text-red-500 text-sm hidden sm:inline">Error!</span>}
+                
+                <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-sky-500 rounded-lg hover:bg-sky-600 transition-colors disabled:bg-sky-400 disabled:cursor-not-allowed shadow-md"
                 >
-                    Go to AI Settings
+                {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
+                {isSaving ? 'Saving...' : 'Save'}
                 </button>
             </div>
-        )}
+        </header>
 
-        {renderView()}
+        {/* Scrollable Content Area */}
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 pb-20">
+            {showUpdateReminder && view !== 'ai' && (
+                <div className="mb-6 p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-fadeIn">
+                    <div className="flex items-start gap-3 text-purple-800 dark:text-purple-200">
+                        <AlertTriangle size={20} className="shrink-0 mt-1 md:mt-0" />
+                        <span className="text-sm"><strong>Content Updated.</strong> Remember to update the AI Knowledge Base so the chatbot knows about these changes.</span>
+                    </div>
+                    <button 
+                        onClick={() => { setView('ai'); setShowUpdateReminder(false); }}
+                        className="text-sm px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors w-full md:w-auto"
+                    >
+                        Go to AI Settings
+                    </button>
+                </div>
+            )}
+
+            {renderView()}
+        </div>
       </main>
     </div>
   );

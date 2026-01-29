@@ -124,7 +124,7 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects }
   return (
     <div>
       <h2 className="text-3xl font-bold mb-6">Manage Projects</h2>
-      <div className="p-6 bg-white dark:bg-slate-800/50 rounded-lg shadow-md mb-8">
+      <div className="p-4 md:p-6 bg-white dark:bg-slate-800/50 rounded-lg shadow-md mb-8">
         <h3 className="text-xl font-semibold mb-4">{isEditing !== null ? 'Edit Project' : 'Add New Project'}</h3>
         <form onSubmit={handleAddNew} className="space-y-6">
           
@@ -162,7 +162,7 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects }
                 {currentForm.imageUrl && <img src={currentForm.imageUrl} alt="preview" className="w-16 h-10 object-cover rounded" />}
                 <label className={`cursor-pointer bg-slate-100 dark:bg-slate-700 px-3 py-1.5 rounded text-xs font-medium flex items-center gap-2 hover:bg-slate-200 ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
                     {isUploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
-                    {isUploading ? 'Uploading...' : 'Upload'}
+                    {isUploading ? '...' : 'Upload'}
                     <input type="file" onChange={(e) => handleFileUpload(e, 'imageUrl', setIsUploading)} disabled={isUploading} className="hidden"/>
                 </label>
               </div>
@@ -173,7 +173,7 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects }
                 <div className="flex items-center space-x-4 border p-2 rounded dark:border-slate-600">
                     <label className={`cursor-pointer bg-slate-100 dark:bg-slate-700 px-3 py-1.5 rounded text-xs font-medium flex items-center gap-2 hover:bg-slate-200 ${isUploadingDoc ? 'opacity-50 cursor-not-allowed' : ''}`}>
                         {isUploadingDoc ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
-                        {isUploadingDoc ? 'Uploading...' : 'Upload Doc'}
+                        {isUploadingDoc ? '...' : 'Upload Doc'}
                         <input type="file" onChange={(e) => handleFileUpload(e, 'docUrl', setIsUploadingDoc)} disabled={isUploadingDoc} accept=".pdf,.doc,.docx" className="hidden"/>
                     </label>
                     {currentForm.docUrl && <span className="text-xs text-green-500 font-bold">Doc Attached</span>}
@@ -258,9 +258,9 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects }
 
           <div className="flex items-center space-x-2 pt-4">
             {isEditing === null ? (
-              <button type="submit" disabled={isUploading || isUploadingDoc || isUploadingChallengeImg || isUploadingOutcomeImg} className="px-6 py-2 font-semibold text-white bg-sky-500 rounded-lg hover:bg-sky-600 disabled:bg-sky-300">Add Project</button>
+              <button type="submit" disabled={isUploading || isUploadingDoc || isUploadingChallengeImg || isUploadingOutcomeImg} className="px-6 py-2 font-semibold text-white bg-sky-500 rounded-lg hover:bg-sky-600 disabled:bg-sky-300 w-full md:w-auto">Add Project</button>
             ) : (
-              <button type="button" onClick={handleDoneEditing} className="px-6 py-2 font-semibold bg-slate-200 dark:bg-slate-600 rounded-lg">Done Editing</button>
+              <button type="button" onClick={handleDoneEditing} className="px-6 py-2 font-semibold bg-slate-200 dark:bg-slate-600 rounded-lg w-full md:w-auto">Done Editing</button>
             )}
           </div>
         </form>
@@ -268,12 +268,12 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects }
 
       <div className="grid grid-cols-1 gap-4">
         {projects.map((project, index) => (
-          <div key={index} className={`flex items-start justify-between p-4 rounded-lg shadow-sm border transition-colors ${isEditing === index ? 'bg-sky-50 dark:bg-sky-900/20 border-sky-200' : 'bg-white dark:bg-slate-800/50 border-transparent'}`}>
-            <div className="flex items-start space-x-4">
-              <img src={project.imageUrl} alt={project.title} className="w-20 h-20 object-cover rounded shadow-inner"/>
+          <div key={index} className={`flex flex-col md:flex-row items-start justify-between p-4 rounded-lg shadow-sm border transition-colors ${isEditing === index ? 'bg-sky-50 dark:bg-sky-900/20 border-sky-200' : 'bg-white dark:bg-slate-800/50 border-transparent'}`}>
+            <div className="flex items-start space-x-4 mb-4 md:mb-0">
+              <img src={project.imageUrl} alt={project.title} className="w-16 h-16 md:w-20 md:h-20 object-cover rounded shadow-inner"/>
               <div>
                 <div className="flex items-center gap-2">
-                    <h4 className="font-bold">{project.title}</h4>
+                    <h4 className="font-bold text-sm md:text-base">{project.title}</h4>
                     {project.featured && <div title="Featured"><Star size={14} className="fill-yellow-400 text-yellow-400" /></div>}
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 max-w-xl mb-1">{project.description}</p>
@@ -284,7 +284,7 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects }
                 </div>
               </div>
             </div>
-            <div className="flex-shrink-0 space-x-4">
+            <div className="flex items-center gap-4 w-full md:w-auto justify-end">
               <button onClick={() => handleSelectToEdit(index)} className="text-sm font-medium text-sky-600 dark:text-sky-400 hover:underline">Edit</button>
               <button onClick={() => handleDelete(index)} className="text-sm font-medium text-red-500 hover:underline">Delete</button>
             </div>

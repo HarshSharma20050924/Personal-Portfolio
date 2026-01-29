@@ -3,13 +3,17 @@ import React, { useEffect, useState } from 'react';
 import { Message } from '../types';
 import { Trash2, Mail } from 'lucide-react';
 
-const ManageMessages: React.FC = () => {
+interface ManageMessagesProps {
+    refreshTrigger?: number;
+}
+
+const ManageMessages: React.FC<ManageMessagesProps> = ({ refreshTrigger = 0 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchMessages();
-  }, []);
+  }, [refreshTrigger]);
 
   const fetchMessages = async () => {
     const apiKey = sessionStorage.getItem('apiKey');
@@ -42,7 +46,7 @@ const ManageMessages: React.FC = () => {
     }
   };
 
-  if (loading) return <div>Loading inbox...</div>;
+  if (loading && messages.length === 0) return <div>Loading inbox...</div>;
 
   return (
     <div>
@@ -54,7 +58,7 @@ const ManageMessages: React.FC = () => {
       ) : (
         <div className="grid gap-4">
           {messages.map((msg) => (
-            <div key={msg.id} className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow border border-slate-200 dark:border-slate-700">
+            <div key={msg.id} className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow border border-slate-200 dark:border-slate-700 animate-fadeIn">
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h3 className="font-bold text-lg">{msg.name}</h3>
@@ -63,7 +67,7 @@ const ManageMessages: React.FC = () => {
                   </a>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs text-slate-400 block mb-2">{new Date(msg.createdAt).toLocaleDateString()}</span>
+                  <span className="text-xs text-slate-400 block mb-2">{new Date(msg.createdAt).toLocaleDateString()} {new Date(msg.createdAt).toLocaleTimeString()}</span>
                   <button onClick={() => deleteMessage(msg.id)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded transition-colors" title="Delete">
                     <Trash2 size={18} />
                   </button>
