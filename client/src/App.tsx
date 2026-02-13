@@ -7,7 +7,10 @@ import Portfolio from './components/Portfolio';
 import ProjectDetails from './pages/ProjectDetails';
 import ProjectGallery from './pages/ProjectGallery';
 import BlogDetails from './pages/BlogDetails';
-import BlogList from './pages/BlogList'; // New Import
+import BlogList from './pages/BlogList'; 
+import ContactPage from './pages/FreelanceContactPage'; // New
+import { WorkPage } from './pages/FreelanceWorkPage'; // New
+import ServiceDetail from './pages/FreelanceServiceDetail'; // New
 import CinematicIntro from './components/CinematicIntro';
 import { HeroData, Skill, Project, SocialLink, Article, Experience, Education, PlaygroundConfig } from './types';
 
@@ -164,6 +167,11 @@ const App: React.FC = () => {
                                     template={data.heroData.template}
                                 />
                             } />
+                            
+                            {/* Freelance Specific Routes */}
+                            <Route path="/contact" element={<ContactPage />} />
+                            <Route path="/work" element={<WorkPage />} />
+                            <Route path="/service/:id" element={<ServiceDetail />} />
                         </Routes>
                     </motion.div>
                 )}

@@ -34,6 +34,7 @@ app = FastAPI(lifespan=lifespan)
 # 3. CLIENT INITIALIZATION
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 groq_client = Groq(api_key=GROQ_API_KEY)
+# Initialize GenAI Client
 genai_client = genai.Client(api_key=GOOGLE_API_KEY)
 
 # 4. DATA MODELS
@@ -44,6 +45,7 @@ class Message(BaseModel):
 class ChatRequest(BaseModel):
     message: str
     history: List[Message]
+    template: Optional[str] = "default" 
 
 class UpdateKnowledgeRequest(BaseModel):
     content: str
@@ -53,13 +55,15 @@ class UpdateKnowledgeRequest(BaseModel):
 def _do_warmup():
     """Warms up embedding and LLM providers."""
     try:
+        # Use the embedding model without models/ prefix
         genai_client.models.embed_content(model="text-embedding-004", contents="warmup")
         groq_client.chat.completions.create(
             messages=[{"role": "user", "content": "hi"}],
             model="llama-3.3-70b-versatile",
             max_tokens=1
         )
-    except: pass
+    except Exception as e: 
+        print(f"Warmup warning: {e}")
 
 def get_query_embedding(text: str):
     """Generates embedding for user queries."""
@@ -82,21 +86,19 @@ async def health_check():
 async def update_knowledge(request: UpdateKnowledgeRequest):
     """
     LOOP UPDATE: Uses Batch Embedding to process all chunks at once.
-    This replaces the old slow serial loop.
     """
     try:
         # Step 1: Clean old data
         supabase.table("documents").delete().eq("metadata->>source", request.source).execute()
 
         # Step 2: Chunking
-        # Increased chunk overlap to ensure context flows better between sections
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         chunks = text_splitter.split_text(request.content)
         
         if not chunks: return {"message": "Empty content"}
 
-        # Step 3: BATCH EMBEDDING (The "Loop Update")
-        # Instead of calling API 50 times for 50 chunks, we call it ONCE.
+        # Step 3: BATCH EMBEDDING
+        # Use the embedding model without models/ prefix
         response = genai_client.models.embed_content(
             model="text-embedding-004",
             contents=chunks,
@@ -116,6 +118,7 @@ async def update_knowledge(request: UpdateKnowledgeRequest):
         return {"status": "success", "chunks": len(records)}
 
     except Exception as e:
+        print(f"Update error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/chat")
@@ -123,20 +126,44 @@ async def update_knowledge(request: UpdateKnowledgeRequest):
 async def chat(request: ChatRequest):
     """
     THIRD PERSON UPDATE: Forces AI to speak about the owner as a separate person.
+    CONTEXTUAL AWARENESS: Adapts to 'freelance' or 'academic' mode.
     """
     try:
         # Step 1: Semantic Search
         query_vec = get_query_embedding(request.message)
+        
+        # Note: 'match_documents' is a custom RPC function in Supabase.
+        # Ensure your supabase_schema.sql set this up correctly.
         rpc_response = supabase.rpc("match_documents", {
             "query_embedding": query_vec,
-            "match_threshold": 0.3, # Lowered slightly to catch more broad context
-            "match_count": 10       # Increased for better context window
+            "match_threshold": 0.5, 
+            "match_count": 10       
         }).execute()
 
         context = "\n\n".join([m['content'] for m in rpc_response.data]) if rpc_response.data else ""
 
-        # Step 2: Third-Person Prompting & Formatting
+        # Determine Mode
+        is_freelance = request.template == "freelance"
+        mode_instruction = ""
+        
+        if is_freelance:
+            mode_instruction = """
+            CRITICAL MODE INSTRUCTION: You are in FREELANCE / AGENCY mode. 
+            - IGNORE projects marked as [ACADEMIC] or [PERSONAL] unless specifically asked.
+            - FOCUS heavily on projects marked as [FREELANCE / COMMERCIAL].
+            - Emphasize ROI, business value, speed, and reliability.
+            - Speak like a high-end consultant or agency partner.
+            - If asked about services, refer to Website Engineering, Automation Systems, and AI Integration.
+            """
+        else:
+            mode_instruction = """
+            MODE: Standard Portfolio. You can discuss both academic and personal projects freely.
+            """
+
+        # Step 2: System Prompt
         system_prompt = f"""You are the sophisticated AI interface for {OWNER_NAME}'s Digital Portfolio.
+
+        {mode_instruction}
 
         CONTEXT FROM DATABASE:
         {context if context else "No specific database records found for this query. Rely on general professional knowledge."}
@@ -149,8 +176,7 @@ async def chat(request: ChatRequest):
             -   **Emphasis**: Use bolding for key technologies or project titles.
         3.  **Tone**: Professional, concise, intelligent, and "Elite". Avoid excessive apologies.
         4.  **Unknowns**: If the context doesn't have the answer, suggest checking the specific "Contact" section or imply that {OWNER_NAME} can discuss it directly.
-        5.  **Source Attribution**: If you find specific project names or sections in the context, mention them (e.g., "According to the Project Alpha logs...").
-
+        
         Example Output:
         "{OWNER_NAME} developed **Project X**, a scalable SaaS platform. You can view the code at [GitHub Repository](https://github.com/...). He utilized React and Node.js for this architecture."
         """
@@ -165,7 +191,7 @@ async def chat(request: ChatRequest):
         response = groq_client.chat.completions.create(
             messages=messages,
             model="llama-3.3-70b-versatile",
-            temperature=0.4, # Lower temperature for more factual/grounded responses
+            temperature=0.4, 
             max_tokens=512
         )
 
@@ -173,7 +199,6 @@ async def chat(request: ChatRequest):
 
     except Exception as e:
         print(f"Chat error: {e}")
-        # Return a fallback message instead of 500ing to the frontend
         return {"reply": "Connection to neural core unstable. Please try again or contact the administrator directly."}
 
 @app.post("/warmup")

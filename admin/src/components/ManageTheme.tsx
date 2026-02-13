@@ -14,6 +14,11 @@ const templates = [
     description: 'The original sleek and modern layout with smooth animations and a professional feel.',
   },
   {
+    id: 'freelance',
+    name: 'Freelance / Agency (New)',
+    description: 'A dark, high-end agency style design. Separates freelance projects from academic work and focuses on ROI and services.',
+  },
+  {
     id: 'minimalist',
     name: 'Centered Minimalist',
     description: 'A clean, focused layout with a centered content column, ideal for a minimalist aesthetic.',

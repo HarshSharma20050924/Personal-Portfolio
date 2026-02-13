@@ -10,7 +10,8 @@ import TemplatePlayground from './templates/TemplatePlayground';
 import TemplateProfileCard from './templates/TemplateProfileCard';
 import TemplateElite from './templates/TemplateElite';
 import TemplateFantasy from './templates/TemplateFantasy';
-import TemplateCorporate from './templates/TemplateCorporate'; // New Import
+import TemplateCorporate from './templates/TemplateCorporate';
+import TemplateFreelance from './templates/TemplateFreelance';
 import ChatWidget from './ChatWidget';
 
 interface PortfolioProps {
@@ -48,8 +49,10 @@ const Portfolio: React.FC<PortfolioProps> = (props) => {
           return <TemplateElite {...props} />;
         case 'fantasy':
           return <TemplateFantasy {...props} />;
-        case 'corporate': // New Case
+        case 'corporate':
           return <TemplateCorporate {...props} />;
+        case 'freelance':
+          return <TemplateFreelance {...props} />;
         case 'default':
         default:
           return <TemplateDefault {...props} />;

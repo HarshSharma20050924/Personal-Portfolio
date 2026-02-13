@@ -105,7 +105,7 @@ const CinematicIntro: React.FC<CinematicIntroProps> = ({ name, onComplete, loade
                         }}
                     >
                         <h1 className="text-4xl md:text-6xl font-medium tracking-tight text-white mb-2">
-                            {firstName} {lastName}
+                            {firstName}
                         </h1>
                         <p className="text-xs font-mono text-gray-500 tracking-[0.3em] uppercase">
                             Portfolio Loaded

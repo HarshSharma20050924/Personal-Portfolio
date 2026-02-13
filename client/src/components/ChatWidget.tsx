@@ -79,7 +79,8 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
 
-  const isElite = template === 'elite';
+  // Elite and Freelance share similar dark aesthetics
+  const isElite = template === 'elite' || template === 'freelance';
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -116,7 +117,8 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: userMsg,
-          history: messages.map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.content }))
+          history: messages.map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.content })),
+          template: template // Pass template to API to switch context/persona
         }),
       });
 
@@ -148,14 +150,9 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
     localStorage.removeItem('portfolio_chat_history');
   };
 
-  // Prevent scroll propagation to body
-  const stopPropagation = (e: React.WheelEvent | React.TouchEvent) => {
-      e.stopPropagation();
-  };
-
   if (isElite) {
     return (
-        <div className="chat-widget-container font-mono" onWheel={stopPropagation} onTouchMove={stopPropagation} data-lenis-prevent>
+        <div className="chat-widget-container font-mono" data-lenis-prevent>
             <AnimatePresence>
                 {isOpen && (
                     <M.div
@@ -196,7 +193,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
                         <div 
                             ref={scrollAreaRef}
                             className="flex-1 overflow-y-auto p-6 space-y-6 bg-white dark:bg-black/40 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-white/20 scrollbar-track-transparent overscroll-contain"
-                            data-lenis-prevent // Important for stopping Lenis scroll hijacking
+                            data-lenis-prevent
                         >
                             {messages.map((msg, idx) => (
                                 <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
@@ -279,7 +276,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
   }
 
   return (
-    <div className="chat-widget-container" onWheel={stopPropagation} onTouchMove={stopPropagation} data-lenis-prevent>
+    <div className="chat-widget-container" data-lenis-prevent>
       <AnimatePresence>
         {isOpen && (
           <M.div

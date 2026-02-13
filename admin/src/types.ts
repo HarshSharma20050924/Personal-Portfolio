@@ -1,5 +1,4 @@
 
-
 export interface HeroData {
   name: string;
   title: string;
@@ -18,6 +17,15 @@ export interface Skill {
   level: number;
 }
 
+export interface Service {
+  id?: number;
+  title: string;
+  tagline?: string;
+  description: string;
+  icon: string;
+  projects?: Project[];
+}
+
 export interface Project {
   id?: number;
   title: string;
@@ -30,10 +38,12 @@ export interface Project {
   repoUrl?: string;
   huggingFaceUrl?: string;
   featured?: boolean;
+  showInFreelance?: boolean;
   challenge?: string;
   challengeImage?: string;
   outcome?: string;
   outcomeImage?: string;
+  serviceId?: number;
 }
 
 export interface SocialLink {
@@ -41,6 +51,7 @@ export interface SocialLink {
   name: string;
   url: string;
   icon: string;
+  showInFreelance?: boolean;
 }
 
 export interface Article {
@@ -52,6 +63,7 @@ export interface Article {
   date: string;
   url: string;
   featured?: boolean;
+  showInFreelance?: boolean;
 }
 
 export interface Experience {
@@ -60,6 +72,7 @@ export interface Experience {
   company: string;
   period: string;
   description: string;
+  showInFreelance?: boolean;
 }
 
 export interface Education {
@@ -67,6 +80,7 @@ export interface Education {
   degree: string;
   institution: string;
   period: string;
+  showInFreelance?: boolean;
 }
 
 export interface Message {

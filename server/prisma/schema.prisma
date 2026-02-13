@@ -1,23 +1,19 @@
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
 }
 
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
 model Admin {
   id       Int    @id @default(autoincrement())
   username String @unique
-  password String
-}
-
-model BiometricCredential {
-  id           String   @id @default(uuid())
-  credentialId String   @unique
-  deviceName   String
-  createdAt    DateTime @default(now())
+  password String // Ideally hashed
 }
 
 model GeneralInfo {
@@ -30,7 +26,7 @@ model GeneralInfo {
   phone           String?
   quote           String?
   resumeUrl       String?
-  template        String? @default("default")
+  template        String? @default("default") // 'default', 'minimalist', 'elite', 'freelance', etc.
 }
 
 model Skill {
@@ -39,55 +35,82 @@ model Skill {
   level Int
 }
 
+// NEW: Service/Expertise Model for Freelance Template
+model Service {
+  id          Int       @id @default(autoincrement())
+  title       String
+  tagline     String?
+  description String
+  icon        String    @default("Globe") // Lucide icon name
+  projects    Project[]
+}
+
 model Project {
-  id             Int      @id @default(autoincrement())
-  title          String
-  description    String
-  imageUrl       String
-  videoUrl       String?
-  docUrl         String?
-  tags           String[]
-  liveUrl        String?
-  repoUrl        String?
-  huggingFaceUrl String?
-  featured       Boolean? @default(false)
-  challenge      String?
-  challengeImage String?
-  outcome        String?
-  outcomeImage   String?
+  id              Int      @id @default(autoincrement())
+  title           String
+  description     String
+  imageUrl        String
+  videoUrl        String?
+  docUrl          String?
+  liveUrl         String?
+  repoUrl         String?
+  huggingFaceUrl  String?
+  tags            String[]
+  featured        Boolean  @default(false)
+  
+  // NEW: Toggle for Freelance Template separation
+  showInFreelance Boolean  @default(false) 
+
+  // NEW: Deep dive content for case studies (Freelance/Elite templates)
+  challenge       String?
+  challengeImage  String?
+  outcome         String?
+  outcomeImage    String?
+
+  // NEW: Link to Service
+  serviceId       Int?
+  service         Service? @relation(fields: [serviceId], references: [id])
 }
 
 model SocialLink {
-  id   Int    @id @default(autoincrement())
-  name String
-  url  String
-  icon String
+  id              Int     @id @default(autoincrement())
+  name            String
+  url             String
+  icon            String
+  // NEW: Control visibility in Freelance Footer
+  showInFreelance Boolean @default(false)
 }
 
 model Article {
-  id       Int     @id @default(autoincrement())
-  title    String
-  excerpt  String
-  content  String?
-  imageUrl String?
-  date     String
-  url      String?
-  featured Boolean? @default(false)
+  id              Int     @id @default(autoincrement())
+  title           String
+  excerpt         String
+  content         String? // Markdown content
+  imageUrl        String?
+  date            String
+  url             String // External link or slug
+  featured        Boolean @default(false)
+  // NEW: Control visibility in Freelance Blog section
+  showInFreelance Boolean @default(false)
 }
 
 model Experience {
-  id          Int    @id @default(autoincrement())
-  position    String
-  company     String
-  period      String
-  description String
+  id              Int     @id @default(autoincrement())
+  position        String
+  company         String
+  period          String
+  description     String
+  // NEW: Control visibility in Freelance Experience section
+  showInFreelance Boolean @default(false)
 }
 
 model Education {
-  id          Int    @id @default(autoincrement())
-  degree      String
-  institution String
-  period      String
+  id              Int     @id @default(autoincrement())
+  degree          String
+  institution     String
+  period          String
+  // NEW: Control visibility in Freelance Education section
+  showInFreelance Boolean @default(false)
 }
 
 model Message {
@@ -98,28 +121,40 @@ model Message {
   createdAt DateTime @default(now())
 }
 
+model BiometricCredential {
+  id           Int      @id @default(autoincrement())
+  credentialId String   @unique // The base64 ID from WebAuthn
+  deviceName   String   @default("Unknown Device")
+  createdAt    DateTime @default(now())
+}
+
 model PlaygroundConfig {
-  id                   Int      @id @default(autoincrement())
-  heroTitle            String?
-  heroSubtitle         String?
-  bgType               String   @default("gradient")
-  bgColor1             String   @default("#0f172a")
-  bgColor2             String   @default("#1e293b")
-  textColor            String   @default("#f8fafc")
-  primaryColor         String   @default("#38bdf8")
-  cardStyle            String   @default("glass")
-  borderRadius         String   @default("rounded-2xl")
-  showHero             Boolean  @default(true)
-  showSkills           Boolean  @default(true)
-  showProjects         Boolean  @default(true)
-  showContact          Boolean  @default(true)
-  animationSpeed       String   @default("normal")
-  particleCount        Int?     @default(200)
-  particleSpread       Int?     @default(10)
-  particleBaseSize     Int?     @default(100)
+  id                   Int     @id @default(autoincrement())
+  heroTitle            String  @default("Playground Mode")
+  heroSubtitle         String  @default("Experimenting with colors, shapes, and layouts.")
+  bgType               String  @default("gradient") // solid, gradient, mesh, stars, particles, floatingLines
+  bgColor1             String  @default("#0f172a")
+  bgColor2             String  @default("#1e293b")
+  textColor            String  @default("#f8fafc")
+  primaryColor         String  @default("#38bdf8")
+  cardStyle            String  @default("glass") // solid, glass, outline, neobrutalism
+  borderRadius         String  @default("rounded-2xl")
+  
+  showHero             Boolean @default(true)
+  showSkills           Boolean @default(true)
+  showProjects         Boolean @default(true)
+  showContact          Boolean @default(true)
+  
+  animationSpeed       String  @default("normal") // slow, normal, fast
+
+  // Advanced Visuals
+  particleCount        Int?    @default(200)
+  particleSpread       Int?    @default(10)
+  particleBaseSize     Int?    @default(100)
   moveParticlesOnHover Boolean? @default(true)
   disableRotation      Boolean? @default(false)
   particleSpeed        Float?   @default(0.1)
+
   flLineCount          Int?     @default(10)
   flLineDistance       Float?   @default(5.0)
   flBendRadius         Float?   @default(5.0)
