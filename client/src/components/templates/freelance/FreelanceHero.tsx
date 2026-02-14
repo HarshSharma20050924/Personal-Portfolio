@@ -30,7 +30,8 @@ export const FreelanceHero = ({ data, socialLinks }: { data: HeroData, socialLin
 
   // Scroll Animations
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
-  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]); // Fade out quicker
+  // Adjusted opacity to fade out later [0.3 start -> 0.8 end]
+  const opacity = useTransform(scrollYProgress, [0, 0.3, 0.8], [1, 1, 0]); 
   const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
 
   const textX = useTransform(springX, [-0.5, 0.5], ["-15px", "15px"]);
@@ -44,7 +45,7 @@ export const FreelanceHero = ({ data, socialLinks }: { data: HeroData, socialLin
     <section 
       ref={ref} 
       onMouseMove={handleMouseMove}
-      className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-elite-bg pt-20"
+      className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-elite-bg pt-24 pb-12 md:pt-20 md:pb-0"
     >
       <motion.div 
         style={{ y: bgY, opacity }}
@@ -58,19 +59,19 @@ export const FreelanceHero = ({ data, socialLinks }: { data: HeroData, socialLin
         
         <motion.div 
           style={{ x: textX, y: textY, opacity }} 
-          className="lg:col-span-7 flex flex-col items-center lg:items-start text-center lg:text-left z-20"
+          className="lg:col-span-7 flex flex-col items-center lg:items-start text-center lg:text-left z-20 order-2 lg:order-1"
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="mb-8 flex items-center gap-3 px-4 py-2 rounded-full border border-white/5 bg-white/[0.01] backdrop-blur-sm"
+            className="mb-6 md:mb-8 flex items-center gap-3 px-4 py-2 rounded-full border border-white/5 bg-white/[0.01] backdrop-blur-sm"
           >
              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
              <span className="text-xs font-mono text-elite-sub tracking-widest uppercase">Available for Select Projects</span>
           </motion.div>
 
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-medium text-white leading-[1.1] mb-8 tracking-tight whitespace-nowrap">
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-medium text-white leading-[1.1] mb-6 md:mb-8 tracking-tight whitespace-nowrap">
             <SplitText className="inline-block" delay={0.2} wordDelay={0.03}>
               Grow your business
             </SplitText>
@@ -86,7 +87,7 @@ export const FreelanceHero = ({ data, socialLinks }: { data: HeroData, socialLin
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 1.0, ease: [0.22, 1, 0.36, 1] }}
-            className="max-w-xl text-lg text-elite-sub leading-relaxed mb-10 font-light tracking-wide"
+            className="max-w-xl text-lg text-elite-sub leading-relaxed mb-8 md:mb-10 font-light tracking-wide"
           >
             Engineering digital ecosystems that operate with <span className="text-white font-medium">precision</span> and <span className="text-white font-medium">autonomy</span>.
           </motion.p>
@@ -102,7 +103,7 @@ export const FreelanceHero = ({ data, socialLinks }: { data: HeroData, socialLin
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => navigate('/contact')}
-                className="clickable px-10 py-4 bg-white text-black text-sm font-semibold tracking-widest uppercase rounded-full hover:bg-neutral-200 transition-all duration-300"
+                className="clickable px-10 py-4 bg-white text-black text-sm font-semibold tracking-widest uppercase rounded-full hover:bg-neutral-200 transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.3)]"
                 >
                 Start Transformation
                 </motion.button>
@@ -129,19 +130,19 @@ export const FreelanceHero = ({ data, socialLinks }: { data: HeroData, socialLin
           </motion.div>
         </motion.div>
 
-        <div className="lg:col-span-5 relative flex justify-center lg:justify-end h-full min-h-[50vh] lg:min-h-screen items-end -mt-48 lg:-mt-64">
+        <div className="lg:col-span-5 relative flex justify-center lg:justify-end h-[40vh] md:h-[50vh] lg:min-h-screen items-center lg:items-end lg:-mt-64 order-1 lg:order-2">
             <motion.div 
                initial={{ opacity: 0, scale: 1.1, filter: "blur(20px)" }}
                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
                transition={{ duration: 1.2, delay: 0.4, ease: "easeOut" }}
                style={{ 
                  y,
-                 opacity, // Fade out on scroll
+                 opacity, 
                  scale: useTransform(scrollYProgress, [0, 1], [1, 1.1]), 
                  x: imgMouseX,
                  rotateY: useTransform(springX, [-0.5, 0.5], [-5, 5]) 
                }}
-               className="relative w-full max-w-md lg:max-w-full origin-bottom"
+               className="relative w-full max-w-[280px] md:max-w-md lg:max-w-full origin-bottom"
             >
                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] bg-elite-accent/10 blur-[100px] rounded-full mix-blend-screen opacity-50" />
                <img 
@@ -149,8 +150,8 @@ export const FreelanceHero = ({ data, socialLinks }: { data: HeroData, socialLin
                  alt={data.name} 
                  className="relative z-10 w-full h-auto object-contain mask-gradient-b drop-shadow-2xl will-change-transform grayscale hover:grayscale-0 transition-all duration-700"
                  style={{ 
-                    maskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)',
-                    WebkitMaskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)'
+                    maskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)',
+                    WebkitMaskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)'
                  }}
                />
             </motion.div>

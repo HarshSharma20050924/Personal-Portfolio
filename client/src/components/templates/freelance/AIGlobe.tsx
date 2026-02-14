@@ -1,7 +1,7 @@
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles, Bot, ArrowRight, CornerDownLeft, User, Terminal } from 'lucide-react';
+import { X, Sparkles, Bot, ArrowRight, CornerDownLeft } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -19,39 +19,42 @@ const AIMessage: React.FC<{
     onComplete?: () => void;
 }> = ({ content, onComplete }) => {
     const [displayContent, setDisplayContent] = useState('');
-    const [isTyping, setIsTyping] = useState(true);
-    const textRef = useRef(''); // Keeps track of text without state lag
+    const hasCompleted = useRef(false);
 
     useEffect(() => {
-        // Reset state for new content
-        textRef.current = '';
-        setDisplayContent('');
-        setIsTyping(true);
+        // If content is short or empty, complete immediately
+        if (!content) {
+            if (onComplete) onComplete();
+            return;
+        }
 
+        hasCompleted.current = false;
+        setDisplayContent(''); 
+        
         let currentIndex = 0;
-        const speed = 10; // Typing speed in ms
+        const speed = 12; // Adjusted speed
 
         const interval = setInterval(() => {
             if (currentIndex < content.length) {
-                // Append next character
-                const char = content[currentIndex];
-                textRef.current += char;
-                setDisplayContent(textRef.current);
+                // Using functional update to ensure we don't depend on stale state
+                setDisplayContent(prev => content.slice(0, prev.length + 1));
                 currentIndex++;
             } else {
                 clearInterval(interval);
-                setIsTyping(false);
-                if (onComplete) onComplete();
+                if (!hasCompleted.current) {
+                    hasCompleted.current = true;
+                    if (onComplete) onComplete();
+                }
             }
         }, speed);
 
         return () => clearInterval(interval);
-    }, [content]); // Re-run if content prop changes (unlikely for immutable history but safe)
+    }, [content]); // Re-run if text changes, but `content` should be stable for a given message ID
 
     return (
         <div className="prose prose-sm prose-invert max-w-none text-xs md:text-sm font-light leading-relaxed prose-p:my-1 prose-headings:my-2 prose-strong:text-blue-400 prose-a:text-blue-400 hover:prose-a:text-blue-300">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{displayContent}</ReactMarkdown>
-            {isTyping && <span className="inline-block w-1.5 h-3 bg-blue-500 ml-1 animate-pulse align-middle" />}
+            {!hasCompleted.current && <span className="inline-block w-1.5 h-3 bg-blue-500 ml-1 animate-pulse align-middle" />}
         </div>
     );
 };
@@ -77,10 +80,13 @@ export const AIGlobe = () => {
   // --- Scroll Logic ---
   const scrollToBottom = () => {
     if (scrollRef.current) {
-        // Use functional state update to ensure we are scrolling after render
         requestAnimationFrame(() => {
             if (scrollRef.current) {
-                scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+                // Smooth scroll to bottom
+                scrollRef.current.scrollTo({
+                    top: scrollRef.current.scrollHeight,
+                    behavior: 'smooth'
+                });
             }
         });
     }
@@ -88,7 +94,8 @@ export const AIGlobe = () => {
 
   useEffect(() => {
     if (isChatOpen) {
-        scrollToBottom();
+        // Delay slightly to allow layout reflow
+        setTimeout(scrollToBottom, 100);
     }
   }, [chatHistory, isChatOpen, isBotThinking]);
 
@@ -136,7 +143,7 @@ export const AIGlobe = () => {
   };
 
   const handleTypingComplete = (id: string) => {
-      // Mark message as done typing in state to prevent re-typing on re-renders
+      // Mark message as done typing
       setChatHistory(prev => prev.map(msg => msg.id === id ? { ...msg, isTyping: false } : msg));
   };
 
@@ -144,16 +151,11 @@ export const AIGlobe = () => {
     if (e.key === 'Enter') handleSend();
   };
 
-  const toggleChat = () => {
-      setIsChatOpen(!isChatOpen);
-  };
-
-  // --- Physics & Animation Refs ---
+  // --- Physics Refs ---
   const particlesRef = useRef<{ x: number, y: number, z: number, r: number }[]>([]);
   const rotationRef = useRef({ x: 0, y: 0 });
   const mouseRef = useRef({ x: 0, y: 0 });
-  const isHoveredRef = useRef(false);
-
+  
   // --- Interactive Globe Logic ---
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -161,12 +163,19 @@ export const AIGlobe = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let width = canvas.width = canvas.offsetWidth;
-    let height = canvas.height = canvas.offsetHeight;
+    // Use parent container dimensions
+    const resizeCanvas = () => {
+        if(canvas.parentElement) {
+            canvas.width = canvas.parentElement.offsetWidth;
+            canvas.height = canvas.parentElement.offsetHeight;
+        }
+    };
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
     
     // Initialize Particles
     if (particlesRef.current.length === 0) {
-        const particleCount = 100; // Optimized count
+        const particleCount = 100;
         for (let i = 0; i < particleCount; i++) {
             const theta = Math.random() * Math.PI * 2;
             const phi = Math.acos((Math.random() * 2) - 1);
@@ -180,50 +189,51 @@ export const AIGlobe = () => {
         }
     }
 
-    const handleMouseMove = (e: MouseEvent) => {
+    // Bind mouse move to WINDOW to track cursor globally
+    const handleGlobalMouseMove = (e: MouseEvent) => {
         const rect = canvas.getBoundingClientRect();
-        mouseRef.current.x = (e.clientX - rect.left - width / 2) * 0.0001; // Scale down
-        mouseRef.current.y = (e.clientY - rect.top - height / 2) * 0.0001;
+        // Calculate relative position from center of canvas
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        // Normalize range approx -1 to 1
+        mouseRef.current.x = (e.clientX - centerX) * 0.0001; 
+        mouseRef.current.y = (e.clientY - centerY) * 0.0001;
     };
     
-    canvas.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mousemove', handleGlobalMouseMove);
 
     let animId: number;
 
     const animate = () => {
-      ctx.clearRect(0, 0, width, height);
-      const cx = width / 2;
-      const cy = height / 2;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
 
       // Physics:
       // Base rotation (Always spinning)
-      const baseRotation = 0.003; 
+      const baseRotation = 0.002; 
       
-      // If hovered, add mouse influence. If not, just spin.
-      // We interpret mouse X as Y-axis rotation speed addition
-      const targetRotY = isHoveredRef.current ? mouseRef.current.x * 5 : baseRotation;
-      const targetRotX = isHoveredRef.current ? mouseRef.current.y * 5 : 0;
+      // Add mouse influence. 
+      const targetRotY = baseRotation + (mouseRef.current.x * 5);
+      const targetRotX = mouseRef.current.y * 5;
 
-      // Smooth interpolation (E asing)
+      // Smooth interpolation
       rotationRef.current.y += (targetRotY - rotationRef.current.y) * 0.05;
       rotationRef.current.x += (targetRotX - rotationRef.current.x) * 0.05;
       
-      // Ensure there's always *some* movement
-      if (Math.abs(rotationRef.current.y) < 0.001) rotationRef.current.y = 0.001;
-
       const rotX = rotationRef.current.x;
       const rotY = rotationRef.current.y;
 
       particlesRef.current.forEach(p => {
-        // Rotate Y (Horizontal Spin)
+        // 3D Rotation Matrix
         const x1 = p.x * Math.cos(rotY) - p.z * Math.sin(rotY);
         const z1 = p.z * Math.cos(rotY) + p.x * Math.sin(rotY);
         
-        // Rotate X (Vertical Tilt - driven by mouse)
         const y1 = p.y * Math.cos(rotX) - z1 * Math.sin(rotX);
         const z2 = z1 * Math.cos(rotX) + p.y * Math.sin(rotX);
 
-        // Update Position
+        // Update Stored Position for next frame
         p.x = x1;
         p.y = y1;
         p.z = z2;
@@ -238,7 +248,8 @@ export const AIGlobe = () => {
         
         ctx.arc(screenX, screenY, p.r * scale, 0, Math.PI * 2);
         
-        if (isHoveredRef.current || isChatOpen) {
+        // Color based on state
+        if (isChatOpen || isHovered) {
             ctx.fillStyle = `rgba(59, 130, 246, ${alpha})`; // Blue
             ctx.shadowBlur = 10;
             ctx.shadowColor = 'rgba(59, 130, 246, 0.5)';
@@ -251,11 +262,12 @@ export const AIGlobe = () => {
         ctx.shadowBlur = 0;
       });
 
-      // Connections (Only when active/hovered to save performance)
-      if (isHoveredRef.current || isChatOpen) {
+      // Connections
+      if (isChatOpen || isHovered) {
           ctx.strokeStyle = 'rgba(59, 130, 246, 0.1)';
           ctx.lineWidth = 0.5;
           ctx.beginPath();
+          // Sample a subset for performance
           for(let i=0; i<particlesRef.current.length; i+=2) { 
               for(let j=i+1; j<particlesRef.current.length; j+=5) {
                   const p1 = particlesRef.current[i];
@@ -283,31 +295,25 @@ export const AIGlobe = () => {
     
     return () => {
         cancelAnimationFrame(animId);
-        canvas.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mousemove', handleGlobalMouseMove);
+        window.removeEventListener('resize', resizeCanvas);
     };
-  }, [isChatOpen]); // Re-bind if chat state changes mostly to trigger render updates
-
-  // Sync ref with state for animation loop
-  useEffect(() => {
-      isHoveredRef.current = isHovered;
-  }, [isHovered]);
+  }, [isChatOpen, isHovered]);
 
   return (
     <div className="relative w-full h-full flex items-center justify-center">
       <motion.div
-        className="relative w-[300px] h-[300px] md:w-[350px] md:h-[350px] cursor-none clickable"
+        className="relative w-[300px] h-[300px] md:w-[350px] md:h-[350px] cursor-none clickable z-10"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        onClick={toggleChat}
+        onClick={() => setIsChatOpen(true)}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
         <canvas ref={canvasRef} className="w-full h-full" />
         
-        {/* Glow Background */}
         <div className={`absolute inset-0 rounded-full blur-[80px] transition-all duration-700 pointer-events-none ${isHovered || isChatOpen ? 'bg-blue-500/20' : 'bg-white/5'}`} />
         
-        {/* Hint Text */}
         <AnimatePresence>
             {!isChatOpen && (
                 <motion.div 
@@ -323,17 +329,17 @@ export const AIGlobe = () => {
         </AnimatePresence>
       </motion.div>
 
-      {/* Twin Interface Chat - Full Screen on Mobile, Popover on Desktop */}
+      {/* Twin Interface Chat - Bottom Sheet on Mobile */}
       <AnimatePresence>
         {isChatOpen && (
           <>
-            {/* Backdrop for mobile to prevent background scrolling/interaction */}
+            {/* Backdrop */}
             <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                onClick={toggleChat}
-                className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 md:hidden"
+                onClick={() => setIsChatOpen(false)}
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
             />
 
             <motion.div
@@ -342,14 +348,13 @@ export const AIGlobe = () => {
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
               className={`
-                fixed z-50 
-                bottom-0 left-0 right-0 h-[85vh] rounded-t-3xl
-                md:absolute md:bottom-auto md:left-[110%] md:right-auto md:h-[550px] md:w-[420px] md:rounded-[1.5rem]
-                bg-[#050505] md:bg-[#050505]/95 backdrop-blur-xl border-t md:border border-white/10 
+                fixed md:absolute z-50 
+                bottom-0 left-0 right-0 h-[85vh] rounded-t-3xl border-t border-white/10 bg-[#050505]
+                md:bottom-auto md:left-[110%] md:right-auto md:h-[550px] md:w-[420px] md:rounded-[1.5rem] md:bg-[#050505]/95 md:backdrop-blur-xl md:border
                 shadow-2xl flex flex-col overflow-hidden
               `}
             >
-                {/* Holographic Header */}
+                {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/[0.02] shrink-0">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
@@ -364,17 +369,17 @@ export const AIGlobe = () => {
                         </div>
                     </div>
                     <button 
-                        onClick={(e) => { e.stopPropagation(); toggleChat(); }} 
+                        onClick={(e) => { e.stopPropagation(); setIsChatOpen(false); }} 
                         className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors text-white/50 hover:text-white clickable"
                     >
                         <X size={16} />
                     </button>
                 </div>
 
-                {/* Scrollable Message Area */}
+                {/* Message Area */}
                 <div 
                     ref={scrollRef}
-                    className="flex-1 p-5 overflow-y-auto space-y-4 overscroll-contain scroll-smooth"
+                    className="flex-1 p-5 overflow-y-auto space-y-4 overscroll-contain scroll-smooth bg-transparent"
                     onWheel={(e) => e.stopPropagation()} 
                     onTouchMove={(e) => e.stopPropagation()} 
                 >
@@ -395,12 +400,10 @@ export const AIGlobe = () => {
                                         onComplete={() => handleTypingComplete(msg.id)}
                                     />
                                 ) : msg.sender === 'bot' ? (
-                                    // Static rendered message after typing is done
                                     <div className="prose prose-sm prose-invert max-w-none text-xs md:text-sm font-light leading-relaxed">
                                         <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
                                     </div>
                                 ) : (
-                                    // User message
                                     <p className="text-xs md:text-sm">{msg.text}</p>
                                 )}
                             </div>
@@ -418,8 +421,8 @@ export const AIGlobe = () => {
                     )}
                 </div>
 
-                {/* Input Area */}
-                <div className="p-4 bg-black/80 md:bg-black/40 border-t border-white/10 shrink-0 mb-safe pb-8 md:pb-4">
+                {/* Input Area - Added padding-bottom for mobile safe area */}
+                <div className="p-4 bg-black/80 md:bg-black/40 border-t border-white/10 shrink-0 pb-8 md:pb-4">
                     <div className="relative flex items-center group">
                         <input 
                             type="text" 
