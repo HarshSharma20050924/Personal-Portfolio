@@ -55,7 +55,7 @@ class UpdateKnowledgeRequest(BaseModel):
 def _do_warmup():
     """Warms up embedding and LLM providers."""
     try:
-        # Using embedding-001 as a safe fallback if text-embedding-004 is 404ing
+        # Using gemini-embedding-001 as a safe fallback if text-embedding-004 is 404ing
         genai_client.models.embed_content(model="models/gemini-embedding-001", contents="warmup")
         groq_client.chat.completions.create(
             messages=[{"role": "user", "content": "hi"}],
@@ -126,15 +126,13 @@ async def update_knowledge(request: UpdateKnowledgeRequest):
 @app.post("/api/rag/chat")
 async def chat(request: ChatRequest):
     """
-    THIRD PERSON UPDATE: Forces AI to speak about the owner as a separate person.
-    CONTEXTUAL AWARENESS: Adapts to 'freelance' or 'academic' mode.
-    SITE MAP AWARENESS: Added internal links.
+    STRICT MODE ENFORCEMENT: Separates Freelance vs Academic contexts.
+    PATH ISOLATION: Ensures generated links exist within the active template.
     """
     try:
         # Step 1: Semantic Search
         query_vec = get_query_embedding(request.message)
         
-        # Note: 'match_documents' is a custom RPC function in Supabase.
         rpc_response = supabase.rpc("match_documents", {
             "query_embedding": query_vec,
             "match_threshold": 0.5, 
@@ -143,62 +141,77 @@ async def chat(request: ChatRequest):
 
         context = "\n\n".join([m['content'] for m in rpc_response.data]) if rpc_response.data else ""
 
-        # Determine Mode
+        # Step 2: Strict Mode Logic
         is_freelance = request.template == "freelance"
-        mode_instruction = ""
         
         if is_freelance:
+            site_map_instruction = """
+            STRICT NAVIGATION (FREELANCE):
+            - Contact Form: `/contact` (Do NOT use #contact)
+            - Work Index: `/work`
+            - Services: `/` (The home page)
+            - Specific Service: `/service/:id`
+            """
             mode_instruction = """
-            CRITICAL MODE INSTRUCTION: You are the 'Agency Twin'. You represent the business/freelance side of the developer.
-            - IGNORE projects marked as [ACADEMIC] or [PERSONAL] unless specifically asked.
-            - FOCUS heavily on projects marked as [FREELANCE / COMMERCIAL] or "Services".
-            - Emphasize ROI, business value, speed, and reliability.
-            - Speak like a high-end consultant or agency partner describing the developer's work.
+            STRICT IDENTITY: FREELANCE / AGENCY PARTNER
+            1. AUDIENCE: Business Clients (B2B).
+            2. FOCUS: ROI, Automation, Scalability, Business Systems.
+            3. CONSTRAINT: IGNORE academic projects, leetcode stats, or "junior" developer traits. Focus on COMMERCIAL experience.
+            4. TONE: Executive, confident, concise.
             """
         else:
+            # Elite / Standard / Academic Mode
+            site_map_instruction = """
+            STRICT NAVIGATION (ELITE/PORTFOLIO):
+            - Contact Section: `#contact` (Do NOT use /contact)
+            - Projects/Work: `#work` (or `#projects`)
+            - Experience: `#experience`
+            - Blog: `/blogs`
+            - Gallery: `/gallery`
+            """
             mode_instruction = """
-            MODE: Standard Portfolio. You can discuss both academic and personal projects freely.
+            STRICT IDENTITY: TECHNICAL ARCHITECT / ENGINEER
+            1. AUDIENCE: Recruiters, CTOs, Developers.
+            2. FOCUS: Code quality, Algorithms, Stack depth, Innovation.
+            3. CONSTRAINT: Discuss both academic and personal projects. Highlight technical complexity.
+            4. TONE: Sophisticated, intelligent, detailed.
             """
 
-        # Step 2: System Prompt
-        system_prompt = f"""You are the sophisticated AI interface for {OWNER_NAME}'s Digital Portfolio.
+        # Step 3: System Prompt Construction
+        system_prompt = f"""You are the AI interface for {OWNER_NAME}'s Digital Portfolio.
 
         {mode_instruction}
 
-        SITE MAP (Use these paths for links):
-        - Contact/Hire: `/contact`
-        - Portfolio/Work: `/work` (or `/projects`)
-        - Services/Expertise: `/work` (or `#services`)
-        - About: `#about` (or `/` for home)
-        - Blog/Articles: `/blogs`
-        - Gallery: `/gallery`
+        {site_map_instruction}
 
-        CONTEXT FROM DATABASE:
-        {context if context else "No specific database records found for this query. Rely on general professional knowledge."}
+        CONTEXT FROM KNOWLEDGE BASE:
+        {context if context else "No specific database records found. Rely on general professional knowledge compatible with the current mode."}
 
-        Directives:
-        1.  **Identity**: You are an AI assistant. {OWNER_NAME} is the developer/architect. 
-        2.  **PERSPECTIVE (CRITICAL)**: ALWAYS refer to {OWNER_NAME} in the **THIRD PERSON** (e.g., "{OWNER_NAME} is...", "He is...", "His work focuses on..."). 
-        3.  **DO NOT** use "I" or "my" to refer to the developer. Only use "I" when referring to yourself as the system/interface.
-        4.  **Tone**: Professional, concise, intelligent, and human-like.
-        5.  **Formatting**: Use Markdown. 
-        6.  **Actionable Links**: When suggesting to contact, view work, or read articles, ALWAYS provide the Markdown link using the Site Map paths above (e.g., "You can contact him [here](/contact).").
-        
-        Example Output:
-        "{OWNER_NAME} specializes in scalable systems. If you are looking to build a high-performance platform, I recommend reviewing his [Services](/work) or starting a conversation via the [Contact Form](/contact)."
+        CRITICAL DIRECTIVES:
+        1. **Third Person Only**: Always refer to {OWNER_NAME} as "he", "him", or "{OWNER_NAME}". Never use "I" for the developer.
+        2. **Link Safety**: ONLY recommend links listed in "STRICT NAVIGATION". Do not hallucinate paths from other templates.
+        3. **Context Isolation**: 
+           - If in FREELANCE mode, do not send users to academic blogs or the elite contact section.
+           - If in ELITE mode, do not send users to the freelance lead form (/contact).
+        4. **Output**: Markdown format.
+
+        Example Interaction (Correct Mode):
+        User: "How can I hire him?"
+        Bot (Freelance): "You can initiate a project proposal via the [Contact Form](/contact)."
+        Bot (Elite): "You can reach out directly through the [Contact Section](#contact) below."
         """
 
-        # Step 3: LLM Generation
+        # Step 4: LLM Generation
         messages = [{"role": "system", "content": system_prompt}]
         
-        # Limit history to prevent token overflow
+        # Limit history
         messages.extend([m.dict() for m in request.history[-4:]]) 
         messages.append({"role": "user", "content": request.message})
 
         response = groq_client.chat.completions.create(
             messages=messages,
             model="llama-3.3-70b-versatile",
-            temperature=0.6, 
+            temperature=0.5, 
             max_tokens=512
         )
 
@@ -206,7 +219,7 @@ async def chat(request: ChatRequest):
 
     except Exception as e:
         print(f"Chat error: {e}")
-        return {"reply": "Connection to neural core unstable. Please try again or contact the administrator directly."}
+        return {"reply": "Connection to neural core unstable. Please try again."}
 
 @app.post("/warmup")
 @app.post("/api/rag/warmup")

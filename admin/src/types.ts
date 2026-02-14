@@ -89,6 +89,10 @@ export interface Message {
   email: string;
   message: string;
   createdAt: string;
+  type?: 'general' | 'freelance';
+  company?: string;
+  service?: string;
+  phone?: string;
 }
 
 export interface PlaygroundConfig {

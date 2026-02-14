@@ -7,14 +7,26 @@ const router = Router();
 // POST /api/messages/send (Public)
 router.post('/send', async (req, res) => {
   try {
-    const { name, email, message } = req.body;
+    // Determine type based on fields present
+    // If 'service' is present, it's likely freelance
+    const { name, email, message, service, company, phone, type } = req.body;
 
     if (!name || !email || !message) {
-      return res.status(400).json({ message: 'All fields are required.' });
+      return res.status(400).json({ message: 'Name, Email, and Message are required.' });
     }
 
+    const messageType = type || (service ? 'freelance' : 'general');
+
     await prisma.message.create({
-      data: { name, email, message }
+      data: { 
+        name, 
+        email, 
+        message,
+        type: messageType,
+        service: service || null,
+        company: company || null,
+        phone: phone || null
+      }
     });
 
     res.status(200).json({ message: 'Message sent successfully.' });

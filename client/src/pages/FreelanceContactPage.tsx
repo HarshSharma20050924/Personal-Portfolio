@@ -65,7 +65,7 @@ const EliteSelect = ({ options, value, onChange, placeholder }: any) => {
 const ContactPage = () => {
   const location = useLocation();
   const [formState, setFormState] = useState({
-    name: '',
+    name: '', // Acts as Name / Company
     email: '',
     phone: '',
     service: '',
@@ -98,10 +98,18 @@ const ContactPage = () => {
     setStatus('SENDING');
 
     try {
+      // Split Name field into Name/Company conceptually for the backend if needed, 
+      // but here we send it as 'company' to the API to populate the specific field
+      const payload = {
+          ...formState,
+          company: formState.name, // Using the name input as Company/Name identifier
+          type: 'freelance'
+      };
+
       const res = await fetch('/api/messages/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formState)
+        body: JSON.stringify(payload)
       });
       
       if (res.ok) {
@@ -208,7 +216,7 @@ const ContactPage = () => {
                     onChange={e => setFormState({...formState, name: e.target.value})}
                     required 
                     type="text" 
-                    placeholder="Enter Name"
+                    placeholder="Enter Name or Company"
                     className="clickable w-full bg-transparent border-b border-white/10 py-4 text-white focus:outline-none focus:border-elite-accent transition-colors font-light placeholder:text-white/20" 
                     />
                 </motion.div>
@@ -253,7 +261,7 @@ const ContactPage = () => {
                     onChange={e => setFormState({...formState, message: e.target.value})}
                     required 
                     rows={4} 
-                    placeholder="Tell me about your goals and timeline..."
+                    placeholder="Tell me about your goals, timeline, and budget..."
                     className="clickable w-full bg-transparent border-b border-white/10 py-4 text-white focus:outline-none focus:border-elite-accent transition-colors font-light resize-none placeholder:text-white/20" 
                     />
                 </motion.div>
