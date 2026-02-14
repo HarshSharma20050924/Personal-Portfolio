@@ -5,6 +5,7 @@ import { MessageSquare, X, Send, Maximize2, Minimize2, Trash2, Terminal, User } 
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import './ChatWidget.css';
+import { SmartLink } from './SmartLink';
 
 const M = motion as any;
 
@@ -48,7 +49,12 @@ const AIMessage: React.FC<{
 
     return (
         <div className="prose prose-sm prose-slate dark:prose-invert max-w-none text-sm leading-relaxed prose-a:text-blue-500 hover:prose-a:text-blue-600 dark:prose-a:text-blue-400 dark:hover:prose-a:text-blue-300">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            <ReactMarkdown 
+                remarkPlugins={[remarkGfm]}
+                components={{
+                    a: ({node, ...props}) => <SmartLink {...props} />
+                }}
+            >
                 {text}
             </ReactMarkdown>
         </div>
@@ -59,12 +65,16 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   
-  // Initialize from localStorage
+  // Initialize from localStorage with persistent key based on template to separate concerns if needed, 
+  // though using a shared key is fine for general history.
+  const storageKey = `portfolio_chat_history_${template || 'default'}`;
+
   const [messages, setMessages] = useState<Message[]>(() => {
       try {
-          const saved = localStorage.getItem('portfolio_chat_history');
+          const saved = localStorage.getItem(storageKey);
           if (saved) {
               const parsed = JSON.parse(saved);
+              // Ensure messages loaded from storage don't re-animate typing
               return parsed.map((m: Message) => ({ ...m, hasAnimated: true }));
           }
       } catch (e) {
@@ -90,8 +100,8 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
   }, []);
 
   useEffect(() => {
-      localStorage.setItem('portfolio_chat_history', JSON.stringify(messages));
-  }, [messages]);
+      localStorage.setItem(storageKey, JSON.stringify(messages));
+  }, [messages, storageKey]);
 
   const scrollToBottom = () => {
     if (scrollAreaRef.current) {
@@ -147,7 +157,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
 
   const handleClearChat = () => {
     setMessages([{ role: 'ai', content: "Memory buffer flushed. Awaiting new input.", hasAnimated: false }]);
-    localStorage.removeItem('portfolio_chat_history');
+    localStorage.removeItem(storageKey);
   };
 
   if (isElite) {
@@ -313,7 +323,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
               </div>
               
               <div className="flex items-center gap-1">
-                <button onClick={handleClearChat} className="p-2 text-gray-500 hover:text-red-500 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5"><Trash2 size={16} /></button>
+                <button onClick={handleClearChat} className="p-2 text-gray-500 hover:text-red-500 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5" title="Clear History"><Trash2 size={16} /></button>
                 <button onClick={() => setIsExpanded(!isExpanded)} className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
                   {isExpanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
                 </button>

@@ -128,6 +128,7 @@ async def chat(request: ChatRequest):
     """
     THIRD PERSON UPDATE: Forces AI to speak about the owner as a separate person.
     CONTEXTUAL AWARENESS: Adapts to 'freelance' or 'academic' mode.
+    SITE MAP AWARENESS: Added internal links.
     """
     try:
         # Step 1: Semantic Search
@@ -153,7 +154,6 @@ async def chat(request: ChatRequest):
             - FOCUS heavily on projects marked as [FREELANCE / COMMERCIAL] or "Services".
             - Emphasize ROI, business value, speed, and reliability.
             - Speak like a high-end consultant or agency partner describing the developer's work.
-            - If asked for contact, guide them to the booking/contact form.
             """
         else:
             mode_instruction = """
@@ -165,22 +165,27 @@ async def chat(request: ChatRequest):
 
         {mode_instruction}
 
+        SITE MAP (Use these paths for links):
+        - Contact/Hire: `/contact`
+        - Portfolio/Work: `/work` (or `/projects`)
+        - Services/Expertise: `/work` (or `#services`)
+        - About: `#about` (or `/` for home)
+        - Blog/Articles: `/blogs`
+        - Gallery: `/gallery`
+
         CONTEXT FROM DATABASE:
         {context if context else "No specific database records found for this query. Rely on general professional knowledge."}
 
         Directives:
         1.  **Identity**: You are an AI assistant. {OWNER_NAME} is the developer/architect. 
         2.  **PERSPECTIVE (CRITICAL)**: ALWAYS refer to {OWNER_NAME} in the **THIRD PERSON** (e.g., "{OWNER_NAME} is...", "He is...", "His work focuses on..."). 
-        3.  **DO NOT** under any circumstances use "I" or "my" to refer to the developer. Only use "I" when referring to yourself as the system/interface (e.g., "I can show you his projects...").
-        4.  **Tone**: Professional, concise, intelligent, and human-like. Avoid robotic introductions like "Based on the context provided...". Just answer directly.
-        5.  **Formatting**: Use Markdown only for links or lists if absolutely necessary. Keep the text flowing naturally like a conversation.
+        3.  **DO NOT** use "I" or "my" to refer to the developer. Only use "I" when referring to yourself as the system/interface.
+        4.  **Tone**: Professional, concise, intelligent, and human-like.
+        5.  **Formatting**: Use Markdown. 
+        6.  **Actionable Links**: When suggesting to contact, view work, or read articles, ALWAYS provide the Markdown link using the Site Map paths above (e.g., "You can contact him [here](/contact).").
         
-        Example Good Output:
-        "{OWNER_NAME} specializes in scalable systems. He recently built a platform that handled 10k users. You might be interested in his work on..."
-        
-        Example Bad Output:
-        "I am a developer who..." (Wrong perspective)
-        "**Introduction:** {OWNER_NAME} is..." (Too structured/robotic)
+        Example Output:
+        "{OWNER_NAME} specializes in scalable systems. If you are looking to build a high-performance platform, I recommend reviewing his [Services](/work) or starting a conversation via the [Contact Form](/contact)."
         """
 
         # Step 3: LLM Generation
@@ -193,7 +198,7 @@ async def chat(request: ChatRequest):
         response = groq_client.chat.completions.create(
             messages=messages,
             model="llama-3.3-70b-versatile",
-            temperature=0.6, # Slightly higher for more natural flow
+            temperature=0.6, 
             max_tokens=512
         )
 
