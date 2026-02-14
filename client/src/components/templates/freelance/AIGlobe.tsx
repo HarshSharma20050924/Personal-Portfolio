@@ -1,7 +1,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles, Bot, ArrowRight, CornerDownLeft } from 'lucide-react';
+import { X, Sparkles, Bot, ArrowRight, CornerDownLeft, Activity } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -22,7 +22,6 @@ const AIMessage: React.FC<{
     const hasCompleted = useRef(false);
 
     useEffect(() => {
-        // If content is short or empty, complete immediately
         if (!content) {
             if (onComplete) onComplete();
             return;
@@ -32,11 +31,10 @@ const AIMessage: React.FC<{
         setDisplayContent(''); 
         
         let currentIndex = 0;
-        const speed = 12; // Adjusted speed
+        const speed = 12; // Fast typing speed
 
         const interval = setInterval(() => {
             if (currentIndex < content.length) {
-                // Using functional update to ensure we don't depend on stale state
                 setDisplayContent(prev => content.slice(0, prev.length + 1));
                 currentIndex++;
             } else {
@@ -49,7 +47,7 @@ const AIMessage: React.FC<{
         }, speed);
 
         return () => clearInterval(interval);
-    }, [content]); // Re-run if text changes, but `content` should be stable for a given message ID
+    }, [content]);
 
     return (
         <div className="prose prose-sm prose-invert max-w-none text-xs md:text-sm font-light leading-relaxed prose-p:my-1 prose-headings:my-2 prose-strong:text-blue-400 prose-a:text-blue-400 hover:prose-a:text-blue-300">
@@ -64,6 +62,7 @@ export const AIGlobe = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   
   const [isHovered, setIsHovered] = useState(false);
+  const [isActive, setIsActive] = useState(false); // Mobile tap state
   const [isChatOpen, setIsChatOpen] = useState(false);
   
   const [chatMessage, setChatMessage] = useState('');
@@ -71,18 +70,25 @@ export const AIGlobe = () => {
     { 
         id: 'init-1',
         sender: 'bot', 
-        text: "**Systems Online.** I am the Agency Twin. Ask me about services, availability, or recent commercial projects.", 
+        text: "System initialized. I am the digital representative. I can provide details on services, availability, and technical architecture.", 
         isTyping: false
     }
   ]);
   const [isBotThinking, setIsBotThinking] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+      const checkMobile = () => setIsMobile(window.innerWidth < 768);
+      checkMobile();
+      window.addEventListener('resize', checkMobile);
+      return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // --- Scroll Logic ---
   const scrollToBottom = () => {
     if (scrollRef.current) {
         requestAnimationFrame(() => {
             if (scrollRef.current) {
-                // Smooth scroll to bottom
                 scrollRef.current.scrollTo({
                     top: scrollRef.current.scrollHeight,
                     behavior: 'smooth'
@@ -94,10 +100,14 @@ export const AIGlobe = () => {
 
   useEffect(() => {
     if (isChatOpen) {
-        // Delay slightly to allow layout reflow
         setTimeout(scrollToBottom, 100);
+        // Prevent body scroll on mobile when chat is open
+        if (isMobile) document.body.style.overflow = 'hidden';
+    } else {
+        if (isMobile) document.body.style.overflow = '';
     }
-  }, [chatHistory, isChatOpen, isBotThinking]);
+    return () => { document.body.style.overflow = ''; };
+  }, [chatHistory, isChatOpen, isBotThinking, isMobile]);
 
   const handleSend = async () => {
     if (!chatMessage.trim()) return;
@@ -105,7 +115,6 @@ export const AIGlobe = () => {
     const userMsg = chatMessage;
     const newMsgId = Date.now().toString();
 
-    // 1. Add User Message
     setChatHistory(prev => [
         ...prev, 
         { id: newMsgId, sender: 'user', text: userMsg, isTyping: false }
@@ -143,12 +152,21 @@ export const AIGlobe = () => {
   };
 
   const handleTypingComplete = (id: string) => {
-      // Mark message as done typing
       setChatHistory(prev => prev.map(msg => msg.id === id ? { ...msg, isTyping: false } : msg));
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleSend();
+  };
+
+  const handleGlobeClick = () => {
+      if (isMobile && !isActive) {
+          // First tap activates, second tap opens
+          setIsActive(true);
+          setTimeout(() => setIsChatOpen(true), 300); // Small delay to show activation
+      } else {
+          setIsChatOpen(true);
+      }
   };
 
   // --- Physics Refs ---
@@ -163,7 +181,6 @@ export const AIGlobe = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Use parent container dimensions
     const resizeCanvas = () => {
         if(canvas.parentElement) {
             canvas.width = canvas.parentElement.offsetWidth;
@@ -173,9 +190,9 @@ export const AIGlobe = () => {
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
     
-    // Initialize Particles
     if (particlesRef.current.length === 0) {
-        const particleCount = 100;
+        // Reduced particle count for mobile to prevent lag
+        const particleCount = window.innerWidth < 768 ? 40 : 90;
         for (let i = 0; i < particleCount; i++) {
             const theta = Math.random() * Math.PI * 2;
             const phi = Math.acos((Math.random() * 2) - 1);
@@ -189,14 +206,10 @@ export const AIGlobe = () => {
         }
     }
 
-    // Bind mouse move to WINDOW to track cursor globally
     const handleGlobalMouseMove = (e: MouseEvent) => {
         const rect = canvas.getBoundingClientRect();
-        // Calculate relative position from center of canvas
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
-        
-        // Normalize range approx -1 to 1
         mouseRef.current.x = (e.clientX - centerX) * 0.0001; 
         mouseRef.current.y = (e.clientY - centerY) * 0.0001;
     };
@@ -210,35 +223,25 @@ export const AIGlobe = () => {
       const cx = canvas.width / 2;
       const cy = canvas.height / 2;
 
-      // Physics:
-      // Base rotation (Always spinning)
       const baseRotation = 0.002; 
-      
-      // Add mouse influence. 
       const targetRotY = baseRotation + (mouseRef.current.x * 5);
       const targetRotX = mouseRef.current.y * 5;
 
-      // Smooth interpolation
       rotationRef.current.y += (targetRotY - rotationRef.current.y) * 0.05;
       rotationRef.current.x += (targetRotX - rotationRef.current.x) * 0.05;
       
       const rotX = rotationRef.current.x;
       const rotY = rotationRef.current.y;
 
+      // Update positions
       particlesRef.current.forEach(p => {
-        // 3D Rotation Matrix
         const x1 = p.x * Math.cos(rotY) - p.z * Math.sin(rotY);
         const z1 = p.z * Math.cos(rotY) + p.x * Math.sin(rotY);
-        
         const y1 = p.y * Math.cos(rotX) - z1 * Math.sin(rotX);
         const z2 = z1 * Math.cos(rotX) + p.y * Math.sin(rotX);
 
-        // Update Stored Position for next frame
-        p.x = x1;
-        p.y = y1;
-        p.z = z2;
+        p.x = x1; p.y = y1; p.z = z2;
 
-        // Projection
         const scale = 250 / (250 + p.z);
         const alpha = Math.max(0.1, (p.z + 100) / 200);
         
@@ -248,9 +251,9 @@ export const AIGlobe = () => {
         
         ctx.arc(screenX, screenY, p.r * scale, 0, Math.PI * 2);
         
-        // Color based on state
-        if (isChatOpen || isHovered) {
-            ctx.fillStyle = `rgba(59, 130, 246, ${alpha})`; // Blue
+        // Force blue color if active (tapped) or open
+        if (isChatOpen || isHovered || isActive) {
+            ctx.fillStyle = `rgba(59, 130, 246, ${alpha})`; 
             ctx.shadowBlur = 10;
             ctx.shadowColor = 'rgba(59, 130, 246, 0.5)';
         } else {
@@ -262,17 +265,17 @@ export const AIGlobe = () => {
         ctx.shadowBlur = 0;
       });
 
-      // Connections
-      if (isChatOpen || isHovered) {
+      // Connections - Only draw if active to save FPS
+      if (isChatOpen || isHovered || isActive) {
           ctx.strokeStyle = 'rgba(59, 130, 246, 0.1)';
           ctx.lineWidth = 0.5;
           ctx.beginPath();
-          // Sample a subset for performance
-          for(let i=0; i<particlesRef.current.length; i+=2) { 
-              for(let j=i+1; j<particlesRef.current.length; j+=5) {
+          // Optimized connection drawing: step by 2 or 3 to reduce n^2 checks
+          const step = window.innerWidth < 768 ? 3 : 2; 
+          for(let i=0; i<particlesRef.current.length; i+=step) { 
+              for(let j=i+1; j<particlesRef.current.length; j+=step) {
                   const p1 = particlesRef.current[i];
                   const p2 = particlesRef.current[j];
-                  
                   const dx = p1.x - p2.x;
                   const dy = p1.y - p2.y;
                   const dz = p1.z - p2.z;
@@ -298,7 +301,7 @@ export const AIGlobe = () => {
         window.removeEventListener('mousemove', handleGlobalMouseMove);
         window.removeEventListener('resize', resizeCanvas);
     };
-  }, [isChatOpen, isHovered]);
+  }, [isChatOpen, isHovered, isActive]);
 
   return (
     <div className="relative w-full h-full flex items-center justify-center">
@@ -306,20 +309,20 @@ export const AIGlobe = () => {
         className="relative w-[300px] h-[300px] md:w-[350px] md:h-[350px] cursor-none clickable z-10"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        onClick={() => setIsChatOpen(true)}
+        onClick={handleGlobeClick}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
         <canvas ref={canvasRef} className="w-full h-full" />
         
-        <div className={`absolute inset-0 rounded-full blur-[80px] transition-all duration-700 pointer-events-none ${isHovered || isChatOpen ? 'bg-blue-500/20' : 'bg-white/5'}`} />
+        <div className={`absolute inset-0 rounded-full blur-[80px] transition-all duration-700 pointer-events-none ${isHovered || isChatOpen || isActive ? 'bg-blue-500/20' : 'bg-white/5'}`} />
         
         <AnimatePresence>
             {!isChatOpen && (
                 <motion.div 
                 className="absolute bottom-10 left-1/2 -translate-x-1/2 px-5 py-2.5 bg-white/5 backdrop-blur-md rounded-full border border-white/10 flex items-center gap-2 pointer-events-none"
                 initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 10 }}
+                animate={{ opacity: (isHovered || isActive) ? 1 : 0, y: (isHovered || isActive) ? 0 : 10 }}
                 exit={{ opacity: 0 }}
                 >
                 <Sparkles size={12} className="text-blue-400" />
@@ -339,7 +342,7 @@ export const AIGlobe = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setIsChatOpen(false)}
-                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 touch-none"
             />
 
             <motion.div
@@ -349,7 +352,7 @@ export const AIGlobe = () => {
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
               className={`
                 fixed md:absolute z-50 
-                bottom-0 left-0 right-0 h-[85vh] rounded-t-3xl border-t border-white/10 bg-[#050505]
+                bottom-0 left-0 right-0 h-[85dvh] rounded-t-3xl border-t border-white/10 bg-[#050505]
                 md:bottom-auto md:left-[110%] md:right-auto md:h-[550px] md:w-[420px] md:rounded-[1.5rem] md:bg-[#050505]/95 md:backdrop-blur-xl md:border
                 shadow-2xl flex flex-col overflow-hidden
               `}
@@ -364,15 +367,16 @@ export const AIGlobe = () => {
                             <h3 className="text-sm font-bold text-white tracking-wide font-display">Agency Twin</h3>
                             <div className="flex items-center gap-1.5">
                                 <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                                <p className="text-[10px] text-gray-400 font-mono uppercase tracking-widest">RAG: Freelance</p>
+                                <p className="text-[10px] text-gray-400 font-mono uppercase tracking-widest">System Active</p>
                             </div>
                         </div>
                     </div>
                     <button 
                         onClick={(e) => { e.stopPropagation(); setIsChatOpen(false); }} 
-                        className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors text-white/50 hover:text-white clickable"
+                        className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors text-white/50 hover:text-white clickable"
+                        aria-label="Close Chat"
                     >
-                        <X size={16} />
+                        <X size={18} />
                     </button>
                 </div>
 
@@ -413,15 +417,14 @@ export const AIGlobe = () => {
                     {isBotThinking && (
                         <div className="flex justify-start">
                             <div className="bg-[#151515] px-4 py-3 rounded-2xl rounded-tl-sm border border-white/10 flex gap-1.5 items-center">
-                            <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}/>
-                            <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}/>
-                            <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}/>
+                               <Activity size={14} className="text-blue-400 animate-spin" />
+                               <span className="text-[10px] text-gray-500 font-mono uppercase">Processing</span>
                             </div>
                         </div>
                     )}
                 </div>
 
-                {/* Input Area - Added padding-bottom for mobile safe area */}
+                {/* Input Area */}
                 <div className="p-4 bg-black/80 md:bg-black/40 border-t border-white/10 shrink-0 pb-8 md:pb-4">
                     <div className="relative flex items-center group">
                         <input 
@@ -429,8 +432,8 @@ export const AIGlobe = () => {
                             value={chatMessage}
                             onChange={(e) => setChatMessage(e.target.value)}
                             onKeyDown={handleKeyPress}
-                            placeholder="Inquire about projects..."
-                            className="w-full bg-[#151515] border border-white/10 rounded-xl pl-5 pr-12 py-4 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500/50 transition-colors shadow-inner font-light"
+                            placeholder="Inquire about services..."
+                            className="w-full bg-[#151515] border border-white/10 rounded-xl pl-5 pr-12 py-4 text-base md:text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500/50 transition-colors shadow-inner font-light"
                         />
                         <button 
                             onClick={handleSend}

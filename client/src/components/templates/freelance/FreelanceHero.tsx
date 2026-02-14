@@ -71,7 +71,7 @@ export const FreelanceHero = ({ data, socialLinks }: { data: HeroData, socialLin
              <span className="text-xs font-mono text-elite-sub tracking-widest uppercase">Available for Select Projects</span>
           </motion.div>
 
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-medium text-white leading-[1.1] mb-6 md:mb-8 tracking-tight whitespace-nowrap">
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-medium text-white leading-[1.1] mb-6 md:mb-8 tracking-tight whitespace-normal md:whitespace-nowrap">
             <SplitText className="inline-block" delay={0.2} wordDelay={0.03}>
               Grow your business
             </SplitText>
