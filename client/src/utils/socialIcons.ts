@@ -3,7 +3,8 @@ import {
   Github, Linkedin, Twitter, Instagram, Facebook, Youtube, Twitch, 
   Dribbble, Globe, Link as LinkIcon, Mail, MessageCircle, 
   Code, Codepen, Gitlab, Disc, Send, X, Terminal, Cpu, PenTool,
-  Slack, Figma, Camera, Music, Video, Podcast
+  Slack, Figma, Camera, Music, Video, Podcast,
+  Zap, Bot, BarChart3, Smartphone, Server, Database, Layers
 } from 'lucide-react';
 import React from 'react';
 
@@ -13,6 +14,7 @@ export const getSocialIcon = (iconName: string): React.ElementType => {
   const normalized = iconName.toLowerCase().replace(/[^a-z0-9]/g, '');
   
   const map: Record<string, React.ElementType> = {
+    // Socials
     github: Github,
     linkedin: Linkedin,
     twitter: Twitter,
@@ -38,7 +40,26 @@ export const getSocialIcon = (iconName: string): React.ElementType => {
     unsplash: Camera,
     spotify: Music,
     tiktok: Video,
-    podcast: Podcast
+    podcast: Podcast,
+    
+    // Services / Generic
+    globe: Globe,
+    website: Globe,
+    zap: Zap,
+    automation: Zap,
+    bot: Bot,
+    ai: Bot,
+    barchart: BarChart3,
+    barchart3: BarChart3,
+    analytics: BarChart3,
+    smartphone: Smartphone,
+    mobile: Smartphone,
+    server: Server,
+    backend: Server,
+    database: Database,
+    layers: Layers,
+    design: PenTool,
+    code: Code
   };
 
   // 1. Direct match

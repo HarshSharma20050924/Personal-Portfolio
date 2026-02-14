@@ -3,35 +3,50 @@ import React from 'react';
 import { motion } from 'framer-motion';
 
 const items = [
-  { label: "ARCHITECTURE", value: "SCALABLE" },
-  { label: "RELIABILITY", value: "99.9%" },
-  { label: "OPERATIONS", value: "AUTONOMOUS" },
-  { label: "GROWTH", value: "DATA-DRIVEN" },
+  "SCALABLE ARCHITECTURE",
+  "99.9% RELIABILITY",
+  "AUTONOMOUS OPERATIONS",
+  "DATA-DRIVEN GROWTH",
+  "MODULAR SYSTEMS",
+  "HIGH PERFORMANCE",
+  "SECURE INFRASTRUCTURE",
+  "AI INTEGRATION"
 ];
 
 export const FreelanceTrust = () => {
   return (
-    <section className="py-10 border-y border-white/[0.08] bg-black/40 backdrop-blur-sm">
-      <div className="container mx-auto px-4">
-         <div className="flex flex-wrap justify-between items-center gap-8">
-            {items.map((item, i) => (
-               <motion.div 
-                 key={i}
-                 initial={{ opacity: 0 }}
-                 whileInView={{ opacity: 1 }}
-                 viewport={{ once: true }}
-                 transition={{ delay: i * 0.1 }}
-                 className="flex items-center gap-3"
-               >
-                  <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                  <div className="flex flex-col">
-                     <span className="text-[10px] text-elite-sub font-mono tracking-widest uppercase">{item.label}</span>
-                     <span className="text-sm text-white font-medium tracking-wide">{item.value}</span>
-                  </div>
-               </motion.div>
-            ))}
-         </div>
+    <section className="py-8 bg-[#0D0D0D] border-y border-white/[0.05] overflow-hidden relative group">
+      
+      {/* Interactive Glow on Hover */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-elite-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-xl pointer-events-none" />
+
+      <div className="flex whitespace-nowrap mask-gradient-x">
+        <MarqueeContent />
+        <MarqueeContent />
+        <MarqueeContent />
+        <MarqueeContent />
       </div>
     </section>
   );
 };
+
+const MarqueeContent = () => (
+  <motion.div 
+    animate={{ x: "-100%" }}
+    transition={{ 
+        repeat: Infinity, 
+        ease: "linear", 
+        duration: 40 
+    }}
+    className="flex gap-16 items-center pr-16"
+  >
+    {items.map((item, i) => (
+       <div key={i} className="flex items-center gap-4 group/item cursor-default">
+          <div className="w-1.5 h-1.5 bg-elite-accent rounded-full shadow-[0_0_10px_rgba(59,130,246,0.8)] group-hover/item:scale-150 transition-transform duration-300" />
+          <span className="text-sm font-mono tracking-[0.2em] text-white/50 group-hover/item:text-white transition-colors duration-300 uppercase">
+            {item}
+          </span>
+       </div>
+    ))}
+  </motion.div>
+);

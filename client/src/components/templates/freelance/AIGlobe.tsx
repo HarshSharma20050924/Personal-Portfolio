@@ -1,58 +1,160 @@
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, X } from 'lucide-react';
+import { X, Sparkles, Bot, ArrowRight, CornerDownLeft, User, Terminal } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
+// --- Typed Message Interface ---
+interface GlobeMessage {
+    id: string;
+    sender: 'user' | 'bot';
+    text: string;
+    isTyping?: boolean;
+}
+
+// --- Robust Typing Animation Component ---
+const AIMessage: React.FC<{ 
+    content: string; 
+    onComplete?: () => void;
+}> = ({ content, onComplete }) => {
+    const [displayContent, setDisplayContent] = useState('');
+    const [isTyping, setIsTyping] = useState(true);
+    const textRef = useRef(''); // Keeps track of text without state lag
+
+    useEffect(() => {
+        // Reset state for new content
+        textRef.current = '';
+        setDisplayContent('');
+        setIsTyping(true);
+
+        let currentIndex = 0;
+        const speed = 10; // Typing speed in ms
+
+        const interval = setInterval(() => {
+            if (currentIndex < content.length) {
+                // Append next character
+                const char = content[currentIndex];
+                textRef.current += char;
+                setDisplayContent(textRef.current);
+                currentIndex++;
+            } else {
+                clearInterval(interval);
+                setIsTyping(false);
+                if (onComplete) onComplete();
+            }
+        }, speed);
+
+        return () => clearInterval(interval);
+    }, [content]); // Re-run if content prop changes (unlikely for immutable history but safe)
+
+    return (
+        <div className="prose prose-sm prose-invert max-w-none text-xs md:text-sm font-light leading-relaxed prose-p:my-1 prose-headings:my-2 prose-strong:text-blue-400 prose-a:text-blue-400 hover:prose-a:text-blue-300">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{displayContent}</ReactMarkdown>
+            {isTyping && <span className="inline-block w-1.5 h-3 bg-blue-500 ml-1 animate-pulse align-middle" />}
+        </div>
+    );
+};
 
 export const AIGlobe = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  
   const [isHovered, setIsHovered] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  
   const [chatMessage, setChatMessage] = useState('');
-  const [chatHistory, setChatHistory] = useState<{sender: 'user' | 'bot', text: string}[]>([
-    { sender: 'bot', text: "Hello. I am the digital twin. Accessing freelance knowledge base. How can I assist your architecture today?" }
+  const [chatHistory, setChatHistory] = useState<GlobeMessage[]>([
+    { 
+        id: 'init-1',
+        sender: 'bot', 
+        text: "**Systems Online.** I am the Agency Twin. Ask me about services, availability, or recent commercial projects.", 
+        isTyping: false
+    }
   ]);
-  const [isTyping, setIsTyping] = useState(false);
+  const [isBotThinking, setIsBotThinking] = useState(false);
 
-  // --- Chat Functionality ---
+  // --- Scroll Logic ---
+  const scrollToBottom = () => {
+    if (scrollRef.current) {
+        // Use functional state update to ensure we are scrolling after render
+        requestAnimationFrame(() => {
+            if (scrollRef.current) {
+                scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+            }
+        });
+    }
+  };
+
+  useEffect(() => {
+    if (isChatOpen) {
+        scrollToBottom();
+    }
+  }, [chatHistory, isChatOpen, isBotThinking]);
+
   const handleSend = async () => {
     if (!chatMessage.trim()) return;
 
-    // 1. Add User Message
     const userMsg = chatMessage;
-    setChatHistory(prev => [...prev, { sender: 'user', text: userMsg }]);
+    const newMsgId = Date.now().toString();
+
+    // 1. Add User Message
+    setChatHistory(prev => [
+        ...prev, 
+        { id: newMsgId, sender: 'user', text: userMsg, isTyping: false }
+    ]);
     setChatMessage('');
-    setIsTyping(true);
+    setIsBotThinking(true);
 
     try {
-      // 2. Call RAG API with 'freelance' template context
       const res = await fetch('/api/rag/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
             message: userMsg,
-            template: 'freelance', // Important: Context switch
+            template: 'freelance', 
             history: chatHistory.map(m => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.text }))
         })
       });
       
       const data = await res.json();
+      const botResponse = data.reply || "Analysis complete. System ready.";
       
-      // 3. Add Bot Response
-      const botResponse = data.reply || "I am processing that data.";
-      setChatHistory(prev => [...prev, { sender: 'bot', text: botResponse }]);
+      setIsBotThinking(false);
+      setChatHistory(prev => [
+          ...prev, 
+          { id: Date.now().toString(), sender: 'bot', text: botResponse, isTyping: true }
+      ]);
+
     } catch (error) {
-      setChatHistory(prev => [...prev, { sender: 'bot', text: "Connection to neural core unstable. Please try again." }]);
-    } finally {
-      setIsTyping(false);
+      setIsBotThinking(false);
+      setChatHistory(prev => [
+          ...prev, 
+          { id: Date.now().toString(), sender: 'bot', text: "Uplink unstable. Please try again.", isTyping: true }
+      ]);
     }
+  };
+
+  const handleTypingComplete = (id: string) => {
+      // Mark message as done typing in state to prevent re-typing on re-renders
+      setChatHistory(prev => prev.map(msg => msg.id === id ? { ...msg, isTyping: false } : msg));
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleSend();
   };
 
-  // --- Globe Animation Logic ---
+  const toggleChat = () => {
+      setIsChatOpen(!isChatOpen);
+  };
+
+  // --- Physics & Animation Refs ---
+  const particlesRef = useRef<{ x: number, y: number, z: number, r: number }[]>([]);
+  const rotationRef = useRef({ x: 0, y: 0 });
+  const mouseRef = useRef({ x: 0, y: 0 });
+  const isHoveredRef = useRef(false);
+
+  // --- Interactive Globe Logic ---
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -61,156 +163,283 @@ export const AIGlobe = () => {
 
     let width = canvas.width = canvas.offsetWidth;
     let height = canvas.height = canvas.offsetHeight;
-    let particles: { x: number, y: number, z: number, r: number }[] = [];
-    const particleCount = 150; 
-    let rotation = 0;
-
-    for (let i = 0; i < particleCount; i++) {
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos((Math.random() * 2) - 1);
-      const r = 100;
-      particles.push({
-        x: r * Math.sin(phi) * Math.cos(theta),
-        y: r * Math.sin(phi) * Math.sin(theta),
-        z: r * Math.cos(phi),
-        r: Math.random() * 2 + 1
-      });
+    
+    // Initialize Particles
+    if (particlesRef.current.length === 0) {
+        const particleCount = 100; // Optimized count
+        for (let i = 0; i < particleCount; i++) {
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos((Math.random() * 2) - 1);
+            const r = 100;
+            particlesRef.current.push({
+                x: r * Math.sin(phi) * Math.cos(theta),
+                y: r * Math.sin(phi) * Math.sin(theta),
+                z: r * Math.cos(phi),
+                r: Math.random() * 1.5 + 0.5,
+            });
+        }
     }
 
+    const handleMouseMove = (e: MouseEvent) => {
+        const rect = canvas.getBoundingClientRect();
+        mouseRef.current.x = (e.clientX - rect.left - width / 2) * 0.0001; // Scale down
+        mouseRef.current.y = (e.clientY - rect.top - height / 2) * 0.0001;
+    };
+    
+    canvas.addEventListener('mousemove', handleMouseMove);
+
     let animId: number;
+
     const animate = () => {
       ctx.clearRect(0, 0, width, height);
       const cx = width / 2;
       const cy = height / 2;
-      rotation += 0.005;
 
-      // Draw connections first (background)
-      ctx.strokeStyle = isHovered ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255, 255, 255, 0.05)';
-      ctx.beginPath();
-      particles.forEach((p, i) => {
-        const x1 = p.x * Math.cos(rotation) - p.z * Math.sin(rotation);
-        const z1 = p.z * Math.cos(rotation) + p.x * Math.sin(rotation);
-        const scale1 = 200 / (200 + z1);
-        const x2D = x1 * scale1 + cx;
-        const y2D = p.y * scale1 + cy;
+      // Physics:
+      // Base rotation (Always spinning)
+      const baseRotation = 0.003; 
+      
+      // If hovered, add mouse influence. If not, just spin.
+      // We interpret mouse X as Y-axis rotation speed addition
+      const targetRotY = isHoveredRef.current ? mouseRef.current.x * 5 : baseRotation;
+      const targetRotX = isHoveredRef.current ? mouseRef.current.y * 5 : 0;
 
-        // Optimization: check fewer connections or simplify distance check
-        for(let j = i+1; j < particleCount; j++){
-             const p2 = particles[j];
-             const dx = p.x - p2.x;
-             const dy = p.y - p2.y;
-             const dz = p.z - p2.z;
-             // Simple rough distance check before sqrt
-             if (dx*dx + dy*dy + dz*dz < 1600) { 
-                 const x1_p2 = p2.x * Math.cos(rotation) - p2.z * Math.sin(rotation);
-                 const z1_p2 = p2.z * Math.cos(rotation) + p2.x * Math.sin(rotation);
-                 const scale2 = 200 / (200 + z1_p2);
-                 ctx.moveTo(x2D, y2D);
-                 ctx.lineTo(x1_p2 * scale2 + cx, p2.y * scale2 + cy);
-             }
-        }
-      });
-      ctx.stroke();
+      // Smooth interpolation (E asing)
+      rotationRef.current.y += (targetRotY - rotationRef.current.y) * 0.05;
+      rotationRef.current.x += (targetRotX - rotationRef.current.x) * 0.05;
+      
+      // Ensure there's always *some* movement
+      if (Math.abs(rotationRef.current.y) < 0.001) rotationRef.current.y = 0.001;
 
-      // Draw Particles
-      ctx.fillStyle = isHovered ? '#3B82F6' : '#FFFFFF';
-      particles.forEach(p => {
-        const x1 = p.x * Math.cos(rotation) - p.z * Math.sin(rotation);
-        const z1 = p.z * Math.cos(rotation) + p.x * Math.sin(rotation);
-        const scale = 200 / (200 + z1);
-        const alpha = Math.max(0, (z1 + 100) / 200);
+      const rotX = rotationRef.current.x;
+      const rotY = rotationRef.current.y;
+
+      particlesRef.current.forEach(p => {
+        // Rotate Y (Horizontal Spin)
+        const x1 = p.x * Math.cos(rotY) - p.z * Math.sin(rotY);
+        const z1 = p.z * Math.cos(rotY) + p.x * Math.sin(rotY);
         
-        ctx.globalAlpha = alpha;
+        // Rotate X (Vertical Tilt - driven by mouse)
+        const y1 = p.y * Math.cos(rotX) - z1 * Math.sin(rotX);
+        const z2 = z1 * Math.cos(rotX) + p.y * Math.sin(rotX);
+
+        // Update Position
+        p.x = x1;
+        p.y = y1;
+        p.z = z2;
+
+        // Projection
+        const scale = 250 / (250 + p.z);
+        const alpha = Math.max(0.1, (p.z + 100) / 200);
+        
         ctx.beginPath();
-        ctx.arc(x1 * scale + cx, p.y * scale + cy, p.r * scale, 0, Math.PI * 2);
+        const screenX = p.x * scale + cx;
+        const screenY = p.y * scale + cy;
+        
+        ctx.arc(screenX, screenY, p.r * scale, 0, Math.PI * 2);
+        
+        if (isHoveredRef.current || isChatOpen) {
+            ctx.fillStyle = `rgba(59, 130, 246, ${alpha})`; // Blue
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = 'rgba(59, 130, 246, 0.5)';
+        } else {
+            ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.5})`;
+            ctx.shadowBlur = 0;
+        }
+        
         ctx.fill();
+        ctx.shadowBlur = 0;
       });
+
+      // Connections (Only when active/hovered to save performance)
+      if (isHoveredRef.current || isChatOpen) {
+          ctx.strokeStyle = 'rgba(59, 130, 246, 0.1)';
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          for(let i=0; i<particlesRef.current.length; i+=2) { 
+              for(let j=i+1; j<particlesRef.current.length; j+=5) {
+                  const p1 = particlesRef.current[i];
+                  const p2 = particlesRef.current[j];
+                  
+                  const dx = p1.x - p2.x;
+                  const dy = p1.y - p2.y;
+                  const dz = p1.z - p2.z;
+                  const distSq = dx*dx + dy*dy + dz*dz;
+                  
+                  if (distSq < 1200) {
+                      const scale1 = 250 / (250 + p1.z);
+                      const scale2 = 250 / (250 + p2.z);
+                      ctx.moveTo(p1.x * scale1 + cx, p1.y * scale1 + cy);
+                      ctx.lineTo(p2.x * scale2 + cx, p2.y * scale2 + cy);
+                  }
+              }
+          }
+          ctx.stroke();
+      }
 
       animId = requestAnimationFrame(animate);
     };
     animId = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(animId);
+    
+    return () => {
+        cancelAnimationFrame(animId);
+        canvas.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, [isChatOpen]); // Re-bind if chat state changes mostly to trigger render updates
+
+  // Sync ref with state for animation loop
+  useEffect(() => {
+      isHoveredRef.current = isHovered;
   }, [isHovered]);
 
   return (
     <div className="relative w-full h-full flex items-center justify-center">
       <motion.div
-        className="relative w-80 h-80 cursor-none clickable"
+        className="relative w-[300px] h-[300px] md:w-[350px] md:h-[350px] cursor-none clickable"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        onClick={() => setIsChatOpen(true)}
+        onClick={toggleChat}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
         <canvas ref={canvasRef} className="w-full h-full" />
-        <div className={`absolute inset-0 rounded-full blur-[60px] transition-colors duration-500 pointer-events-none ${isHovered ? 'bg-elite-accent/20' : 'bg-white/5'}`} />
-        <motion.div 
-          className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-white/10 backdrop-blur rounded-full text-xs text-white border border-white/10 whitespace-nowrap"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 10 }}
-        >
-          Click to Initialize Twin
-        </motion.div>
+        
+        {/* Glow Background */}
+        <div className={`absolute inset-0 rounded-full blur-[80px] transition-all duration-700 pointer-events-none ${isHovered || isChatOpen ? 'bg-blue-500/20' : 'bg-white/5'}`} />
+        
+        {/* Hint Text */}
+        <AnimatePresence>
+            {!isChatOpen && (
+                <motion.div 
+                className="absolute bottom-10 left-1/2 -translate-x-1/2 px-5 py-2.5 bg-white/5 backdrop-blur-md rounded-full border border-white/10 flex items-center gap-2 pointer-events-none"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 10 }}
+                exit={{ opacity: 0 }}
+                >
+                <Sparkles size={12} className="text-blue-400" />
+                <span className="text-[10px] font-medium tracking-widest text-white uppercase">Initialize Twin</span>
+                </motion.div>
+            )}
+        </AnimatePresence>
       </motion.div>
 
+      {/* Twin Interface Chat - Full Screen on Mobile, Popover on Desktop */}
       <AnimatePresence>
         {isChatOpen && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="absolute z-50 bottom-0 right-0 md:-right-20 w-80 md:w-96 bg-neutral-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[500px]"
-          >
-            {/* Header */}
-            <div className="bg-white/5 p-4 flex justify-between items-center border-b border-white/5">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-elite-accent rounded-full animate-pulse" />
-                <span className="text-xs font-mono uppercase tracking-wider">Harsh AI Twin (Freelance)</span>
-              </div>
-              <button onClick={(e) => { e.stopPropagation(); setIsChatOpen(false); }} className="hover:text-elite-accent text-white">
-                <X size={16} />
-              </button>
-            </div>
+          <>
+            {/* Backdrop for mobile to prevent background scrolling/interaction */}
+            <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={toggleChat}
+                className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 md:hidden"
+            />
 
-            {/* Chat Body */}
-            <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-black/50 scrollbar-thin scrollbar-thumb-white/10">
-              {chatHistory.map((msg, idx) => (
-                <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed ${
-                    msg.sender === 'user' 
-                      ? 'bg-elite-accent text-white rounded-tr-sm' 
-                      : 'bg-white/10 text-neutral-200 rounded-tl-sm'
-                  }`}>
-                    <ReactMarkdown>{msg.text}</ReactMarkdown>
-                  </div>
-                </div>
-              ))}
-              {isTyping && (
-                 <div className="flex justify-start">
-                    <div className="bg-white/10 p-3 rounded-2xl rounded-tl-sm flex gap-1 items-center">
-                       <span className="w-1.5 h-1.5 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}/>
-                       <span className="w-1.5 h-1.5 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}/>
-                       <span className="w-1.5 h-1.5 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}/>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className={`
+                fixed z-50 
+                bottom-0 left-0 right-0 h-[85vh] rounded-t-3xl
+                md:absolute md:bottom-auto md:left-[110%] md:right-auto md:h-[550px] md:w-[420px] md:rounded-[1.5rem]
+                bg-[#050505] md:bg-[#050505]/95 backdrop-blur-xl border-t md:border border-white/10 
+                shadow-2xl flex flex-col overflow-hidden
+              `}
+            >
+                {/* Holographic Header */}
+                <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/[0.02] shrink-0">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+                            <Bot size={16} className="text-blue-400" />
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-bold text-white tracking-wide font-display">Agency Twin</h3>
+                            <div className="flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                                <p className="text-[10px] text-gray-400 font-mono uppercase tracking-widest">RAG: Freelance</p>
+                            </div>
+                        </div>
                     </div>
-                 </div>
-              )}
-            </div>
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); toggleChat(); }} 
+                        className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors text-white/50 hover:text-white clickable"
+                    >
+                        <X size={16} />
+                    </button>
+                </div>
 
-            {/* Input */}
-            <div className="p-4 bg-neutral-900 border-t border-white/5 relative">
-              <input 
-                type="text" 
-                value={chatMessage}
-                onChange={(e) => setChatMessage(e.target.value)}
-                onKeyDown={handleKeyPress}
-                placeholder="Ask about expertise..."
-                className="w-full bg-black border border-white/10 rounded-full px-4 py-3 text-sm focus:border-elite-accent focus:outline-none pr-10 text-white placeholder:text-neutral-600"
-              />
-              <button onClick={handleSend} className="absolute right-6 top-1/2 -translate-y-1/2 text-elite-accent hover:scale-110 transition-transform">
-                <Send size={16} />
-              </button>
-            </div>
-          </motion.div>
+                {/* Scrollable Message Area */}
+                <div 
+                    ref={scrollRef}
+                    className="flex-1 p-5 overflow-y-auto space-y-4 overscroll-contain scroll-smooth"
+                    onWheel={(e) => e.stopPropagation()} 
+                    onTouchMove={(e) => e.stopPropagation()} 
+                >
+                    {chatHistory.map((msg, idx) => (
+                        <div key={msg.id || idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                            <div 
+                                className={`
+                                    max-w-[85%] p-4 shadow-sm backdrop-blur-sm
+                                    ${msg.sender === 'user' 
+                                        ? 'bg-blue-600/90 text-white rounded-2xl rounded-tr-sm' 
+                                        : 'bg-[#151515]/90 text-gray-200 border border-white/10 rounded-2xl rounded-tl-sm'
+                                    }
+                                `}
+                            >
+                                {msg.sender === 'bot' && msg.isTyping ? (
+                                    <AIMessage 
+                                        content={msg.text} 
+                                        onComplete={() => handleTypingComplete(msg.id)}
+                                    />
+                                ) : msg.sender === 'bot' ? (
+                                    // Static rendered message after typing is done
+                                    <div className="prose prose-sm prose-invert max-w-none text-xs md:text-sm font-light leading-relaxed">
+                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
+                                    </div>
+                                ) : (
+                                    // User message
+                                    <p className="text-xs md:text-sm">{msg.text}</p>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                    
+                    {isBotThinking && (
+                        <div className="flex justify-start">
+                            <div className="bg-[#151515] px-4 py-3 rounded-2xl rounded-tl-sm border border-white/10 flex gap-1.5 items-center">
+                            <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}/>
+                            <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}/>
+                            <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}/>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Input Area */}
+                <div className="p-4 bg-black/80 md:bg-black/40 border-t border-white/10 shrink-0 mb-safe pb-8 md:pb-4">
+                    <div className="relative flex items-center group">
+                        <input 
+                            type="text" 
+                            value={chatMessage}
+                            onChange={(e) => setChatMessage(e.target.value)}
+                            onKeyDown={handleKeyPress}
+                            placeholder="Inquire about projects..."
+                            className="w-full bg-[#151515] border border-white/10 rounded-xl pl-5 pr-12 py-4 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500/50 transition-colors shadow-inner font-light"
+                        />
+                        <button 
+                            onClick={handleSend}
+                            disabled={!chatMessage.trim()}
+                            className={`absolute right-2 p-2 rounded-lg transition-all duration-300 clickable ${chatMessage.trim() ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'bg-transparent text-gray-600'}`}
+                        >
+                            {chatMessage.trim() ? <ArrowRight size={18} /> : <CornerDownLeft size={18} />}
+                        </button>
+                    </div>
+                </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </div>

@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
-import { ChevronDown, Check } from 'lucide-react';
+import { ChevronDown, Check, Send, Loader2 } from 'lucide-react';
 import { FreelanceNavigation } from '../components/templates/freelance/FreelanceNavigation';
 import FreelanceCursor from '../components/templates/freelance/FreelanceCursor';
 import { SplitText } from '../components/SplitText';
@@ -147,7 +147,7 @@ const ContactPage = () => {
               transition={{ delay: 0.2 }}
               className="font-mono text-xs text-elite-accent tracking-widest uppercase mb-4 block"
             >
-              Initiate Protocol
+              Get In Touch
             </motion.span>
             
             <h1 className="text-5xl md:text-7xl font-display font-medium text-white mb-6">
@@ -164,96 +164,113 @@ const ContactPage = () => {
             </motion.p>
           </div>
 
-          {status === 'SUCCESS' ? (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="p-12 border border-elite-accent/30 bg-elite-accent/5 rounded-2xl text-center"
-            >
-              <h3 className="text-3xl font-display text-white mb-4">Transmission Received</h3>
-              <p className="text-elite-sub mb-8">I will analyze your request and deploy a response within 24 hours.</p>
-              <button 
-                onClick={() => setStatus('IDLE')} 
-                className="text-elite-accent underline underline-offset-4 clickable"
-              >
-                Send another message
-              </button>
-            </motion.div>
-          ) : (
-            <motion.form 
-              initial="hidden"
-              animate="visible"
-              onSubmit={handleSubmit}
-              className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-12"
-            >
-              <motion.div custom={0} variants={fieldVariants} className="group">
-                 <label className="block text-[10px] uppercase tracking-widest text-elite-sub mb-2 font-mono">Identification</label>
-                 <input 
-                   value={formState.name}
-                   onChange={e => setFormState({...formState, name: e.target.value})}
-                   required 
-                   type="text" 
-                   placeholder="Name / Company"
-                   className="clickable w-full bg-transparent border-b border-white/10 py-4 text-white focus:outline-none focus:border-elite-accent transition-colors font-light placeholder:text-white/20" 
-                 />
-              </motion.div>
-              
-              <motion.div custom={1} variants={fieldVariants} className="group">
-                 <label className="block text-[10px] uppercase tracking-widest text-elite-sub mb-2 font-mono">Contact Protocol</label>
-                 <input 
-                   value={formState.email}
-                   onChange={e => setFormState({...formState, email: e.target.value})}
-                   required 
-                   type="email" 
-                   placeholder="Email Address"
-                   className="clickable w-full bg-transparent border-b border-white/10 py-4 text-white focus:outline-none focus:border-elite-accent transition-colors font-light placeholder:text-white/20" 
-                 />
-              </motion.div>
+          <AnimatePresence mode="wait">
+            {status === 'SUCCESS' ? (
+                <motion.div 
+                key="success"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="p-12 border border-elite-accent/30 bg-elite-accent/5 rounded-2xl text-center flex flex-col items-center"
+                >
+                <motion.div 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
+                    className="w-16 h-16 bg-elite-accent rounded-full flex items-center justify-center mb-6"
+                >
+                    <Check size={32} className="text-white" />
+                </motion.div>
+                <h3 className="text-3xl font-display text-white mb-4">Message Sent</h3>
+                <p className="text-elite-sub mb-8 max-w-md">
+                    Thank you. I have received your message and will review your project details shortly.
+                </p>
+                <button 
+                    onClick={() => setStatus('IDLE')} 
+                    className="text-elite-accent underline underline-offset-4 clickable hover:text-white transition-colors"
+                >
+                    Send another message
+                </button>
+                </motion.div>
+            ) : (
+                <motion.form 
+                key="form"
+                initial="hidden"
+                animate="visible"
+                exit={{ opacity: 0, y: -20 }}
+                onSubmit={handleSubmit}
+                className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-12"
+                >
+                <motion.div custom={0} variants={fieldVariants} className="group">
+                    <label className="block text-[10px] uppercase tracking-widest text-elite-sub mb-2 font-mono">Name / Company</label>
+                    <input 
+                    value={formState.name}
+                    onChange={e => setFormState({...formState, name: e.target.value})}
+                    required 
+                    type="text" 
+                    placeholder="Enter Name"
+                    className="clickable w-full bg-transparent border-b border-white/10 py-4 text-white focus:outline-none focus:border-elite-accent transition-colors font-light placeholder:text-white/20" 
+                    />
+                </motion.div>
+                
+                <motion.div custom={1} variants={fieldVariants} className="group">
+                    <label className="block text-[10px] uppercase tracking-widest text-elite-sub mb-2 font-mono">Email Address</label>
+                    <input 
+                    value={formState.email}
+                    onChange={e => setFormState({...formState, email: e.target.value})}
+                    required 
+                    type="email" 
+                    placeholder="name@company.com"
+                    className="clickable w-full bg-transparent border-b border-white/10 py-4 text-white focus:outline-none focus:border-elite-accent transition-colors font-light placeholder:text-white/20" 
+                    />
+                </motion.div>
 
-              <motion.div custom={2} variants={fieldVariants} className="group">
-                 <label className="block text-[10px] uppercase tracking-widest text-elite-sub mb-2 font-mono">Sector</label>
-                 <EliteSelect 
-                    options={serviceOptions}
-                    value={formState.service}
-                    onChange={(val: string) => setFormState({...formState, service: val})}
-                    placeholder="Select Operational Area"
-                 />
-              </motion.div>
+                <motion.div custom={2} variants={fieldVariants} className="group">
+                    <label className="block text-[10px] uppercase tracking-widest text-elite-sub mb-2 font-mono">Interest</label>
+                    <EliteSelect 
+                        options={serviceOptions}
+                        value={formState.service}
+                        onChange={(val: string) => setFormState({...formState, service: val})}
+                        placeholder="Select Service"
+                    />
+                </motion.div>
 
-              <motion.div custom={3} variants={fieldVariants} className="group">
-                 <label className="block text-[10px] uppercase tracking-widest text-elite-sub mb-2 font-mono">Signal</label>
-                 <input 
-                   value={formState.phone}
-                   onChange={e => setFormState({...formState, phone: e.target.value})}
-                   type="tel" 
-                   placeholder="Phone (Optional)"
-                   className="clickable w-full bg-transparent border-b border-white/10 py-4 text-white focus:outline-none focus:border-elite-accent transition-colors font-light placeholder:text-white/20" 
-                 />
-              </motion.div>
+                <motion.div custom={3} variants={fieldVariants} className="group">
+                    <label className="block text-[10px] uppercase tracking-widest text-elite-sub mb-2 font-mono">Phone (Optional)</label>
+                    <input 
+                    value={formState.phone}
+                    onChange={e => setFormState({...formState, phone: e.target.value})}
+                    type="tel" 
+                    placeholder="+1 (555) 000-0000"
+                    className="clickable w-full bg-transparent border-b border-white/10 py-4 text-white focus:outline-none focus:border-elite-accent transition-colors font-light placeholder:text-white/20" 
+                    />
+                </motion.div>
 
-              <motion.div custom={4} variants={fieldVariants} className="col-span-1 md:col-span-2 group">
-                 <label className="block text-[10px] uppercase tracking-widest text-elite-sub mb-2 font-mono">Objective Data</label>
-                 <textarea 
-                   value={formState.message}
-                   onChange={e => setFormState({...formState, message: e.target.value})}
-                   required 
-                   rows={4} 
-                   placeholder="Describe current infrastructure bottlenecks and desired outcomes..."
-                   className="clickable w-full bg-transparent border-b border-white/10 py-4 text-white focus:outline-none focus:border-elite-accent transition-colors font-light resize-none placeholder:text-white/20" 
-                 />
-              </motion.div>
+                <motion.div custom={4} variants={fieldVariants} className="col-span-1 md:col-span-2 group">
+                    <label className="block text-[10px] uppercase tracking-widest text-elite-sub mb-2 font-mono">Project Details</label>
+                    <textarea 
+                    value={formState.message}
+                    onChange={e => setFormState({...formState, message: e.target.value})}
+                    required 
+                    rows={4} 
+                    placeholder="Tell me about your goals and timeline..."
+                    className="clickable w-full bg-transparent border-b border-white/10 py-4 text-white focus:outline-none focus:border-elite-accent transition-colors font-light resize-none placeholder:text-white/20" 
+                    />
+                </motion.div>
 
-              <motion.div custom={5} variants={fieldVariants} className="col-span-1 md:col-span-2 pt-8">
-                 <button 
-                   disabled={status === 'SENDING'}
-                   type="submit" 
-                   className="clickable w-full md:w-auto px-12 py-5 bg-white text-black font-medium tracking-widest uppercase text-xs hover:bg-elite-accent hover:text-white transition-all duration-500 disabled:opacity-50"
-                 >
-                   {status === 'SENDING' ? 'Transmitting...' : 'Initialize'}
-                 </button>
-              </motion.div>
-            </motion.form>
-          )}
+                <motion.div custom={5} variants={fieldVariants} className="col-span-1 md:col-span-2 pt-8">
+                    <button 
+                    disabled={status === 'SENDING'}
+                    type="submit" 
+                    className="clickable w-full md:w-auto px-12 py-5 bg-white text-black font-medium tracking-widest uppercase text-xs hover:bg-elite-accent hover:text-white transition-all duration-500 disabled:opacity-50 flex items-center justify-center gap-3"
+                    >
+                    {status === 'SENDING' ? 'Sending...' : 'Send Message'}
+                    {status === 'SENDING' ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                    </button>
+                </motion.div>
+                </motion.form>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>

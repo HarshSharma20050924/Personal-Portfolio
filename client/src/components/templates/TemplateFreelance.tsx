@@ -45,7 +45,7 @@ const TemplateFreelance: React.FC<TemplateProps> = ({ heroData, projects, social
       <FreelanceNavigation />
       
       <main>
-        <FreelanceHero data={heroData} />
+        <FreelanceHero data={heroData} socialLinks={socialLinks} />
         <FreelanceTrust />
         <FreelanceServices services={services} />
         <FreelanceAbout />

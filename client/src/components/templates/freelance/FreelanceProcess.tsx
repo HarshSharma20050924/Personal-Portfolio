@@ -66,9 +66,10 @@ const ProcessStep = ({ step, index }: { step: any, index: number }) => {
     offset: ["start end", "center center"]
   });
 
-  const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.2, 0.5, 1]);
-  const scale = useTransform(scrollYProgress, [0, 1], [0.9, 1]);
-  const color = useTransform(scrollYProgress, [0.8, 1], ["#333", "#3B82F6"]); 
+  // Fade In and Fade Out
+  const opacity = useTransform(scrollYProgress, [0, 0.5, 0.8, 1], [0, 1, 1, 0.2]);
+  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.9, 1, 0.95]);
+  const color = useTransform(scrollYProgress, [0.4, 0.6], ["#333", "#3B82F6"]); 
 
   return (
     <motion.div 

@@ -3,10 +3,10 @@ import React, { useRef } from 'react';
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
 import { SplitText } from '../../SplitText';
 import { useNavigate } from 'react-router-dom';
-import { Linkedin, Twitter, Mail } from 'lucide-react';
-import { HeroData } from '../../../types';
+import { HeroData, SocialLink } from '../../../types';
+import { getSocialIcon } from '../../../utils/socialIcons';
 
-export const FreelanceHero = ({ data }: { data: HeroData }) => {
+export const FreelanceHero = ({ data, socialLinks }: { data: HeroData, socialLinks?: SocialLink[] }) => {
   const ref = useRef(null);
   const navigate = useNavigate();
   const { scrollYProgress } = useScroll({
@@ -14,6 +14,7 @@ export const FreelanceHero = ({ data }: { data: HeroData }) => {
     offset: ["start start", "end start"]
   });
 
+  // Mouse Parallax
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   const springConfig = { damping: 50, stiffness: 400 };
@@ -27,13 +28,17 @@ export const FreelanceHero = ({ data }: { data: HeroData }) => {
     mouseY.set(clientY / innerHeight - 0.5);
   };
 
+  // Scroll Animations
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
-  const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]); // Fade out quicker
   const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
 
   const textX = useTransform(springX, [-0.5, 0.5], ["-15px", "15px"]);
   const textY = useTransform(springY, [-0.5, 0.5], ["-15px", "15px"]);
   const imgMouseX = useTransform(springX, [-0.5, 0.5], ["20px", "-20px"]);
+
+  // Filter visible links
+  const visibleLinks = socialLinks?.filter(s => s.showInFreelance) || [];
 
   return (
     <section 
@@ -52,7 +57,7 @@ export const FreelanceHero = ({ data }: { data: HeroData }) => {
       <div className="container mx-auto px-4 z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center h-full">
         
         <motion.div 
-          style={{ x: textX, y: textY }} 
+          style={{ x: textX, y: textY, opacity }} 
           className="lg:col-span-7 flex flex-col items-center lg:items-start text-center lg:text-left z-20"
         >
           <motion.div
@@ -92,25 +97,34 @@ export const FreelanceHero = ({ data }: { data: HeroData }) => {
             transition={{ duration: 0.8, delay: 1.2, ease: [0.22, 1, 0.36, 1] }}
             className="flex flex-col gap-8"
           >
-            <motion.button 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate('/contact')}
-              className="clickable self-center lg:self-start px-10 py-5 bg-white text-black text-sm font-semibold tracking-widest uppercase rounded-full hover:bg-neutral-200 transition-all duration-300"
-            >
-              Start Transformation
-            </motion.button>
+            <div className="flex flex-col md:flex-row items-center gap-6">
+                <motion.button 
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate('/contact')}
+                className="clickable px-10 py-4 bg-white text-black text-sm font-semibold tracking-widest uppercase rounded-full hover:bg-neutral-200 transition-all duration-300"
+                >
+                Start Transformation
+                </motion.button>
 
-            <div className="flex gap-6 items-center justify-center lg:justify-start">
-               <a href="#" className="clickable p-3 rounded-full border border-white/10 text-elite-sub hover:text-white hover:border-elite-accent hover:bg-elite-accent/10 transition-all duration-300">
-                 <Mail size={18} />
-               </a>
-               <a href="#" className="clickable p-3 rounded-full border border-white/10 text-elite-sub hover:text-white hover:border-elite-accent hover:bg-elite-accent/10 transition-all duration-300">
-                 <Linkedin size={18} />
-               </a>
-               <a href="#" className="clickable p-3 rounded-full border border-white/10 text-elite-sub hover:text-white hover:border-elite-accent hover:bg-elite-accent/10 transition-all duration-300">
-                 <Twitter size={18} />
-               </a>
+                {/* Hero Social Links */}
+                <div className="flex gap-4">
+                    {visibleLinks.map((link) => {
+                        const Icon = getSocialIcon(link.icon);
+                        return (
+                            <a 
+                                key={link.name}
+                                href={link.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="clickable p-3 rounded-full border border-white/10 text-elite-sub hover:text-white hover:border-elite-accent hover:bg-elite-accent/10 transition-all duration-300"
+                                title={link.name}
+                            >
+                                <Icon size={18} />
+                            </a>
+                        );
+                    })}
+                </div>
             </div>
           </motion.div>
         </motion.div>
@@ -121,7 +135,8 @@ export const FreelanceHero = ({ data }: { data: HeroData }) => {
                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
                transition={{ duration: 1.2, delay: 0.4, ease: "easeOut" }}
                style={{ 
-                 y, 
+                 y,
+                 opacity, // Fade out on scroll
                  scale: useTransform(scrollYProgress, [0, 1], [1, 1.1]), 
                  x: imgMouseX,
                  rotateY: useTransform(springX, [-0.5, 0.5], [-5, 5]) 
@@ -132,7 +147,7 @@ export const FreelanceHero = ({ data }: { data: HeroData }) => {
                <img 
                  src={data.profileImageUrl} 
                  alt={data.name} 
-                 className="relative z-10 w-full h-auto object-contain mask-gradient-b drop-shadow-2xl will-change-transform"
+                 className="relative z-10 w-full h-auto object-contain mask-gradient-b drop-shadow-2xl will-change-transform grayscale hover:grayscale-0 transition-all duration-700"
                  style={{ 
                     maskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)',
                     WebkitMaskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)'

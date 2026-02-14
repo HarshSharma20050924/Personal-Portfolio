@@ -96,13 +96,16 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projects = [], template
     const lenis = useLenis();
     const { scrollY } = useScroll();
     
-    const safeProjects = Array.isArray(projects) ? projects : [];
+    // Filter projects if in freelance template mode
+    const displayProjects = template === 'freelance' 
+        ? projects.filter(p => p.showInFreelance)
+        : projects;
 
-    const projectIndex = safeProjects.findIndex(p => String(p.id) === id || String(safeProjects.indexOf(p)) === id);
-    const project = safeProjects[projectIndex];
+    const projectIndex = displayProjects.findIndex(p => String(p.id) === id || String(displayProjects.indexOf(p)) === id);
+    const project = displayProjects[projectIndex];
     
-    const nextIndex = projectIndex === -1 ? 0 : (projectIndex + 1) % safeProjects.length;
-    const nextProject = safeProjects[nextIndex];
+    const nextIndex = projectIndex === -1 ? 0 : (projectIndex + 1) % displayProjects.length;
+    const nextProject = displayProjects[nextIndex];
 
     useLayoutEffect(() => {
         window.scrollTo(0, 0);

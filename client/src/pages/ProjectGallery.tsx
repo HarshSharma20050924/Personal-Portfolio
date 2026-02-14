@@ -113,9 +113,13 @@ const LoopBackPortal: React.FC = () => {
 };
 
 const ProjectGallery: React.FC<ProjectGalleryProps> = ({ projects, template }) => {
-    const isElite = template === 'elite';
+    const isElite = template === 'elite' || template === 'freelance';
     
-    // Ensure we start at top on mount
+    // Filter projects based on template
+    const displayProjects = template === 'freelance' 
+        ? projects.filter(p => p.showInFreelance)
+        : projects;
+
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
@@ -159,16 +163,18 @@ const ProjectGallery: React.FC<ProjectGalleryProps> = ({ projects, template }) =
                             Total Projects
                         </span>
                         <span className="text-2xl font-mono text-black dark:text-white">
-                            {String(projects.length).padStart(2, '0')}
+                            {String(displayProjects.length).padStart(2, '0')}
                         </span>
                     </div>
                 </M.div>
 
                 {/* Render Projects */}
                 <div className="flex flex-col gap-8 md:gap-12 min-h-[50vh]">
-                    {projects.map((project, idx) => (
+                    {displayProjects.length > 0 ? displayProjects.map((project, idx) => (
                         <GalleryCard key={project.id || idx} project={project} index={idx} />
-                    ))}
+                    )) : (
+                        <div className="text-center text-gray-500 py-20">No projects visible in this archive.</div>
+                    )}
                 </div>
                 
                 {/* Loop Back Logic */}

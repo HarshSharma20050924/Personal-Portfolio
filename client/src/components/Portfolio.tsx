@@ -62,7 +62,8 @@ const Portfolio: React.FC<PortfolioProps> = (props) => {
   return (
     <>
         {renderTemplate()}
-        <ChatWidget template={heroData.template} />
+        {/* Hide default ChatWidget on Freelance template because it has AIGlobe */}
+        {heroData.template !== 'freelance' && <ChatWidget template={heroData.template} />}
     </>
   );
 };
