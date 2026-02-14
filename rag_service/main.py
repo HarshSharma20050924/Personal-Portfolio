@@ -109,10 +109,11 @@ async def update_knowledge(request: UpdateKnowledgeRequest):
         records = []
         for i, chunk in enumerate(chunks):
             records.append({
-                "content": chunk,
-                "embedding": response.embeddings[i].values,
-                "metadata": {"source": request.source}
-            })
+    "content": chunk,
+    "embedding_3072": response.embeddings[i].values,
+    "metadata": {"source": request.source}
+})
+
 
         # Step 4: Bulk Insert
         supabase.table("documents").insert(records).execute()
