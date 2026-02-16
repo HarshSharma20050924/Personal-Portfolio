@@ -80,7 +80,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
       } catch (e) {
           console.error("Failed to load chat history", e);
       }
-      return [{ role: 'ai', content: "System online. Accessing portfolio archives... How may I assist you?", hasAnimated: false }];
+      return [{ role: 'ai', content: "System initialized. Portfolio knowledge base online. Awaiting instruction.", hasAnimated: false }];
   });
 
   const [inputValue, setInputValue] = useState('');
@@ -139,7 +139,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
 
     } catch (error) {
       console.error(error);
-      setMessages(prev => [...prev, { role: 'ai', content: "Connection interrupted. Neural link unstable. Please try again.", hasAnimated: false }]);
+      setMessages(prev => [...prev, { role: 'ai', content: "Connection interrupted. Neural link unstable. Please try again later.", hasAnimated: false }]);
     } finally {
       setIsLoading(false);
     }
@@ -156,7 +156,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
   };
 
   const handleClearChat = () => {
-    setMessages([{ role: 'ai', content: "Memory buffer flushed. Awaiting new input.", hasAnimated: false }]);
+    setMessages([{ role: 'ai', content: "Session reset. Context cleared. Ready for new query.", hasAnimated: false }]);
     localStorage.removeItem(storageKey);
   };
 
@@ -189,7 +189,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
                         <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-white/20 bg-gray-50 dark:bg-black/50">
                             <div className="flex items-center gap-3">
                                 <div className="w-2 h-2 bg-blue-500 dark:bg-green-500 animate-pulse shadow-sm" />
-                                <h3 className="text-xs uppercase tracking-widest font-bold text-slate-700 dark:text-white">System.AI_Core</h3>
+                                <h3 className="text-xs uppercase tracking-widest font-bold text-slate-700 dark:text-white">Portfolio Assitant</h3>
                             </div>
                             <div className="flex items-center gap-4 text-slate-400 dark:text-white/50">
                                 <button onClick={handleClearChat} className="hover:text-slate-900 dark:hover:text-white transition-colors" title="Clear Chat"><Trash2 size={14} /></button>
@@ -208,7 +208,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
                             {messages.map((msg, idx) => (
                                 <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                                     <span className="text-[9px] text-slate-400 dark:text-white/30 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
-                                        {msg.role === 'user' ? <><User size={8} /> USER</> : <><Terminal size={8} /> SYSTEM_RESPONSE</>}
+                                        {msg.role === 'user' ? <><User size={8} /> USER</> : <><Terminal size={8} />BOT</>}
                                     </span>
                                     <div className={`
                                         max-w-[95%] p-3 rounded-md border
@@ -231,7 +231,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
                             ))}
                              {isLoading && (
                                 <div className="flex flex-col items-start gap-1">
-                                    <span className="text-[9px] text-slate-400 dark:text-white/30 uppercase tracking-[0.2em]">PROCESSING</span>
+                                    <span className="text-[9px] text-slate-400 dark:text-white/30 uppercase tracking-[0.2em]">EXECUTING</span>
                                     <div className="flex gap-1 h-1">
                                         <motion.div animate={{ height: [2, 10, 2] }} transition={{ repeat: Infinity, duration: 0.5 }} className="w-1 bg-slate-300 dark:bg-white/50" />
                                         <motion.div animate={{ height: [2, 10, 2] }} transition={{ repeat: Infinity, duration: 0.5, delay: 0.1 }} className="w-1 bg-slate-300 dark:bg-white/50" />
@@ -248,7 +248,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ template }) => {
                                 <input
                                     type="text"
                                     className="flex-1 bg-transparent border-none outline-none text-slate-800 dark:text-white text-sm font-mono placeholder-slate-400 dark:placeholder-white/20 focus:ring-0"
-                                    placeholder="Input command..."
+                                    placeholder="Enter query..."
                                     value={inputValue}
                                     onChange={(e) => setInputValue(e.target.value)}
                                     onKeyPress={handleKeyPress}

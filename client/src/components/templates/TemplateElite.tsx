@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import EliteHeader from './elite/EliteHeader';
 import EliteHero from './elite/EliteHero';
-import EliteMetrics from './elite/EliteMetrics'; // New Import
+import EliteMetrics from './elite/EliteMetrics';
 import EliteWork from './elite/EliteWork';
 import EliteThinking from './elite/EliteThinking';
 import EliteExperience from './elite/EliteExperience';
@@ -65,14 +65,22 @@ const TemplateElite: React.FC<TemplateProps> = ({
   }, [isDark]);
 
   return (
-    <div className={`min-h-screen selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black overflow-x-hidden relative transition-colors duration-500 bg-white dark:bg-[#050505] text-black dark:text-white`}>
+    <div className={`min-h-screen selection:bg-blue-500 selection:text-white dark:selection:bg-blue-500 dark:selection:text-white overflow-x-hidden relative transition-colors duration-500 bg-white dark:bg-[#050505] text-black dark:text-white`}>
       <EliteCursor />
       
+      {/* GLOBAL AMBIENT NEBULA - Blue & Indigo (Restored) */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+          {/* Top Left: Deep Blue Glow */}
+          <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-blue-500/10 dark:bg-blue-600/10 rounded-full blur-[150px] animate-pulse-slow mix-blend-multiply dark:mix-blend-screen" />
+          
+          {/* Bottom Right: Midnight Indigo */}
+          <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-indigo-500/10 dark:bg-indigo-600/10 rounded-full blur-[150px] animate-pulse-slow mix-blend-multiply dark:mix-blend-screen" style={{ animationDelay: '2s' }} />
+      </div>
+
       <EliteHeader name={heroData.name} isDark={isDark} toggleTheme={toggleTheme} />
       
       <main className="relative z-10">
         <EliteHero data={heroData} socialLinks={socialLinks} isDark={isDark} />
-        {/* Inserted Metrics here between Hero and Work */}
         <EliteMetrics socialLinks={socialLinks} isDark={isDark} />
         <EliteWork projects={projects} />
         <EliteExperience experience={experience} education={education} />

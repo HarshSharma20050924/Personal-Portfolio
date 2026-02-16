@@ -37,7 +37,14 @@ const EliteContact: React.FC<{ data: HeroData; socialLinks: SocialLink[] }> = ({
   };
 
   return (
-    <section id="contact" className="py-24 md:py-40 px-4 md:px-6 flex flex-col items-center justify-center bg-white dark:bg-[#050505] border-t border-black/5 dark:border-white/5 overflow-hidden transition-colors duration-500">
+    <section id="contact" className="relative py-24 md:py-40 px-4 md:px-6 flex flex-col items-center justify-center bg-white dark:bg-[#050505] border-t border-black/5 dark:border-white/5 overflow-hidden transition-colors duration-500">
+      
+      {/* BACKGROUND AMBIENCE (Blue/Indigo - Matching Hero) */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+          <div className="absolute bottom-[-20%] left-[-10%] w-[60%] h-[60%] bg-blue-500/5 dark:bg-blue-600/5 rounded-full blur-[150px] animate-pulse-slow" />
+          <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-500/5 dark:bg-indigo-600/5 rounded-full blur-[150px] animate-pulse-slow" style={{ animationDelay: '3s' }} />
+      </div>
+
       <div className="max-w-5xl w-full relative z-10">
         
         {/* Header */}
@@ -99,7 +106,7 @@ const EliteContact: React.FC<{ data: HeroData; socialLinks: SocialLink[] }> = ({
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
                             transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-                            className="absolute inset-0 bg-gray-50 dark:bg-[#0a0a0a] border border-black/5 dark:border-white/5 flex flex-col items-center justify-center text-center p-8 rounded-3xl"
+                            className="absolute inset-0 bg-gray-50/80 dark:bg-[#0a0a0a]/80 backdrop-blur-sm border border-black/5 dark:border-white/5 flex flex-col items-center justify-center text-center p-8 rounded-3xl"
                         >
                             <M.div 
                                 initial={{ scale: 0 }}
@@ -126,7 +133,7 @@ const EliteContact: React.FC<{ data: HeroData; socialLinks: SocialLink[] }> = ({
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="bg-gray-50 dark:bg-[#0a0a0a] p-8 md:p-12 rounded-3xl border border-black/5 dark:border-white/5 w-full h-full flex flex-col justify-center"
+                            className="bg-gray-50/50 dark:bg-[#0a0a0a]/50 backdrop-blur-sm p-8 md:p-12 rounded-3xl border border-black/5 dark:border-white/5 w-full h-full flex flex-col justify-center"
                         >
                             <h3 className="text-xs font-mono text-gray-400 uppercase tracking-widest mb-10">
                                 Send a Message

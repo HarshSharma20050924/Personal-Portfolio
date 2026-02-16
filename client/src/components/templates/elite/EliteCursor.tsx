@@ -1,83 +1,74 @@
 
 import React, { useEffect, useState } from 'react';
-import { motion, useSpring, useMotionValue } from 'framer-motion';
+import { motion, useMotionValue, useSpring } from 'framer-motion';
 
 const EliteCursor: React.FC = () => {
-  const [isHovered, setIsHovered] = useState(false);
-  const [isVisible, setIsVisible] = useState(false); // Hidden by default
-  const cursorX = useMotionValue(-100);
-  const cursorY = useMotionValue(-100);
+  const [isHovering, setIsHovering] = useState(false);
   
-  // Smooth springs for movement
-  const springConfig = { damping: 20, stiffness: 150, mass: 0.5 };
-  const smoothX = useSpring(cursorX, springConfig);
-  const smoothY = useSpring(cursorY, springConfig);
+  // Motion values for raw mouse position
+  const mouseX = useMotionValue(-100);
+  const mouseY = useMotionValue(-100);
 
-  // Scale spring
-  const scale = useSpring(1, springConfig);
+  // Smooth spring physics for the trailing ring
+  const springConfig = { damping: 20, stiffness: 300, mass: 0.2 };
+  const ringX = useSpring(mouseX, springConfig);
+  const ringY = useSpring(mouseY, springConfig);
 
   useEffect(() => {
-    // Only show custom cursor on fine pointer devices (mouse)
-    const checkPointer = () => {
-        const isTouch = window.matchMedia("(pointer: coarse)").matches;
-        setIsVisible(!isTouch);
-    };
-    
-    checkPointer();
-    window.addEventListener('resize', checkPointer);
-
-    if (!isVisible) return;
+    // Disable on touch devices for performance
+    if (window.matchMedia("(pointer: coarse)").matches) return;
 
     const moveCursor = (e: MouseEvent) => {
-      cursorX.set(e.clientX);
-      cursorY.set(e.clientY);
+      mouseX.set(e.clientX);
+      mouseY.set(e.clientY);
     };
 
     const handleMouseOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      // Check for interactive elements
-      if (
-        target.tagName === 'A' ||
-        target.tagName === 'BUTTON' ||
-        target.closest('a') ||
+      
+      // Check for interactive elements (links, buttons, or specific class)
+      const isClickable = 
+        target.tagName === 'BUTTON' || 
+        target.tagName === 'A' || 
+        target.tagName === 'INPUT' || 
+        target.closest('a') || 
         target.closest('button') ||
         target.classList.contains('elite-interactive') ||
-        target.closest('.elite-interactive')
-      ) {
-        setIsHovered(true);
-        scale.set(3); // Expand cursor
-      } else {
-        setIsHovered(false);
-        scale.set(1);
-      }
+        target.closest('.elite-interactive');
+        
+      setIsHovering(!!isClickable);
     };
 
     window.addEventListener('mousemove', moveCursor);
     window.addEventListener('mouseover', handleMouseOver);
 
     return () => {
-      window.removeEventListener('resize', checkPointer);
       window.removeEventListener('mousemove', moveCursor);
       window.removeEventListener('mouseover', handleMouseOver);
     };
-  }, [cursorX, cursorY, scale, isVisible]);
-
-  if (!isVisible) return null;
+  }, [mouseX, mouseY]);
 
   return (
-    <motion.div
-      className="elite-cursor fixed top-0 left-0 w-4 h-4 bg-white rounded-full pointer-events-none z-[9999] mix-blend-difference"
-      style={{
-        translateX: smoothX,
-        translateY: smoothY,
-        scale: scale,
-        x: '-50%', // Center align
-        y: '-50%',
-      }}
-    >
-        {/* Optional inner dot for precision */}
-        {!isHovered && <div className="absolute inset-0 bg-white rounded-full opacity-50" />}
-    </motion.div>
+    <>
+      {/* The Core Dot - Moves instantly */}
+      <motion.div
+        style={{ x: mouseX, y: mouseY }}
+        className="fixed top-0 left-0 w-2 h-2 bg-white rounded-full pointer-events-none z-[9999] -translate-x-1/2 -translate-y-1/2 mix-blend-difference"
+      />
+      
+      {/* The Magnetic Ring - Follows with physics */}
+      <motion.div
+        style={{ x: ringX, y: ringY }}
+        className={`fixed top-0 left-0 border border-white pointer-events-none z-[9998] -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ease-out mix-blend-difference ${
+          isHovering 
+            ? 'w-12 h-12 bg-white/20 border-transparent scale-110 backdrop-blur-[1px]' 
+            : 'w-8 h-8 rounded-full'
+        }`}
+        animate={{
+            borderRadius: isHovering ? '30%' : '50%'
+        }}
+      />
+    </>
   );
 };
 
