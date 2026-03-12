@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Fingerprint, ShieldCheck, Smartphone, CheckCircle2 } from 'lucide-react';
+import API_BASE from '../utils/apiBase';
 
 const ManageSecurity: React.FC = () => {
     const [isRegistering, setIsRegistering] = useState(false);
@@ -63,7 +64,7 @@ const ManageSecurity: React.FC = () => {
 
             // 3. Register the credential ID with the server
             const apiKey = sessionStorage.getItem('apiKey');
-            const response = await fetch('/api/auth/register-biometric', {
+            const response = await fetch(`${API_BASE}/api/auth/register-biometric`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',

@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { BrainCircuit, Download, UploadCloud, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import API_BASE from '../utils/apiBase';
 
 const ManageAI: React.FC = () => {
     const [portfolioData, setPortfolioData] = useState<string>('');
@@ -10,7 +11,7 @@ const ManageAI: React.FC = () => {
     const handleExport = async () => {
         const apiKey = sessionStorage.getItem('apiKey');
         try {
-            const res = await fetch('/api/data/export', {
+            const res = await fetch(`${API_BASE}/api/data/export`, {
                 headers: { 'Authorization': `Bearer ${apiKey}` }
             });
             if (res.ok) {
@@ -33,7 +34,7 @@ const ManageAI: React.FC = () => {
         try {
             // NOTE: The RAG service might be on a different port/proxy in some setups,
             // but based on vite.config.js, /api/rag requests are proxied correctly.
-            const res = await fetch('/api/rag/update-knowledge', {
+            const res = await fetch(`${API_BASE}/api/rag/update-knowledge`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 

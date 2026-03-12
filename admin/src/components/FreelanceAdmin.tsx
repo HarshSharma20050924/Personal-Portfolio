@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { FileText, Receipt, ShieldCheck, Download, Users, Briefcase, Plus, Trash2, Printer, Calculator, Info, Layout, Save, IndianRupee, MessageSquare, Bell, Loader2 } from 'lucide-react';
 import type { HeroData, Service, Project } from '../types';
 import { getFCMToken } from '../utils/firebase';
+import API_BASE from '../utils/apiBase';
 
 interface FreelanceAdminProps {
     heroData: HeroData;
@@ -32,7 +33,6 @@ interface FreelanceLead {
     phone?: string;
 }
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 const ADMIN_KEY = import.meta.env.VITE_ADMIN_API_KEY;
 
 const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, projects }) => {

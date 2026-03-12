@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Article } from '../types';
 import { Upload, Image as ImageIcon, Star, Loader2, Briefcase } from 'lucide-react';
+import API_BASE from '../utils/apiBase';
 
 interface ManageBlogProps {
   articles: Article[];
@@ -75,7 +76,7 @@ const ManageBlog: React.FC<ManageBlogProps> = ({ articles, setArticles }) => {
     formData.append('file', file);
 
     try {
-        const response = await fetch('/api/upload', { method: 'POST', body: formData });
+        const response = await fetch(`${API_BASE}/api/upload`, { method: 'POST', body: formData });
         const result = await response.json();
         
         if (targetField === 'imageUrl') {
@@ -203,7 +204,7 @@ const ManageBlog: React.FC<ManageBlogProps> = ({ articles, setArticles }) => {
                   <div className="flex items-center gap-2">
                     <h4 className="font-bold">{article.title}</h4>
                     {article.featured && <Star size={12} className="fill-sky-500 text-sky-500" />}
-                    {article.showInFreelance && <Briefcase size={12} className="text-purple-500" title="Visible in Freelance" />}
+                    {article.showInFreelance && <Briefcase size={12} className="text-purple-500" />}
                   </div>
                   <p className="text-sm text-slate-500 dark:text-slate-400">{article.date}</p>
                </div>

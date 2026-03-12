@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Project, Service } from '../types';
 import { Star, Upload, ImageIcon, Loader2, Briefcase } from 'lucide-react';
+import API_BASE from '../utils/apiBase';
 
 interface ManageProjectsProps {
   projects: Project[];
@@ -74,7 +75,7 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects, 
     setUploadError(null);
 
     try {
-      const response = await fetch('/api/upload', {
+      const response = await fetch(`${API_BASE}/api/upload`, {
         method: 'POST',
         body: uploadData,
       });

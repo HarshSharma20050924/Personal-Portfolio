@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Message } from '../types';
 import { Trash2, Mail, Phone, Briefcase, User, Star, Bell } from 'lucide-react';
 import { getFCMToken } from '../utils/firebase';
+import API_BASE from '../utils/apiBase';
 
 interface ManageMessagesProps {
     refreshTrigger?: number;
@@ -24,7 +25,7 @@ const ManageMessages: React.FC<ManageMessagesProps> = ({ refreshTrigger = 0 }) =
       if (token) {
         const apiKey = sessionStorage.getItem('apiKey');
         try {
-            await fetch('/api/notifications/token', {
+            await fetch(`${API_BASE}/api/notifications/token`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -40,7 +41,7 @@ const ManageMessages: React.FC<ManageMessagesProps> = ({ refreshTrigger = 0 }) =
   const fetchMessages = async () => {
     const apiKey = sessionStorage.getItem('apiKey');
     try {
-      const res = await fetch('/api/messages', {
+      const res = await fetch(`${API_BASE}/api/messages`, {
         headers: { 'Authorization': `Bearer ${apiKey}` }
       });
       if (res.ok) {
@@ -58,7 +59,7 @@ const ManageMessages: React.FC<ManageMessagesProps> = ({ refreshTrigger = 0 }) =
     if (!window.confirm("Delete this message?")) return;
     const apiKey = sessionStorage.getItem('apiKey');
     try {
-      await fetch(`/api/messages/${id}`, {
+      await fetch(`${API_BASE}/api/messages/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${apiKey}` }
       });

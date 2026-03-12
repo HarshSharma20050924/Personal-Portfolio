@@ -1,6 +1,6 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Fingerprint, Lock, ShieldCheck } from 'lucide-react';
+import API_BASE from '../utils/apiBase';
 
 interface LoginProps {
   onLogin: (apiKey: string) => void;
@@ -30,7 +30,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     const password = passwordRef.current?.value;
 
     try {
-      const response = await fetch('/api/auth', {
+      const response = await fetch(`${API_BASE}/api/auth`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
@@ -96,7 +96,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           challenge: challenge,
           rpId: window.location.hostname,
           allowCredentials: [{
-              id: credentialIdBuffer,
+              id: credentialIdBuffer as unknown as BufferSource,
               type: 'public-key',
               // FIX: Removed 'transports' array. Forcing ['internal', 'hybrid'] causes some mobile browsers 
               // to ignore the credential if they don't strictly report the transport type correctly.
@@ -115,7 +115,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       console.log("Biometric assertion received. ID:", assertion.id);
 
       // 4. Send the ID to server for verification
-      const response = await fetch('/api/auth/biometric', {
+      const response = await fetch(`${API_BASE}/api/auth/biometric`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ credentialId: assertion.id })

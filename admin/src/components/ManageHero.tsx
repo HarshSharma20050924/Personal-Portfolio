@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import type { HeroData } from '../types';
 import { Loader2 } from 'lucide-react';
+import API_BASE from '../utils/apiBase';
 
 interface ManageHeroProps {
   data: HeroData;
@@ -30,7 +31,7 @@ const ManageHero: React.FC<ManageHeroProps> = ({ data, setData }) => {
     formData.append('file', file);
 
     try {
-      const response = await fetch('/api/upload', {
+      const response = await fetch(`${API_BASE}/api/upload`, {
         method: 'POST',
         body: formData,
       });
@@ -59,7 +60,7 @@ const ManageHero: React.FC<ManageHeroProps> = ({ data, setData }) => {
     formData.append('file', file);
 
     try {
-      const response = await fetch('/api/upload', {
+      const response = await fetch(`${API_BASE}/api/upload`, {
         method: 'POST',
         body: formData,
       });

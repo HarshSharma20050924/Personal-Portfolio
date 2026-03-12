@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import { HeroData, Skill, Project, SocialLink, Article, Experience, Education, PlaygroundConfig, Service } from './types';
+import API_BASE from './utils/apiBase';
 
 type AppData = {
   heroData: HeroData;
@@ -30,7 +31,7 @@ const App: React.FC = () => {
     const fetchData = async () => {
       try {
         setError(null);
-        const response = await fetch('/api/data');
+        const response = await fetch(`${API_BASE}/api/data`);
         if (!response.ok) throw new Error('Failed to fetch portfolio data.');
         const result = await response.json();
         setData(result);
@@ -58,7 +59,7 @@ const App: React.FC = () => {
       throw new Error('Not authenticated or no data to save.');
     }
 
-    const response = await fetch('/api/data', {
+    const response = await fetch(`${API_BASE}/api/data`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
