@@ -56,7 +56,7 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
 
     const fetchLedger = async () => {
         try {
-            const res = await fetch(`${API_BASE}/ledger`, {
+            const res = await fetch(`${API_BASE}/api/ledger`, {
                 headers: { 'Authorization': `Bearer ${ADMIN_KEY}` }
             });
             if (res.ok) setAccounts(await res.json());
@@ -65,7 +65,7 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
 
     const fetchLeads = async () => {
         try {
-            const res = await fetch(`${API_BASE}/messages`, {
+            const res = await fetch(`${API_BASE}/api/messages`, {
                 headers: { 'Authorization': `Bearer ${ADMIN_KEY}` }
             });
             if (res.ok) {
@@ -77,7 +77,7 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
 
     const checkNotificationStatus = async () => {
         try {
-            const res = await fetch(`${API_BASE}/notifications/token`, {
+            const res = await fetch(`${API_BASE}/api/notifications/token`, {
                 headers: { 'Authorization': `Bearer ${ADMIN_KEY}` }
             });
             const data = await res.json();
@@ -90,7 +90,7 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
         try {
             const token = await getFCMToken();
             if (token) {
-                await fetch(`${API_BASE}/notifications/token`, {
+                await fetch(`${API_BASE}/api/notifications/token`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -173,7 +173,7 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
             status: 'active'
         };
         try {
-            const res = await fetch(`${API_BASE}/ledger`, {
+            const res = await fetch(`${API_BASE}/api/ledger`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -187,7 +187,7 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
 
     const updateAccount = async (id: number, field: string, value: any) => {
         try {
-            await fetch(`${API_BASE}/ledger/${id}`, {
+            await fetch(`${API_BASE}/api/ledger/${id}`, {
                 method: 'PATCH',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -203,7 +203,7 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
     const deleteAccount = async (id: number) => {
         if (!confirm('Remove this client?')) return;
         try {
-            const res = await fetch(`${API_BASE}/ledger/${id}`, {
+            const res = await fetch(`${API_BASE}/api/ledger/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${ADMIN_KEY}` }
             });
@@ -214,7 +214,7 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
     const deleteLead = async (id: number) => {
         if (!confirm('Discard this lead?')) return;
         try {
-            const res = await fetch(`${API_BASE}/messages/${id}`, {
+            const res = await fetch(`${API_BASE}/api/messages/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${ADMIN_KEY}` }
             });
