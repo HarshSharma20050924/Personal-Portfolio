@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, PanInfo, useMotionValue, animate } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Skill, Article, SocialLink } from '../../../types';
 import { ArrowRight, Cpu, ArrowUpRight } from 'lucide-react';
@@ -18,11 +18,8 @@ const MARQUEE = [
 
 const SpecCard = ({ skill, index }: { skill: Skill, index: number }) => {
     return (
-        <M.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05, duration: 0.5 }}
-            className="group relative h-36 rounded-2xl border border-black/5 dark:border-white/5 bg-white/50 dark:bg-white/[0.02] backdrop-blur-sm overflow-hidden elite-interactive cursor-none hover:shadow-[0_0_30px_rgba(59,130,246,0.15)] dark:hover:shadow-[0_0_30px_rgba(59,130,246,0.1)] transition-all duration-500"
+        <div
+            className="group relative w-full h-full rounded-2xl border border-black/5 dark:border-white/5 bg-white/50 dark:bg-white/[0.02] backdrop-blur-sm overflow-hidden elite-interactive hover:shadow-[0_0_30px_rgba(59,130,246,0.15)] dark:hover:shadow-[0_0_30px_rgba(59,130,246,0.1)] transition-all duration-500"
         >
             {/* Soft Blue Gradient Reveal */}
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -48,8 +45,86 @@ const SpecCard = ({ skill, index }: { skill: Skill, index: number }) => {
                     </div>
                 </div>
             </div>
-        </M.div>
+        </div>
     );
+};
+
+const TechCarousel3D = ({ skills }: { skills: Skill[] }) => {
+  const rotation = useMotionValue(0);
+  const safeSkills = skills && skills.length > 0 ? skills : [
+    { name: 'React', level: 90 },
+    { name: 'TypeScript', level: 85 },
+    { name: 'Node.js', level: 80 },
+    { name: 'Next.js', level: 75 },
+    { name: 'Tailwind CSS', level: 95 },
+    { name: 'PostgreSQL', level: 80 },
+  ];
+  
+  const itemAngle = 360 / safeSkills.length;
+  const radius = Math.max(280, (safeSkills.length * 280) / (2 * Math.PI));
+
+  const handlePan = (e: any, { delta }: PanInfo) => {
+    rotation.set(rotation.get() + delta.x * 0.5);
+  };
+
+  const handlePanEnd = (e: any, { velocity }: PanInfo) => {
+    const currentRotation = rotation.get();
+    const rotationChange = velocity.x * 0.1;
+    const targetRotation = currentRotation + rotationChange;
+    const snappedRotation = Math.round(targetRotation / itemAngle) * itemAngle;
+    
+    animate(rotation, snappedRotation, {
+      type: "spring",
+      stiffness: 50,
+      damping: 10,
+      mass: 1
+    });
+  };
+
+  return (
+    <div className="relative w-full h-[400px] md:h-[500px] flex items-center justify-center overflow-hidden" style={{ perspective: '1200px' }}>
+      
+      {/* Fade edges */}
+      {/* <div className="absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-white dark:from-[#050505] to-transparent z-20 pointer-events-none" />
+      <div className="absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l from-white dark:from-[#050505] to-transparent z-20 pointer-events-none" /> */}
+
+      <motion.div
+        className="relative w-[260px] h-[180px] cursor-grab active:cursor-grabbing z-10"
+        style={{ transformStyle: 'preserve-3d', rotateY: rotation, z: -radius }}
+        onPan={handlePan}
+        onPanEnd={handlePanEnd}
+      >
+        {safeSkills.map((skill, i) => (
+          <div
+            key={i}
+            className="absolute inset-0"
+            style={{
+              transform: `rotateY(${i * itemAngle}deg) translateZ(${radius}px)`,
+              transformStyle: 'preserve-3d',
+              backfaceVisibility: 'hidden',
+            }}
+          >
+            <SpecCard skill={skill} index={i} />
+          </div>
+        ))}
+      </motion.div>
+
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex gap-6 z-30">
+        <button 
+          onClick={() => animate(rotation, rotation.get() + itemAngle, { type: 'spring', stiffness: 50, damping: 10 })}
+          className="w-12 h-12 rounded-full border border-black/10 dark:border-white/10 flex items-center justify-center hover:bg-blue-500 hover:border-blue-500 hover:text-white transition-all text-black dark:text-white elite-interactive"
+        >
+          <ArrowRight className="w-5 h-5 rotate-180" />
+        </button>
+        <button 
+          onClick={() => animate(rotation, rotation.get() - itemAngle, { type: 'spring', stiffness: 50, damping: 10 })}
+          className="w-12 h-12 rounded-full border border-black/10 dark:border-white/10 flex items-center justify-center hover:bg-blue-500 hover:border-blue-500 hover:text-white transition-all text-black dark:text-white elite-interactive"
+        >
+          <ArrowRight className="w-5 h-5" />
+        </button>
+      </div>
+    </div>
+  );
 };
 
 // 2. Freelance-Style Kinetic Journal Row (Blue Theme) — slowed sweep + slowed content drift
@@ -121,16 +196,12 @@ const EliteThinking: React.FC<{ skills: Skill[]; articles: Article[]; socialLink
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {safeSkills.map((skill, i) => (
-              <SpecCard key={i} skill={skill} index={i} />
-            ))}
-          </div>
+          <TechCarousel3D skills={safeSkills} />
         </div>
       </div>
 
       {/* 2. Infinite Marquee Divider (Blue Edition) */}
-      <div className="py-8 bg-[#050505] border-y border-white/[0.08] overflow-hidden relative group">
+      <div className="py-8 bg-transparent border-y border-black/5 dark:border-white/[0.08] overflow-hidden relative group">
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-xl pointer-events-none" />
 
         <div className="flex whitespace-nowrap">

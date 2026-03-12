@@ -80,7 +80,13 @@ const TemplateElite: React.FC<TemplateProps> = ({
       <EliteHeader name={heroData.name} isDark={isDark} toggleTheme={toggleTheme} />
       
       <main className="relative z-10">
-        <EliteHero data={heroData} socialLinks={socialLinks} isDark={isDark} />
+        <EliteHero
+          data={heroData}
+          socialLinks={socialLinks}
+          isDark={isDark}
+          experience={experience}
+          education={education}
+        />
         <EliteMetrics socialLinks={socialLinks} isDark={isDark} />
         <EliteWork projects={projects} />
         <EliteExperience experience={experience} education={education} />

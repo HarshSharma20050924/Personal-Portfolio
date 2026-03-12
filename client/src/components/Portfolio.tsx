@@ -23,47 +23,50 @@ interface PortfolioProps {
   experience: Experience[];
   education: Education[];
   playgroundConfig?: PlaygroundConfig;
+  forceTemplate?: string;
 }
 
 const Portfolio: React.FC<PortfolioProps> = (props) => {
-  const { heroData, playgroundConfig } = props;
+  const { heroData, playgroundConfig, forceTemplate } = props;
 
   const renderTemplate = () => {
-    switch (heroData.template) {
-        case 'playground':
-            if (playgroundConfig) {
-                return <TemplatePlayground {...props} config={playgroundConfig} />;
-            }
-            return <TemplateDefault {...props} />;
-        case 'minimalist':
-          return <TemplateMinimalist {...props} />;
-        case 'dotgrid':
-          return <TemplateDotGrid {...props} />;
-        case 'magicbento':
-          return <TemplateMagicBento {...props} />;
-        case 'starrynight':
-          return <TemplateStarryNight {...props} />;
-        case 'profilecard':
-          return <TemplateProfileCard {...props} />;
-        case 'elite':
-          return <TemplateElite {...props} />;
-        case 'fantasy':
-          return <TemplateFantasy {...props} />;
-        case 'corporate':
-          return <TemplateCorporate {...props} />;
-        case 'freelance':
-          return <TemplateFreelance {...props} />;
-        case 'default':
-        default:
-          return <TemplateDefault {...props} />;
-      }
+    const activeTemplate = forceTemplate || heroData.template;
+
+    switch (activeTemplate) {
+      case 'playground':
+        if (playgroundConfig) {
+          return <TemplatePlayground {...props} config={playgroundConfig} />;
+        }
+        return <TemplateDefault {...props} />;
+      case 'minimalist':
+        return <TemplateMinimalist {...props} />;
+      case 'dotgrid':
+        return <TemplateDotGrid {...props} />;
+      case 'magicbento':
+        return <TemplateMagicBento {...props} />;
+      case 'starrynight':
+        return <TemplateStarryNight {...props} />;
+      case 'profilecard':
+        return <TemplateProfileCard {...props} />;
+      case 'elite':
+        return <TemplateElite {...props} />;
+      case 'fantasy':
+        return <TemplateFantasy {...props} />;
+      case 'corporate':
+        return <TemplateCorporate {...props} />;
+      case 'freelance':
+        return <TemplateFreelance {...props} />;
+      case 'default':
+      default:
+        return <TemplateDefault {...props} />;
+    }
   };
 
   return (
     <>
-        {renderTemplate()}
-        {/* Hide default ChatWidget on Freelance template because it has AIGlobe */}
-        {heroData.template !== 'freelance' && <ChatWidget template={heroData.template} />}
+      {renderTemplate()}
+      {/* Hide default ChatWidget on Freelance template because it has AIGlobe */}
+      {(forceTemplate || heroData.template) !== 'freelance' && <ChatWidget template={heroData.template} />}
     </>
   );
 };

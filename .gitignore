@@ -43,4 +43,6 @@ pyvenv.cfg
 
 # OS junk
 .DS_Store
-client/public/models
+client/public/models.env
+FIREBASE_SERVICE_ACCOUNT.json
+server/.env

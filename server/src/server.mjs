@@ -7,8 +7,9 @@ import { fileURLToPath } from 'url';
 import authRouter from './api/auth.mjs';
 import dataRouter from './api/data.mjs';
 import uploadRouter from './api/upload.mjs';
-// import chatRouter from './api/chat.mjs'; 
 import messagesRouter from './api/messages.mjs'; // New Router
+import ledgerRouter from './api/ledger.mjs';
+import notificationsRouter from './api/notifications.mjs';
 import prisma from './prisma.mjs';
 
 const app = express();
@@ -25,6 +26,8 @@ app.use('/api/auth', authRouter);
 app.use('/api/data', dataRouter);
 app.use('/api/upload', uploadRouter);
 app.use('/api/messages', messagesRouter); // Use new router
+app.use('/api/ledger', ledgerRouter);
+app.use('/api/notifications', notificationsRouter);
 
 // --- Dynamic Sitemap ---
 app.get('/sitemap.xml', async (req, res) => {

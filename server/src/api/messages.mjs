@@ -1,14 +1,13 @@
 
 import { Router } from 'express';
 import prisma from '../prisma.mjs';
+import { sendNotification } from '../utils/firebase.mjs';
 
 const router = Router();
 
 // POST /api/messages/send (Public)
 router.post('/send', async (req, res) => {
   try {
-    // Determine type based on fields present
-    // If 'service' is present, it's likely freelance
     const { name, email, message, service, company, phone, type } = req.body;
 
     if (!name || !email || !message) {
@@ -17,7 +16,7 @@ router.post('/send', async (req, res) => {
 
     const messageType = type || (service ? 'freelance' : 'general');
 
-    await prisma.message.create({
+    const newMessage = await prisma.message.create({
       data: { 
         name, 
         email, 
@@ -28,6 +27,19 @@ router.post('/send', async (req, res) => {
         phone: phone || null
       }
     });
+
+    // Notify Admin via FCM
+    try {
+      const config = await prisma.adminConfig.findFirst();
+      if (config?.fcmToken) {
+        const title = messageType === 'freelance' ? 'New Freelance Lead!' : 'New Portfolio Message';
+        const body = `From: ${name}\n"${message.substring(0, 50)}${message.length > 50 ? '...' : ''}"`;
+        await sendNotification(config.fcmToken, title, body);
+      }
+    } catch (notifyError) {
+      console.error('Notification Skip/Error:', notifyError);
+      // Don't fail the message submission if notification fails
+    }
 
     res.status(200).json({ message: 'Message sent successfully.' });
   } catch (error) {

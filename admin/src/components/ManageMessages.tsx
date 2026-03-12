@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Message } from '../types';
 import { Trash2, Mail, Phone, Briefcase, User, Star, Bell } from 'lucide-react';
+import { getFCMToken } from '../utils/firebase';
 
 interface ManageMessagesProps {
     refreshTrigger?: number;
@@ -19,7 +20,20 @@ const ManageMessages: React.FC<ManageMessagesProps> = ({ refreshTrigger = 0 }) =
 
   const requestNotificationPermission = async () => {
     if ('Notification' in window && Notification.permission !== 'granted') {
-      await Notification.requestPermission();
+      const token = await getFCMToken();
+      if (token) {
+        const apiKey = sessionStorage.getItem('apiKey');
+        try {
+            await fetch('/api/notifications/token', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}` 
+                },
+                body: JSON.stringify({ token })
+            });
+        } catch (e) { console.error('Token save failed', e); }
+      }
     }
   };
 

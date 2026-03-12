@@ -159,3 +159,19 @@ model PlaygroundConfig {
   flBendStrength       Float   @default(-0.5)
   flParallax           Boolean @default(true)
 }
+
+model ClientLedger {
+  id        Int      @id @default(autoincrement())
+  clientName String
+  project   String
+  totalAmount Float
+  paidAmount  Float
+  notes      String?
+  status     String   @default("active")
+  date       DateTime @default(now())
+}
+
+model AdminConfig {
+  id       Int     @id @default(autoincrement())
+  fcmToken String?
+}

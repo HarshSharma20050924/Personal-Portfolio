@@ -13,7 +13,12 @@ import ManageExperience from './ManageExperience';
 import ManageMessages from './ManageMessages';
 import ManageAI from './ManageAI';
 import ManageServices from './ManageServices';
-import { AlertTriangle, Loader2, Menu, X, Bell, BellOff, MonitorDown } from 'lucide-react';
+import FreelanceAdmin from './FreelanceAdmin';
+import { 
+  LayoutDashboard, Palette, FlaskConical, BriefcaseBusiness, Cpu, GraduationCap, FolderKanban, 
+  Share2, FileText, MessageSquare, Bot, ShieldCheck, Menu, X, Save, Loader2, AlertTriangle, 
+  ChevronRight, ExternalLink, Trash2, Edit3 
+} from 'lucide-react';
 
 interface DashboardProps {
   onLogout: () => void;
@@ -38,37 +43,35 @@ interface DashboardProps {
   setServices: React.Dispatch<React.SetStateAction<Service[]>>; // Added prop
 }
 
-type AdminView = 'hero' | 'theme' | 'skills' | 'projects' | 'socials' | 'blog' | 'experience' | 'messages' | 'playground' | 'security' | 'ai' | 'services';
+type AdminView = 'hero' | 'theme' | 'skills' | 'projects' | 'socials' | 'blog' | 'experience' | 'messages' | 'playground' | 'security' | 'ai' | 'services' | 'freelance';
 
 const Dashboard: React.FC<DashboardProps> = (props) => {
   const [view, setView] = useState<AdminView>('hero');
+  const [freelanceMode, setFreelanceMode] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'success' | 'error' | null>(null);
   const [showUpdateReminder, setShowUpdateReminder] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
-  const [installPrompt, setInstallPrompt] = useState<any>(null);
-  
+
   const lastMessageCount = useRef<number | null>(null);
   const [messageUpdateTrigger, setMessageUpdateTrigger] = useState(0);
 
-  // ... (Keep existing notification and PWA logic) ...
-
-  const navItems: { id: AdminView; label: string }[] = [
-    { id: 'hero', label: 'Hero Section' },
-    { id: 'theme', label: 'Template' },
-    { id: 'playground', label: 'Playground' },
-    { id: 'services', label: 'Expertise / Services' }, // New Item
-    { id: 'skills', label: 'Skills' },
-    { id: 'experience', label: 'Experience & Edu' },
-    { id: 'projects', label: 'Projects' },
-    { id: 'socials', label: 'Social Links' },
-    { id: 'blog', label: 'Blog' },
-    { id: 'messages', label: 'Inbox' },
-    { id: 'ai', label: 'AI Knowledge Base' },
-    { id: 'security', label: 'Security' },
+  const navItems: { id: AdminView; label: string; icon: any }[] = [
+    { id: 'hero', label: 'Hero / Bio', icon: LayoutDashboard },
+    { id: 'theme', label: 'Theme / Colors', icon: Palette },
+    { id: 'playground', label: 'Interactive Lab', icon: FlaskConical },
+    { id: 'services', label: 'Expertise / Services', icon: BriefcaseBusiness },
+    { id: 'skills', label: 'Skills', icon: Cpu },
+    { id: 'experience', label: 'Experience & Edu', icon: GraduationCap },
+    { id: 'projects', label: 'Projects', icon: FolderKanban },
+    { id: 'socials', label: 'Social Links', icon: Share2 },
+    { id: 'blog', label: 'Blog', icon: FileText },
+    { id: 'messages', label: 'Inbox', icon: MessageSquare },
+    { id: 'ai', label: 'AI Knowledge Base', icon: Bot },
+    { id: 'security', label: 'Security', icon: ShieldCheck },
   ];
-  
+
   const handleSave = async () => {
     setIsSaving(true);
     setSaveStatus(null);
@@ -86,11 +89,15 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
   };
 
   const handleNavClick = (id: AdminView) => {
-      setView(id);
-      setSidebarOpen(false);
+    setView(id);
+    setSidebarOpen(false);
   };
 
   const renderView = () => {
+    if (freelanceMode) {
+      return <FreelanceAdmin heroData={props.heroData} services={props.services} projects={props.projects} />;
+    }
+
     switch (view) {
       case 'hero':
         return <ManageHero data={props.heroData} setData={props.setHeroData} />;
@@ -120,57 +127,74 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
         return <p>Select a section to manage.</p>;
     }
   };
-  
+
   return (
     <div className="flex min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200">
-      
+
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
-        <div 
-            className="fixed inset-0 bg-black/50 z-30 md:hidden"
-            onClick={() => setSidebarOpen(false)}
+        <div
+          className="fixed inset-0 bg-black/50 z-30 md:hidden"
+          onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <aside className={`
-        fixed top-0 left-0 h-full w-64 bg-white dark:bg-slate-800 p-6 shadow-lg z-40 transition-transform duration-300 ease-in-out overflow-y-auto
+        fixed top-0 left-0 h-full w-72 bg-white dark:bg-slate-800 p-6 shadow-2xl z-40 transition-transform duration-300 ease-in-out overflow-y-auto
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
-        md:translate-x-0
+        md:translate-x-0 md:sticky md:shadow-lg
       `}>
-        <div className="flex justify-between items-center mb-8">
-            <h1 className="text-2xl font-bold">Admin Panel</h1>
-            <button onClick={() => setSidebarOpen(false)} className="md:hidden text-slate-500">
-                <X size={24} />
-            </button>
+        <div className="flex justify-between items-center mb-10">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-sky-500 rounded-lg flex items-center justify-center">
+              <span className="text-white font-black text-sm">P</span>
+            </div>
+            <h1 className="text-xl font-bold tracking-tighter">PORTFOLIO<span className="text-sky-500">.OS</span></h1>
+          </div>
+          <button onClick={() => setSidebarOpen(false)} className="md:hidden p-2 hover:bg-slate-100 rounded-full">
+            <X size={20} />
+          </button>
         </div>
-        
-        <nav>
-          <ul>
-            {navItems.map((item) => (
-               <li key={item.id} className="mb-2">
-                <button
-                  onClick={() => handleNavClick(item.id)}
-                  className={`w-full text-left px-4 py-2 rounded-lg transition-colors flex justify-between items-center ${
-                    view === item.id
-                      ? 'bg-sky-500 text-white'
-                      : 'hover:bg-slate-200 dark:hover:bg-slate-700'
-                  }`}
-                >
-                  {item.label}
-                  {item.id === 'messages' && lastMessageCount.current !== null && lastMessageCount.current > 0 && (
+
+        {!freelanceMode ? (
+          <nav className="mb-auto">
+            <ul className="space-y-1.5">
+              {navItems.map((item) => (
+                <li key={item.id}>
+                  <button
+                    onClick={() => handleNavClick(item.id)}
+                    className={`w-full text-left px-5 py-3 rounded-2xl transition-all flex justify-between items-center group ${view === item.id
+                        ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/30 font-bold'
+                        : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700/50'
+                      }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <item.icon size={18} />
+                      <span className="text-sm tracking-tight">{item.label}</span>
+                    </div>
+                    {item.id === 'messages' && lastMessageCount.current !== null && lastMessageCount.current > 0 && (
                       <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full">{lastMessageCount.current}</span>
-                  )}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        
-        {/* ... (Keep existing sidebar footer) ... */}
-        
+                    )}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ) : (
+          <div className="space-y-6">
+            <div className="p-5 bg-blue-500/5 rounded-3xl border border-blue-500/10">
+              <p className="text-[10px] font-bold text-blue-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                 <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
+                 Freelance Mode
+              </p>
+              <p className="text-xs text-slate-500 leading-relaxed font-medium">Manage professional clients, prepare invoices, and track leads centrally.</p>
+            </div>
+          </div>
+        )}
+
         <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-700 pb-6">
-           <a href="/" target="_blank" rel="noopener noreferrer" className="block w-full text-center text-sm mb-4 px-4 py-2 rounded-lg transition-colors hover:bg-slate-200 dark:hover:bg-slate-700">
+          <a href="/" target="_blank" rel="noopener noreferrer" className="block w-full text-center text-sm mb-4 px-4 py-2 rounded-lg transition-colors hover:bg-slate-200 dark:hover:bg-slate-700">
             View Live Site
           </a>
           <button
@@ -183,50 +207,82 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 w-full md:ml-64 flex flex-col h-screen overflow-hidden">
-        
-        {/* Mobile Header */}
-        <header className="flex-shrink-0 bg-white dark:bg-slate-800 md:bg-transparent md:dark:bg-transparent p-4 flex justify-between items-center shadow-sm md:shadow-none z-20">
-            <div className="flex items-center gap-4">
-                <button onClick={() => setSidebarOpen(true)} className="md:hidden p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg">
-                    <Menu size={24} />
-                </button>
-                <h2 className="text-lg font-bold md:hidden">{navItems.find(i => i.id === view)?.label}</h2>
+      <main className="flex-1 flex flex-col min-w-0 bg-slate-50 dark:bg-slate-900 h-screen overflow-hidden">
+        <header className="h-20 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 px-4 md:px-8 flex items-center justify-between sticky top-0 z-20">
+          <div className="flex items-center gap-4">
+            <button onClick={() => setSidebarOpen(true)} className="md:hidden p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl bg-white border shadow-sm">
+              <Menu size={20} />
+            </button>
+            <div className="hidden sm:flex items-center gap-2 bg-slate-100 dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800">
+              <button
+                onClick={() => setFreelanceMode(false)}
+                className={`flex items-center gap-2 px-6 py-2 rounded-xl text-xs font-bold transition-all ${!freelanceMode ? 'bg-white dark:bg-slate-700 shadow-sm text-sky-600' : 'text-slate-500 hover:text-slate-800'}`}
+              >
+                <LayoutDashboard size={14} /> Main
+              </button>
+              <button
+                onClick={() => setFreelanceMode(true)}
+                className={`flex items-center gap-2 px-6 py-2 rounded-xl text-xs font-bold transition-all ${freelanceMode ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-600' : 'text-slate-500 hover:text-slate-800'}`}
+              >
+                <BriefcaseBusiness size={14} /> Freelance
+              </button>
             </div>
+            
+            {/* Mobile Mode Switcher (Icons Only) */}
+            <div className="sm:hidden flex items-center gap-1.5 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800">
+              <button 
+                onClick={() => setFreelanceMode(false)}
+                className={`p-2 rounded-lg transition-all ${!freelanceMode ? 'bg-white text-sky-600 shadow-sm' : 'text-slate-400'}`}
+              >
+                <LayoutDashboard size={18} />
+              </button>
+              <button 
+                onClick={() => setFreelanceMode(true)}
+                className={`p-2 rounded-lg transition-all ${freelanceMode ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}
+              >
+                <BriefcaseBusiness size={18} />
+              </button>
+            </div>
+          </div>
 
-            <div className="flex items-center space-x-4">
-                {saveStatus === 'success' && <span className="text-green-500 text-sm hidden sm:inline">Saved!</span>}
-                {saveStatus === 'error' && <span className="text-red-500 text-sm hidden sm:inline">Error!</span>}
-                
-                <button
-                onClick={handleSave}
-                disabled={isSaving}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-sky-500 rounded-lg hover:bg-sky-600 transition-colors disabled:bg-sky-400 disabled:cursor-not-allowed shadow-md"
-                >
-                {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
-                {isSaving ? 'Saving...' : 'Save'}
-                </button>
-            </div>
+          <div className="flex items-center space-x-3">
+            {saveStatus === 'success' && <span className="text-emerald-500 text-[10px] font-bold uppercase hidden lg:inline bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">Synced</span>}
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="group relative flex items-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-widest text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-all disabled:bg-slate-300 shadow-lg shadow-blue-500/25 active:scale-95 overflow-hidden"
+            >
+              {isSaving && <Loader2 size={14} className="animate-spin" />}
+              <span>{isSaving ? 'Saving' : 'Sync Cloud'}</span>
+            </button>
+          </div>
         </header>
 
-        {/* Scrollable Content Area */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 pb-20">
-            {showUpdateReminder && view !== 'ai' && (
-                <div className="mb-6 p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-fadeIn">
-                    <div className="flex items-start gap-3 text-purple-800 dark:text-purple-200">
-                        <AlertTriangle size={20} className="shrink-0 mt-1 md:mt-0" />
-                        <span className="text-sm"><strong>Content Updated.</strong> Remember to update the AI Knowledge Base so the chatbot knows about these changes.</span>
-                    </div>
-                    <button 
-                        onClick={() => { setView('ai'); setShowUpdateReminder(false); }}
-                        className="text-sm px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors w-full md:w-auto"
-                    >
-                        Go to AI Settings
-                    </button>
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12 pb-24 scroll-smooth">
+          {showUpdateReminder && !freelanceMode && view !== 'ai' && (
+            <div className="mb-8 p-5 bg-purple-600 rounded-3xl text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl shadow-purple-500/20">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-white/20 rounded-2xl">
+                  <AlertTriangle size={24} />
                 </div>
-            )}
+                <div>
+                  <h4 className="font-bold">Sync AI Knowledge Base</h4>
+                  <p className="text-sm opacity-80">Sync your latest portfolio changes with the RAG engine.</p>
+                </div>
+              </div>
+              <button
+                onClick={() => { setView('ai'); setShowUpdateReminder(false); }}
+                className="w-full md:w-auto px-8 py-3 bg-white text-purple-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-purple-50 transition-colors shadow-lg"
+              >
+                Sync Now
+              </button>
+            </div>
+          )}
 
+          <div className="max-w-7xl mx-auto">
             {renderView()}
+          </div>
         </div>
       </main>
     </div>
@@ -234,3 +290,4 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
 };
 
 export default Dashboard;
+

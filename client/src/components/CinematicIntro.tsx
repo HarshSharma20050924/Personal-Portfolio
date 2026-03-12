@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -7,113 +8,102 @@ interface CinematicIntroProps {
     loaded: boolean;
 }
 
-const statusMessages = [
-    "INITIALIZING",
-    "CHECKING SYSTEMS",
-    "ESTABLISHING UPLINK",
-    "READY"
-];
-
-const NAME_HOLD_MS = 1000;
-
 const CinematicIntro: React.FC<CinematicIntroProps> = ({ name, onComplete, loaded }) => {
+    const [phase, setPhase] = useState<'loading' | 'reveal'>('loading');
     const [progress, setProgress] = useState(0);
-    const [messageIndex, setMessageIndex] = useState(0);
-    const [isFinished, setIsFinished] = useState(false);
-
-    useEffect(() => {
-        const totalMessages = statusMessages.length;
-        const newIndex = Math.min(
-            Math.floor((progress / 100) * totalMessages),
-            totalMessages - 1
-        );
-        setMessageIndex(newIndex);
-    }, [progress]);
 
     useEffect(() => {
         const interval = setInterval(() => {
             setProgress(prev => {
-                if (prev >= 90 && !loaded) return 90;
                 if (prev >= 100) {
                     clearInterval(interval);
-                    setIsFinished(true);
+                    if (loaded) setPhase('reveal');
                     return 100;
                 }
-                const jump = Math.random() > 0.5 ? 4 : 2;
-                return Math.min(prev + jump, 100);
+                const diff = Math.random() * 10 + 2;
+                return Math.min(prev + diff, 100);
             });
-        }, 30);
-
+        }, 80);
         return () => clearInterval(interval);
     }, [loaded]);
 
     useEffect(() => {
-        if (isFinished) {
-            const timer = setTimeout(onComplete, NAME_HOLD_MS);
+        if (phase === 'reveal') {
+            const timer = setTimeout(onComplete, 2500);
             return () => clearTimeout(timer);
         }
-    }, [isFinished, onComplete]);
+    }, [phase, onComplete]);
 
-    const firstName = name.split(' ')[0] || "PORTFOLIO";
-    const lastName = name.split(' ').slice(1).join(' ');
+    const firstName = name.split(' ')[0] || "HARSH";
+    const lastName = name.split(' ').slice(1).join(' ') || "SHARMA";
 
     return (
-        <motion.div
-            className="fixed inset-0 z-[9999] bg-[#050505] flex items-center justify-center overflow-hidden h-[100svh]"
-            exit={{
-                opacity: 0,
-                transition: { duration: 1.2, ease: "easeInOut" }
-            }}
-        >
+        <div className="fixed inset-0 z-[9999] bg-black flex items-center justify-center overflow-hidden font-sans">
             <AnimatePresence mode="wait">
-                {!isFinished ? (
+                {phase === 'loading' ? (
                     <motion.div
-                        key="loader"
-                        className="w-full max-w-sm px-6"
-                        exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.4 } }}
+                        key="loading-screen"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0, scale: 1.02, filter: "blur(10px)" }}
+                        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                        className="relative flex flex-col items-center gap-6"
                     >
-                        <div className="flex justify-between text-[10px] font-mono text-gray-500 tracking-widest mb-2">
-                            <motion.span
-                                key={statusMessages[messageIndex]}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                            >
-                                {statusMessages[messageIndex]}
-                            </motion.span>
-                            <span>{progress.toString().padStart(3, '0')}%</span>
-                        </div>
-
-                        <div className="w-full h-px bg-white/10 overflow-hidden">
+                        <div className="w-64 h-[2px] bg-white/5 relative overflow-hidden rounded-full">
                             <motion.div
-    className="h-full bg-white origin-left"
-    initial={{ scaleX: 0 }}
-    animate={{ scaleX: progress / 100 }}
-    transition={{ ease: "linear", duration: 0.1 }}
-/>
-
+                                className="absolute inset-y-0 left-0 bg-blue-500 shadow-[0_0_10px_#3b82f6]"
+                                initial={{ width: 0 }}
+                                animate={{ width: `${progress}%` }}
+                                transition={{ ease: "linear" }}
+                            />
+                        </div>
+                        <div className="flex flex-col items-center">
+                            <span className="text-[10px] font-mono tracking-[0.6em] text-white/50 uppercase">
+                                Preparing Profile
+                            </span>
                         </div>
                     </motion.div>
                 ) : (
                     <motion.div
-                        key="reveal"
-                        className="text-center"
-                        initial={{ opacity: 0, y: 24 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{
-                            duration: 1.2,
-                            ease: [0.22, 1, 0.36, 1]
-                        }}
+                        key="reveal-screen"
+                        className="relative flex flex-col items-center text-center px-10"
                     >
-                        <h1 className="text-4xl md:text-6xl font-medium tracking-tight text-white mb-2">
-                            {firstName}
-                        </h1>
-                        <p className="text-xs font-mono text-gray-500 tracking-[0.3em] uppercase">
-                            Portfolio Loaded
-                        </p>
+                        <div className="overflow-hidden mb-4">
+                            <motion.h1
+                                initial={{ y: 200 }}
+                                animate={{ y: 0 }}
+                                transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+                                className="text-7xl md:text-[8rem] font-display font-bold text-white tracking-tighter uppercase"
+                            >
+                                {firstName}
+                            </motion.h1>
+                        </div>
+
+                        <div className="overflow-hidden">
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.8, ease: "easeOut", delay: 0.6 }}
+                                className="flex items-center gap-6"
+                            >
+                                <div className="h-px w-8 bg-blue-500/50" />
+                                <span className="text-base font-display tracking-[0.8em] text-white/60 uppercase font-light">
+                                    {lastName}
+                                </span>
+                                <div className="h-px w-8 bg-blue-500/50" />
+                            </motion.div>
+                        </div>
+
+                        <motion.div
+                            initial={{ opacity: 0, scale: 1 }}
+                            animate={{ opacity: [0, 1, 0.5] }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none -z-10"
+                        />
                     </motion.div>
                 )}
             </AnimatePresence>
-        </motion.div>
+        </div>
     );
 };
 
