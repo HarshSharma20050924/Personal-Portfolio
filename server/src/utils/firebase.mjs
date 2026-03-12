@@ -4,8 +4,15 @@ try {
   let serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
   
   if (serviceAccount) {
-    if (typeof serviceAccount === 'string') {
-      serviceAccount = JSON.parse(serviceAccount);
+    // Vercel/Docker sometimes double-quotes JSON strings. Handle it gracefully.
+    while (typeof serviceAccount === 'string' && (serviceAccount.startsWith('{') || serviceAccount.startsWith('"'))) {
+      try {
+        const parsed = JSON.parse(serviceAccount);
+        if (typeof parsed === 'string' && parsed === serviceAccount) break; // Avoid infinite loop if string is not valid JSON
+        serviceAccount = parsed;
+      } catch (e) {
+        break; // If parse fails, keep current value
+      }
     }
     
     if (!admin.apps.length) {

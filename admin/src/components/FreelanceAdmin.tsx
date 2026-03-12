@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { FileText, Receipt, ShieldCheck, Download, Users, Briefcase, Plus, Trash2, Printer, Calculator, Info, Layout, Save, IndianRupee, MessageSquare, Bell, Loader2 } from 'lucide-react';
+import { FileText, Receipt, ShieldCheck, Download, Users, Briefcase, Plus, Trash2, Printer, Calculator, Info, Layout, Save, IndianRupee, MessageSquare, Bell, Loader2, RotateCw } from 'lucide-react';
 import type { HeroData, Service, Project } from '../types';
 import { getFCMToken } from '../utils/firebase';
 import API_BASE from '../utils/apiBase';
@@ -33,7 +33,7 @@ interface FreelanceLead {
     phone?: string;
 }
 
-const ADMIN_KEY = import.meta.env.VITE_ADMIN_API_KEY;
+const ADMIN_KEY = () => sessionStorage.getItem('apiKey') || import.meta.env.VITE_ADMIN_API_KEY;
 
 const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, projects }) => {
     const [activeTab, setActiveTab] = useState<'brochure' | 'billing' | 'leads' | 'payments'>('brochure');
@@ -57,7 +57,7 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
     const fetchLedger = async () => {
         try {
             const res = await fetch(`${API_BASE}/api/ledger`, {
-                headers: { 'Authorization': `Bearer ${ADMIN_KEY}` }
+                headers: { 'Authorization': `Bearer ${ADMIN_KEY()}` }
             });
             if (res.ok) setAccounts(await res.json());
         } catch (e) { console.error('Ledger error:', e); }
@@ -66,7 +66,7 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
     const fetchLeads = async () => {
         try {
             const res = await fetch(`${API_BASE}/api/messages`, {
-                headers: { 'Authorization': `Bearer ${ADMIN_KEY}` }
+                headers: { 'Authorization': `Bearer ${ADMIN_KEY()}` }
             });
             if (res.ok) {
                 const allMessages = await res.json();
@@ -78,7 +78,7 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
     const checkNotificationStatus = async () => {
         try {
             const res = await fetch(`${API_BASE}/api/notifications/token`, {
-                headers: { 'Authorization': `Bearer ${ADMIN_KEY}` }
+                headers: { 'Authorization': `Bearer ${ADMIN_KEY()}` }
             });
             const data = await res.json();
             if (data.token) setNotificationStatus('enabled');
@@ -94,7 +94,7 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${ADMIN_KEY}` 
+                        'Authorization': `Bearer ${ADMIN_KEY()}` 
                     },
                     body: JSON.stringify({ token })
                 });
@@ -177,7 +177,7 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${ADMIN_KEY}` 
+                    'Authorization': `Bearer ${ADMIN_KEY()}` 
                 },
                 body: JSON.stringify(newAcc)
             });
@@ -191,7 +191,7 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
                 method: 'PATCH',
                 headers: { 
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${ADMIN_KEY}` 
+                    'Authorization': `Bearer ${ADMIN_KEY()}` 
                 },
                 body: JSON.stringify({ [field]: value })
             });
@@ -205,7 +205,7 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
         try {
             const res = await fetch(`${API_BASE}/api/ledger/${id}`, {
                 method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${ADMIN_KEY}` }
+                headers: { 'Authorization': `Bearer ${ADMIN_KEY()}` }
             });
             if (res.ok) fetchLedger();
         } catch (e) {}
@@ -216,7 +216,7 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
         try {
             const res = await fetch(`${API_BASE}/api/messages/${id}`, {
                 method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${ADMIN_KEY}` }
+                headers: { 'Authorization': `Bearer ${ADMIN_KEY()}` }
             });
             if (res.ok) fetchLeads();
         } catch (e) {}
@@ -398,8 +398,8 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
                         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 h-full min-h-[500px]">
                             <div className="p-6 border-b flex justify-between items-center bg-slate-50/50">
                                 <h3 className="text-xl font-bold">Freelance Leads</h3>
-                                <button onClick={fetchLeads} className="p-2 hover:bg-blue-50 text-blue-600 rounded-lg transition-colors">
-                                    <Save size={18} className="rotate-90" />
+                                <button onClick={fetchLeads} className="p-2 hover:bg-blue-50 text-blue-600 rounded-lg transition-colors" title="Refresh Leads">
+                                    <RotateCw size={18} className={loading ? "animate-spin" : ""} />
                                 </button>
                             </div>
                             <div className="p-6 space-y-4">
