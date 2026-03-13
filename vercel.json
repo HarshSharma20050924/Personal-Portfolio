@@ -20,21 +20,7 @@
       }
     },
     {
-      "src": "admin/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
-    },
-    {
       "src": "client/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
-    },
-    {
-      "src": "freelance/package.json",
       "use": "@vercel/static-build",
       "config": {
         "distDir": "dist"
@@ -67,32 +53,12 @@
       "dest": "/server/src/server.mjs"
     },
     {
-      "src": "/admin/assets/(.*)",
-      "dest": "/admin/assets/$1"
-    },
-    {
-      "src": "/admin/sw.js",
-      "dest": "/admin/sw.js"
-    },
-    {
-      "src": "/admin/manifest.json",
-      "dest": "/admin/manifest.json"
-    },
-    {
-      "src": "/admin/favicon.svg",
-      "dest": "/admin/favicon.svg"
-    },
-    {
       "src": "/assets/(.*)",
       "dest": "/client/assets/$1"
     },
     {
       "src": "/favicon.svg",
       "dest": "/client/favicon.svg"
-    },
-    {
-      "src": "/admin(/.*)?",
-      "dest": "/admin/index.html"
     },
     {
       "src": "/(.*)",
