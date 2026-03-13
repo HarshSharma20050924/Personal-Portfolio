@@ -12,6 +12,7 @@ import { FreelanceFooter } from '../components/FreelanceFooter';
 import FreelanceCursor from '../components/FreelanceCursor';
 import { AIGlobe } from '../components/AIGlobe';
 import { FreelanceIntro } from '../components/FreelanceIntro';
+import { API_BASE } from '../config';
 
 interface TemplateProps {
   heroData: HeroData;
@@ -34,7 +35,7 @@ const HomePage: React.FC<TemplateProps> = ({ heroData, projects, socialLinks }) 
     document.body.style.backgroundColor = '#0D0D0D';
 
     // Fetch Services dynamically
-    fetch('/api/data')
+    fetch(`${API_BASE}/api/data`)
       .then(res => res.json())
       .then(data => {
         if (data && data.services) setServices(data.services);

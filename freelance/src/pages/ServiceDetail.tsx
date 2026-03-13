@@ -6,6 +6,7 @@ import { ArrowLeft, CheckCircle2, ArrowRight, ExternalLink } from 'lucide-react'
 import { FreelanceNavigation } from '../components/FreelanceNavigation';
 import FreelanceCursor from '../components/FreelanceCursor';
 import { Service, Project } from '../types';
+import { API_BASE } from '../config';
 
 const ServiceDetail = ({ name }: { name?: string }) => {
   const { id } = useParams();
@@ -25,7 +26,7 @@ const ServiceDetail = ({ name }: { name?: string }) => {
   }, [id]);
 
   useEffect(() => {
-      fetch('/api/data')
+      fetch(`${API_BASE}/api/data`)
         .then(res => res.json())
         .then(data => {
             const services: Service[] = data.services || [];

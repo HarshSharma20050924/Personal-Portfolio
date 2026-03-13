@@ -5,13 +5,14 @@ import { ArrowUpRight } from 'lucide-react';
 import { SplitText } from '../components/SplitText';
 import { FreelanceNavigation } from '../components/FreelanceNavigation';
 import FreelanceCursor from '../components/FreelanceCursor';
-import { Project } from '../types';
+import { Project, Service } from '../types';
+import { API_BASE } from '../config';
 
 const WorkPage = ({ name }: { name?: string }) => {
   const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
-    fetch('/api/data')
+    fetch(`${API_BASE}/api/data`)
       .then(res => res.json())
       .then(data => {
         if(data && Array.isArray(data.projects)) {

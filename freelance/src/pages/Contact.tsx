@@ -7,6 +7,7 @@ import { FreelanceNavigation } from '../components/FreelanceNavigation';
 import FreelanceCursor from '../components/FreelanceCursor';
 import { SplitText } from '../components/SplitText';
 import { Service } from '../types';
+import { API_BASE } from '../config';
 
 // Custom Elite Select Component
 const EliteSelect = ({ options, value, onChange, placeholder }: any) => {
@@ -77,7 +78,7 @@ const ContactPage = ({ name }: { name?: string }) => {
   useEffect(() => {
     window.scrollTo(0,0);
     // Fetch dynamic services
-    fetch('/api/data')
+    fetch(`${API_BASE}/api/data`)
         .then(res => res.json())
         .then(data => {
             if(data && data.services) {
@@ -104,7 +105,7 @@ const ContactPage = ({ name }: { name?: string }) => {
           type: 'freelance'
       };
 
-      const res = await fetch('/api/messages/send', {
+      const res = await fetch(`${API_BASE}/api/messages/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

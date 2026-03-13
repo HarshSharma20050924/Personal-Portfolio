@@ -6,6 +6,7 @@ import Contact from './pages/Contact';
 import Work from './pages/Work';
 import ServiceDetail from './pages/ServiceDetail';
 import { HeroData, Project, Skill, SocialLink, Article } from './types';
+import { API_BASE, FALLBACK_DATA } from './config';
 
 interface AppData {
   heroData: HeroData;
@@ -21,12 +22,14 @@ const App: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/api/data');
-        if (!response.ok) throw new Error('Failed to fetch data');
+        const response = await fetch(`${API_BASE}/api/data`);
+        if (!response.ok) throw new Error('Unstable uplink');
         const result = await response.json();
         setData(result);
       } catch (err) {
-        console.error('Error fetching data:', err);
+        console.error('API Error: System defaulting to stable fallback.', err);
+        // Default to fallback data so the app doesn't stay stuck
+        setData(FALLBACK_DATA as any);
       }
     };
     fetchData();

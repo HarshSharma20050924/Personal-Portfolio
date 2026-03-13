@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
 import { GlobeRenderer } from './GlobeRenderer';
 import { GlobeChatInterface } from './GlobeChatInterface';
+import { API_BASE } from '../config';
 
 interface GlobeMessage {
   id: string;
@@ -73,7 +74,7 @@ export const AIGlobe = () => {
     setIsBotThinking(true);
 
     try {
-      const res = await fetch('/api/rag/chat', {
+      const res = await fetch(`${API_BASE}/api/rag/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
