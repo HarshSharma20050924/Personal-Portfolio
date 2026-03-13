@@ -32,6 +32,13 @@
       "config": {
         "distDir": "dist"
       }
+    },
+    {
+      "src": "freelance/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
     }
   ],
   "routes": [

@@ -6,11 +6,12 @@
   "workspaces": [
     "server",
     "client",
-    "admin"
+    "admin",
+    "freelance"
   ],
   "scripts": {
-    "dev": "concurrently \"npm:dev --workspace=server\" \"npm:dev --workspace=client\" \"npm:dev --workspace=admin\" \"cd rag_service && uvicorn main:app --reload --port 8000\"",
-    "build": "npm run build --workspace=client && npm run build --workspace=admin",
+    "dev": "concurrently \"npm:dev --workspace=server\" \"npm:dev --workspace=client\" \"npm:dev --workspace=admin\" \"npm:dev --workspace=freelance\" \"cd rag_service && uvicorn main:app --reload --port 8000\"",
+    "build": "npm run build --workspace=client && npm run build --workspace=admin && npm run build --workspace=freelance",
     "start": "npm start --workspace=server",
     "prisma:migrate": "dotenv -e server/.env -- npx prisma migrate dev --schema=./server/prisma/schema.prisma",
     "prisma:seed": "dotenv -e server/.env -- npx prisma db seed --schema=./server/prisma/schema.prisma",
