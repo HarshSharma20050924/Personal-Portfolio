@@ -29,7 +29,7 @@ export const FreelanceIntro: React.FC<FreelanceIntroProps> = ({ onComplete, load
 
     useEffect(() => {
         if (phase === 'reveal') {
-            const timer = setTimeout(onComplete, 2500);
+            const timer = setTimeout(onComplete, 2000);
             return () => clearTimeout(timer);
         }
     }, [phase, onComplete]);
@@ -90,9 +90,9 @@ export const FreelanceIntro: React.FC<FreelanceIntroProps> = ({ onComplete, load
 
                         <motion.div
                             initial={{ letterSpacing: "1.5em", opacity: 0, filter: "blur(10px)" }}
-                            animate={{ letterSpacing: "0.8em", opacity: 1, filter: "blur(0px)" }}
+                            animate={{ letterSpacing: "0.2em", opacity: 1, filter: "blur(0px)" }}
                             transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
-                            className="text-4xl md:text-6xl font-display font-medium text-white tracking-[0.8em] uppercase mb-4"
+                            className="text-3xl md:text-6xl font-display font-medium text-white tracking-[0.2em] md:tracking-[0.5em] uppercase mb-4"
                         >
                             SYSTEMLABS
                         </motion.div>

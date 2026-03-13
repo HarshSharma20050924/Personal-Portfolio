@@ -77,7 +77,7 @@ export const FreelanceHero = ({ data, socialLinks }: { data: HeroData, socialLin
             </SplitText>
             
             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-200 via-white to-neutral-400">
-               <SplitText delay={0.6} wordDelay={0.03}>
+               <SplitText delay={0.1} wordDelay={0.03}>
                  with SystemLabs
                </SplitText>
             </span>
