@@ -3,7 +3,7 @@
 // When deployed on Vercel, set VITE_API_BASE in your environment variables 
 // to point to your backend server (e.g., https://your-server.com)
 
-export const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+export const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 
 // Fallback data for the freelance app in case the API is unreachable
 export const FALLBACK_DATA = {
