@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import type { Article } from '../types';
-import { Upload, Image as ImageIcon, Star, Loader2, Briefcase } from 'lucide-react';
+import { Upload, Image as ImageIcon, Star, Loader2, Briefcase, Monitor } from 'lucide-react';
 import API_BASE from '../utils/apiBase';
 
 interface ManageBlogProps {
@@ -10,7 +10,7 @@ interface ManageBlogProps {
 }
 
 const ManageBlog: React.FC<ManageBlogProps> = ({ articles, setArticles }) => {
-  const blankForm: Article = { title: '', excerpt: '', content: '', date: '', url: '', imageUrl: '', featured: false, showInFreelance: false };
+  const blankForm: Article = { title: '', excerpt: '', content: '', date: '', url: '', imageUrl: '', featured: false, showInClient: true, showInFreelance: false };
   const [isEditing, setIsEditing] = useState<number | null>(null);
   const [form, setForm] = useState<Article>(blankForm);
   const [isUploading, setIsUploading] = useState(false);
@@ -117,7 +117,7 @@ const ManageBlog: React.FC<ManageBlogProps> = ({ articles, setArticles }) => {
              </div>
 
              {/* Toggles */}
-             <div className="md:col-span-2 grid grid-cols-2 gap-4">
+             <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <label className="flex items-center gap-2 p-3 bg-sky-50 dark:bg-sky-900/20 rounded-lg border border-sky-100 dark:border-sky-800 cursor-pointer">
                     <input 
                         type="checkbox" 
@@ -143,6 +143,20 @@ const ManageBlog: React.FC<ManageBlogProps> = ({ articles, setArticles }) => {
                     <span className="text-sm font-semibold flex items-center gap-2">
                         <Briefcase size={16} className={currentForm.showInFreelance ? "text-purple-500" : "text-slate-400"} />
                         Show in Freelance
+                    </span>
+                </label>
+
+                <label className="flex items-center gap-2 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border border-indigo-100 dark:border-indigo-800 cursor-pointer">
+                    <input 
+                        type="checkbox" 
+                        name="showInClient" 
+                        checked={currentForm.showInClient !== false} 
+                        onChange={handleFormChange}
+                        className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500"
+                    />
+                    <span className="text-sm font-semibold flex items-center gap-2">
+                        <Monitor size={16} className={currentForm.showInClient !== false ? "text-indigo-500" : "text-slate-400"} />
+                        Show in Portfolio
                     </span>
                 </label>
              </div>
@@ -204,7 +218,8 @@ const ManageBlog: React.FC<ManageBlogProps> = ({ articles, setArticles }) => {
                   <div className="flex items-center gap-2">
                     <h4 className="font-bold">{article.title}</h4>
                     {article.featured && <Star size={12} className="fill-sky-500 text-sky-500" />}
-                    {article.showInFreelance && <Briefcase size={12} className="text-purple-500" />}
+                    {article.showInFreelance && <div title="Freelance"><Briefcase size={12} className="text-purple-500" /></div>}
+                    {article.showInClient !== false && <div title="Portfolio"><Monitor size={12} className="text-indigo-500" /></div>}
                   </div>
                   <p className="text-sm text-slate-500 dark:text-slate-400">{article.date}</p>
                </div>

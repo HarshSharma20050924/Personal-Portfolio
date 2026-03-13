@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import type { Project, Service } from '../types';
-import { Star, Upload, ImageIcon, Loader2, Briefcase } from 'lucide-react';
+import { Star, Upload, ImageIcon, Loader2, Briefcase, Monitor } from 'lucide-react';
 import API_BASE from '../utils/apiBase';
 
 interface ManageProjectsProps {
@@ -22,6 +22,7 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects, 
     liveUrl: '', 
     repoUrl: '',
     featured: false,
+    showInClient: true,
     showInFreelance: false,
     challenge: '',
     challengeImage: '',
@@ -140,7 +141,7 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects, 
                 <input name="title" value={currentForm.title} onChange={handleFormChange} placeholder="Title" className="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600" />
             </div>
             
-            <div className="md:col-span-2 grid grid-cols-2 gap-4">
+            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <label className="flex items-center gap-2 p-3 bg-sky-50 dark:bg-sky-900/20 rounded-lg border border-sky-100 dark:border-sky-800 cursor-pointer">
                     <input 
                         type="checkbox" 
@@ -165,7 +166,21 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects, 
                     />
                     <span className="text-sm font-semibold flex items-center gap-2">
                         <div title="Freelance"><Briefcase size={16} className={currentForm.showInFreelance ? "text-purple-500" : "text-slate-400"} /></div>
-                        Show in Freelance
+                        Freelance Page
+                    </span>
+                </label>
+
+                <label className="flex items-center gap-2 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border border-indigo-100 dark:border-indigo-800 cursor-pointer">
+                    <input 
+                        type="checkbox" 
+                        name="showInClient" 
+                        checked={currentForm.showInClient !== false} 
+                        onChange={handleFormChange}
+                        className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500"
+                    />
+                    <span className="text-sm font-semibold flex items-center gap-2">
+                        <div title="Portfolio Site"><Monitor size={16} className={currentForm.showInClient !== false ? "text-indigo-500" : "text-slate-400"} /></div>
+                        Portfolio Site
                     </span>
                 </label>
             </div>
@@ -246,6 +261,7 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects, 
                     <h4 className="font-bold text-sm md:text-base">{project.title}</h4>
                     {project.featured && <div title="Featured"><Star size={14} className="fill-yellow-400 text-yellow-400" /></div>}
                     {project.showInFreelance && <div title="Freelance Template"><Briefcase size={14} className="text-purple-500" /></div>}
+                    {project.showInClient !== false && <div title="Portfolio Site"><Monitor size={14} className="text-indigo-500" /></div>}
                 </div>
                 {project.serviceId && (
                     <span className="text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-500 px-2 py-0.5 rounded">

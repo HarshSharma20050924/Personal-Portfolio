@@ -38,6 +38,7 @@ export interface Project {
   repoUrl?: string;
   huggingFaceUrl?: string;
   featured?: boolean;
+  showInClient?: boolean;
   showInFreelance?: boolean;
   challenge?: string;
   challengeImage?: string;
@@ -51,6 +52,7 @@ export interface SocialLink {
   name: string;
   url: string;
   icon: string;
+  showInClient?: boolean;
   showInFreelance?: boolean;
 }
 
@@ -63,6 +65,7 @@ export interface Article {
   date: string;
   url?: string;
   featured?: boolean;
+  showInClient?: boolean;
   showInFreelance?: boolean;
 }
 
@@ -72,6 +75,7 @@ export interface Experience {
   company: string;
   period: string;
   description: string;
+  showInClient?: boolean;
   showInFreelance?: boolean;
 }
 
@@ -80,6 +84,7 @@ export interface Education {
   degree: string;
   institution: string;
   period: string;
+  showInClient?: boolean;
   showInFreelance?: boolean;
 }
 

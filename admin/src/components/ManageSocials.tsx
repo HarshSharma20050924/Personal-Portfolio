@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import type { SocialLink } from '../types';
-import { Link, Globe, Briefcase } from 'lucide-react';
+import { Link, Globe, Briefcase, Monitor } from 'lucide-react';
 
 interface ManageSocialsProps {
   socialLinks: SocialLink[];
@@ -9,7 +9,7 @@ interface ManageSocialsProps {
 }
 
 const ManageSocials: React.FC<ManageSocialsProps> = ({ socialLinks, setSocialLinks }) => {
-  const blankForm: SocialLink = { name: '', url: '', icon: '', showInFreelance: false };
+  const blankForm: SocialLink = { name: '', url: '', icon: '', showInClient: true, showInFreelance: false };
   const [isEditing, setIsEditing] = useState<number | null>(null);
   const [form, setForm] = useState<SocialLink>(blankForm);
 
@@ -107,8 +107,8 @@ const ManageSocials: React.FC<ManageSocialsProps> = ({ socialLinks, setSocialLin
              <input name="icon" value={currentForm.icon} onChange={handleFormChange} placeholder="Auto-detected..." className="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600 bg-slate-50 dark:bg-slate-800" />
           </div>
           
-          {/* Show In Freelance Toggle */}
-          <div className="md:col-span-4 mt-2">
+          {/* Visibility Toggles */}
+          <div className="md:col-span-4 mt-2 flex flex-wrap gap-4">
              <label className="flex items-center gap-2 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-100 dark:border-purple-800 cursor-pointer w-fit">
                 <input 
                     type="checkbox" 
@@ -120,6 +120,20 @@ const ManageSocials: React.FC<ManageSocialsProps> = ({ socialLinks, setSocialLin
                 <span className="text-sm font-semibold flex items-center gap-2">
                     <Briefcase size={16} className={currentForm.showInFreelance ? "text-purple-500" : "text-slate-400"} />
                     Show in Freelance Footer
+                </span>
+            </label>
+
+            <label className="flex items-center gap-2 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border border-indigo-100 dark:border-indigo-800 cursor-pointer w-fit">
+                <input 
+                    type="checkbox" 
+                    name="showInClient" 
+                    checked={currentForm.showInClient !== false} 
+                    onChange={handleFormChange}
+                    className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500"
+                />
+                <span className="text-sm font-semibold flex items-center gap-2">
+                    <Monitor size={16} className={currentForm.showInClient !== false ? "text-indigo-500" : "text-slate-400"} />
+                    Show in Portfolio Site
                 </span>
             </label>
           </div>
@@ -147,6 +161,11 @@ const ManageSocials: React.FC<ManageSocialsProps> = ({ socialLinks, setSocialLin
                       {link.showInFreelance && (
                           <span className="text-[10px] bg-purple-100 text-purple-600 dark:bg-purple-900/30 px-1.5 py-0.5 rounded border border-purple-200 dark:border-purple-800">
                               Freelance
+                          </span>
+                      )}
+                      {link.showInClient !== false && (
+                          <span className="text-[10px] bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 px-1.5 py-0.5 rounded border border-indigo-200 dark:border-indigo-800">
+                              Portfolio
                           </span>
                       )}
                   </div>

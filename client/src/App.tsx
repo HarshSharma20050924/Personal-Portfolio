@@ -83,12 +83,21 @@ const App: React.FC = () => {
         if (!response.ok) throw new Error('Failed to fetch portfolio data.');
         const result = await response.json();
 
-        const projectsWithIds = result.projects.map((p: Project, i: number) => ({
-          ...p,
-          id: p.id || i
-        }));
+        const projectsWithIds = result.projects
+          .filter((p: Project) => p.showInClient !== false)
+          .map((p: Project, i: number) => ({
+            ...p,
+            id: p.id || i
+          }));
 
-        const finalData = { ...result, projects: projectsWithIds };
+        const finalData = { 
+            ...result, 
+            projects: projectsWithIds,
+            socialLinks: (result.socialLinks || []).filter((s: SocialLink) => s.showInClient !== false),
+            articles: (result.articles || []).filter((a: Article) => a.showInClient !== false),
+            experience: (result.experience || []).filter((e: Experience) => e.showInClient !== false),
+            education: (result.education || []).filter((e: Education) => e.showInClient !== false),
+        };
         setTimeout(() => setData(finalData), 500);
 
       } catch (err) {

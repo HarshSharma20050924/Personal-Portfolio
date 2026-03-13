@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import type { Experience, Education } from '../types';
-import { Briefcase } from 'lucide-react';
+import { Briefcase, Monitor } from 'lucide-react';
 
 interface ManageExperienceProps {
   experience: Experience[];
@@ -12,12 +12,12 @@ interface ManageExperienceProps {
 
 const ManageExperience: React.FC<ManageExperienceProps> = ({ experience, setExperience, education, setEducation }) => {
   // Experience State
-  const blankExp: Experience = { position: '', company: '', period: '', description: '', showInFreelance: false };
+  const blankExp: Experience = { position: '', company: '', period: '', description: '', showInClient: true, showInFreelance: false };
   const [isEditingExp, setIsEditingExp] = useState<number | null>(null);
   const [formExp, setFormExp] = useState<Experience>(blankExp);
 
   // Education State
-  const blankEdu: Education = { degree: '', institution: '', period: '', showInFreelance: false };
+  const blankEdu: Education = { degree: '', institution: '', period: '', showInClient: true, showInFreelance: false };
   const [isEditingEdu, setIsEditingEdu] = useState<number | null>(null);
   const [formEdu, setFormEdu] = useState<Education>(blankEdu);
 
@@ -101,19 +101,35 @@ const ManageExperience: React.FC<ManageExperienceProps> = ({ experience, setExpe
                     <input name="period" value={formExp.period} onChange={handleExpChange} placeholder="Period (e.g. 2020 - Present)" className="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600" />
                     <textarea name="description" value={formExp.description} onChange={handleExpChange} placeholder="Description" rows={3} className="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600" />
                     
-                    <label className="flex items-center gap-2 p-2 bg-purple-50 dark:bg-purple-900/20 rounded border border-purple-100 dark:border-purple-800 cursor-pointer">
-                        <input 
-                            type="checkbox" 
-                            name="showInFreelance" 
-                            checked={formExp.showInFreelance || false} 
-                            onChange={handleExpChange}
-                            className="w-4 h-4 text-purple-600"
-                        />
-                        <span className="text-xs font-semibold flex items-center gap-2">
-                            <Briefcase size={14} className={formExp.showInFreelance ? "text-purple-500" : "text-slate-400"} />
-                            Show in Freelance
-                        </span>
-                    </label>
+                    <div className="flex gap-4 flex-wrap">
+                        <label className="flex items-center gap-2 p-2 bg-purple-50 dark:bg-purple-900/20 rounded border border-purple-100 dark:border-purple-800 cursor-pointer">
+                            <input 
+                                type="checkbox" 
+                                name="showInFreelance" 
+                                checked={formExp.showInFreelance || false} 
+                                onChange={handleExpChange}
+                                className="w-4 h-4 text-purple-600"
+                            />
+                            <span className="text-xs font-semibold flex items-center gap-2">
+                                <Briefcase size={14} className={formExp.showInFreelance ? "text-purple-500" : "text-slate-400"} />
+                                Show in Freelance
+                            </span>
+                        </label>
+
+                        <label className="flex items-center gap-2 p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded border border-indigo-100 dark:border-indigo-800 cursor-pointer">
+                            <input 
+                                type="checkbox" 
+                                name="showInClient" 
+                                checked={formExp.showInClient !== false} 
+                                onChange={handleExpChange}
+                                className="w-4 h-4 text-indigo-600"
+                            />
+                            <span className="text-xs font-semibold flex items-center gap-2">
+                                <Monitor size={14} className={formExp.showInClient !== false ? "text-indigo-500" : "text-slate-400"} />
+                                Show in Portfolio
+                            </span>
+                        </label>
+                    </div>
 
                     <div className="flex gap-2">
                         {isEditingExp === null ? (
@@ -132,7 +148,10 @@ const ManageExperience: React.FC<ManageExperienceProps> = ({ experience, setExpe
                                 <h4 className="font-bold">{exp.position}</h4>
                                 <span className="text-xs text-slate-500">{exp.period}</span>
                             </div>
-                            {exp.showInFreelance && <Briefcase size={16} className="text-purple-500" title="Visible in Freelance" />}
+                            <div className="flex gap-2">
+                                {exp.showInFreelance && <div title="Freelance"><Briefcase size={16} className="text-purple-500" /></div>}
+                                {exp.showInClient !== false && <div title="Portfolio"><Monitor size={16} className="text-indigo-500" /></div>}
+                            </div>
                         </div>
                         <p className="text-sm text-slate-600 dark:text-slate-400">{exp.company}</p>
                         <div className="mt-2 flex gap-2">
@@ -156,19 +175,35 @@ const ManageExperience: React.FC<ManageExperienceProps> = ({ experience, setExpe
                     <input name="institution" value={formEdu.institution} onChange={handleEduChange} placeholder="Institution" className="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600" />
                     <input name="period" value={formEdu.period} onChange={handleEduChange} placeholder="Period" className="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600" />
                     
-                    <label className="flex items-center gap-2 p-2 bg-purple-50 dark:bg-purple-900/20 rounded border border-purple-100 dark:border-purple-800 cursor-pointer">
-                        <input 
-                            type="checkbox" 
-                            name="showInFreelance" 
-                            checked={formEdu.showInFreelance || false} 
-                            onChange={handleEduChange}
-                            className="w-4 h-4 text-purple-600"
-                        />
-                        <span className="text-xs font-semibold flex items-center gap-2">
-                            <Briefcase size={14} className={formEdu.showInFreelance ? "text-purple-500" : "text-slate-400"} />
-                            Show in Freelance
-                        </span>
-                    </label>
+                    <div className="flex gap-4 flex-wrap">
+                        <label className="flex items-center gap-2 p-2 bg-purple-50 dark:bg-purple-900/20 rounded border border-purple-100 dark:border-purple-800 cursor-pointer">
+                            <input 
+                                type="checkbox" 
+                                name="showInFreelance" 
+                                checked={formEdu.showInFreelance || false} 
+                                onChange={handleEduChange}
+                                className="w-4 h-4 text-purple-600"
+                            />
+                            <span className="text-xs font-semibold flex items-center gap-2">
+                                <Briefcase size={14} className={formEdu.showInFreelance ? "text-purple-500" : "text-slate-400"} />
+                                Show in Freelance
+                            </span>
+                        </label>
+
+                        <label className="flex items-center gap-2 p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded border border-indigo-100 dark:border-indigo-800 cursor-pointer">
+                            <input 
+                                type="checkbox" 
+                                name="showInClient" 
+                                checked={formEdu.showInClient !== false} 
+                                onChange={handleEduChange}
+                                className="w-4 h-4 text-indigo-600"
+                            />
+                            <span className="text-xs font-semibold flex items-center gap-2">
+                                <Monitor size={14} className={formEdu.showInClient !== false ? "text-indigo-500" : "text-slate-400"} />
+                                Show in Portfolio
+                            </span>
+                        </label>
+                    </div>
 
                     <div className="flex gap-2">
                         {isEditingEdu === null ? (
@@ -187,7 +222,10 @@ const ManageExperience: React.FC<ManageExperienceProps> = ({ experience, setExpe
                                 <h4 className="font-bold">{edu.degree}</h4>
                                 <span className="text-xs text-slate-500">{edu.period}</span>
                             </div>
-                            {edu.showInFreelance && <Briefcase size={16} className="text-purple-500" title="Visible in Freelance" />}
+                            <div className="flex gap-2">
+                                {edu.showInFreelance && <div title="Freelance"><Briefcase size={16} className="text-purple-500" /></div>}
+                                {edu.showInClient !== false && <div title="Portfolio"><Monitor size={16} className="text-indigo-500" /></div>}
+                            </div>
                         </div>
                         <p className="text-sm text-slate-600 dark:text-slate-400">{edu.institution}</p>
                         <div className="mt-2 flex gap-2">
