@@ -47,28 +47,28 @@ export const FreelanceIntro: React.FC<FreelanceIntroProps> = ({ onComplete, load
                         className="relative flex flex-col items-center gap-8"
                     >
                         <div className="flex flex-col items-center gap-2">
-                             <span className="text-[10px] font-mono tracking-[1em] text-blue-500 uppercase animate-pulse">
+                            <span className="text-[10px] font-mono tracking-[1em] text-blue-500 uppercase animate-pulse">
                                 SYSTEM_LABS
-                             </span>
-                             <div className="w-48 h-[1px] bg-white/5 relative overflow-hidden">
+                            </span>
+                            <div className="w-48 h-[1px] bg-white/5 relative overflow-hidden">
                                 <motion.div
                                     className="absolute inset-y-0 left-0 bg-blue-500 shadow-[0_0_15px_#3b82f6]"
                                     initial={{ width: 0 }}
                                     animate={{ width: `${progress}%` }}
                                     transition={{ ease: "linear" }}
                                 />
-                             </div>
+                            </div>
                         </div>
-                        
+
                         <div className="flex gap-4">
-                           {[...Array(4)].map((_, i) => (
-                             <motion.div 
-                                key={i}
-                                initial={{ opacity: 0.2 }}
-                                animate={{ opacity: progress > (i * 25) ? 1 : 0.2 }}
-                                className="w-1 h-1 bg-white rounded-full"
-                             />
-                           ))}
+                            {[...Array(4)].map((_, i) => (
+                                <motion.div
+                                    key={i}
+                                    initial={{ opacity: 0.2 }}
+                                    animate={{ opacity: progress > (i * 25) ? 1 : 0.2 }}
+                                    className="w-1 h-1 bg-white rounded-full"
+                                />
+                            ))}
                         </div>
                     </motion.div>
                 ) : (

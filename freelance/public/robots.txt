@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://systemlabs.xyz/sitemap.xml
+Sitemap: https://systemlabss.vercel.app/sitemap.xml
