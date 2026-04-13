@@ -1,17 +1,21 @@
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Project } from '../../../types';
 import { ArrowUpRight, LayoutGrid } from 'lucide-react';
-
-const M = motion as any;
 
 const EliteWork: React.FC<{ projects: Project[] }> = ({ projects = [] }) => {
   const [hoveredProject, setHoveredProject] = useState<number | null>(null);
   
   const featuredProjects = projects.filter(p => p.featured);
   const displayProjects = featuredProjects.length > 0 ? featuredProjects : projects.slice(0, 4);
+
+  // Memoize the background image to prevent unnecessary re-renders
+  const backgroundImage = useMemo(() => {
+    if (hoveredProject === null || displayProjects.length <= hoveredProject) return null;
+    return displayProjects[hoveredProject]?.imageUrl;
+  }, [hoveredProject, displayProjects]);
 
   return (
     <section 
@@ -20,25 +24,23 @@ const EliteWork: React.FC<{ projects: Project[] }> = ({ projects = [] }) => {
     >
       {/* Background Reveal Layer */}
       <div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
-         <AnimatePresence>
-            {hoveredProject !== null && (
-                <M.div
-                    key={hoveredProject}
-                    initial={{ opacity: 0, scale: 1.1 }}
-                    animate={{ opacity: 0.2, scale: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="absolute inset-0 w-full h-full"
-                >
-                    <img 
-                        src={displayProjects[hoveredProject].imageUrl} 
-                        alt="Background" 
-                        className="w-full h-full object-cover filter blur-sm grayscale-[50%]"
-                    />
-                    <div className="absolute inset-0 bg-white/40 dark:bg-[#050505]/60" />
-                </M.div>
-            )}
-         </AnimatePresence>
+        {backgroundImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.2 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="absolute inset-0 w-full h-full"
+          >
+            <img 
+              src={backgroundImage} 
+              alt="Background" 
+              className="w-full h-full object-cover filter blur-sm grayscale-[50%]"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-white/40 dark:bg-[#050505]/60" />
+          </motion.div>
+        )}
       </div>
 
       <div className="max-w-6xl mx-auto relative z-10">
@@ -53,7 +55,7 @@ const EliteWork: React.FC<{ projects: Project[] }> = ({ projects = [] }) => {
             {displayProjects.map((project, index) => (
                 <Link 
                     to={`/project/${project.id || index}`}
-                    key={index}
+                    key={project.id || index}
                     onMouseEnter={() => setHoveredProject(index)}
                     onMouseLeave={() => setHoveredProject(null)}
                     className="group relative flex flex-col md:flex-row items-baseline justify-between py-8 md:py-12 border-b border-black/5 dark:border-white/5 hover:border-black/20 dark:hover:border-white/20 transition-all duration-500 elite-interactive"

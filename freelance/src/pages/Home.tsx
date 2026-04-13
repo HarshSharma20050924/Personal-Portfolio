@@ -14,6 +14,8 @@ import { AIGlobe } from '../components/AIGlobe';
 import { FreelanceIntro } from '../components/FreelanceIntro';
 import { API_BASE } from '../config';
 
+import { FreelanceTestimonials } from '../components/FreelanceTestimonials';
+
 interface TemplateProps {
   heroData: HeroData;
   skills: Skill[];
@@ -60,7 +62,7 @@ const HomePage: React.FC<TemplateProps> = ({ heroData, projects, socialLinks }) 
         />
       )}
 
-      <div className={`bg-[#0D0D0D] text-white min-h-screen font-sans selection:bg-white/20 selection:text-white cursor-none ${!introComplete ? 'h-screen overflow-hidden' : ''}`}>
+      <div className={`bg-[#0D0D0D] text-white min-h-screen font-sans selection:bg-white/20 selection:text-white ${!introComplete ? 'h-screen overflow-hidden' : ''}`}>
         <FreelanceCursor />
         <FreelanceNavigation name={heroData.name} />
 
@@ -71,6 +73,7 @@ const HomePage: React.FC<TemplateProps> = ({ heroData, projects, socialLinks }) 
           <FreelanceAbout />
           <FreelanceProcess />
           <FreelanceWork projects={projects} services={services} />
+          <FreelanceTestimonials />
         </main>
 
 

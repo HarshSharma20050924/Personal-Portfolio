@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
-import { HeroData, Skill, Project, SocialLink, Article, Experience, Education, PlaygroundConfig, Service } from './types';
+import { HeroData, Skill, Project, SocialLink, Article, Experience, Education, PlaygroundConfig, Service, Testimonial } from './types';
 import API_BASE from './utils/apiBase';
 
 type AppData = {
@@ -15,6 +15,7 @@ type AppData = {
   education: Education[];
   playgroundConfig: PlaygroundConfig;
   services: Service[];
+  testimonials: Testimonial[];
 };
 
 const App: React.FC = () => {
@@ -112,6 +113,8 @@ const App: React.FC = () => {
       setPlaygroundConfig={(pc) => setData(prev => ({...prev!, playgroundConfig: typeof pc === 'function' ? pc(prev!.playgroundConfig) : pc }))}
       services={data.services || []}
       setServices={(sv) => setData(prev => ({...prev!, services: typeof sv === 'function' ? sv(prev!.services || []) : sv }))}
+      testimonials={data.testimonials || []}
+      setTestimonials={(t) => setData(prev => ({...prev!, testimonials: typeof t === 'function' ? t(prev!.testimonials || []) : t }))}
     />
   );
 };

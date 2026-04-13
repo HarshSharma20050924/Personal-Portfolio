@@ -5,7 +5,7 @@ import Home from './pages/Home';
 import Contact from './pages/Contact';
 import Work from './pages/Work';
 import ServiceDetail from './pages/ServiceDetail';
-import { HeroData, Project, Skill, SocialLink, Article } from './types';
+import { HeroData, Project, Skill, SocialLink, Article, Testimonial } from './types';
 import { API_BASE, FALLBACK_DATA } from './config';
 
 interface AppData {
@@ -14,6 +14,7 @@ interface AppData {
   projects: Project[];
   socialLinks: SocialLink[];
   articles: Article[];
+  testimonials: Testimonial[];
 }
 
 const App: React.FC = () => {
@@ -36,12 +37,7 @@ const App: React.FC = () => {
   }, []);
 
   if (!data) return (
-    <div className="min-h-screen bg-[#0D0D0D] flex items-center justify-center text-white font-mono uppercase tracking-[0.3em] text-xs">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-8 h-px bg-white/20 animate-pulse" />
-        Initializing System...
-      </div>
-    </div>
+    <div className="min-h-screen bg-[#0D0D0D]"></div>
   );
 
   return (

@@ -109,14 +109,15 @@ export const GlobeChatInterface: React.FC<GlobeChatInterfaceProps> = ({ onClose,
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            transition={{ type: "spring", stiffness: 350, damping: 30 }}
             className={`
-            fixed md:absolute z-50 
-            bottom-0 left-0 right-0 md:inset-auto md:bottom-0 md:left-[110%] md:right-auto
-            h-[70vh] md:h-[550px] md:w-[420px] w-full md:w-[420px]
-            bg-[#050505] md:bg-[#050505]/95 md:backdrop-blur-xl md:border md:border-white/10 md:rounded-[1.5rem] md:shadow-2xl 
-            rounded-t-3xl md:rounded-[1.5rem]
+            fixed md:absolute z-[100] 
+            bottom-6 left-4 right-4 md:inset-auto md:bottom-0 md:left-[110%] md:right-auto
+            h-[60vh] md:h-[550px] w-auto md:w-[420px]
+            bg-[#050505] md:bg-[#050505]/95 md:backdrop-blur-xl border border-white/10 md:shadow-2xl 
+            rounded-[2rem] md:rounded-[1.5rem]
             flex flex-col overflow-hidden
+            shadow-[0_20px_50px_rgba(0,0,0,0.5)]
             `}
         >
             {/* Header */}
@@ -203,7 +204,7 @@ export const GlobeChatInterface: React.FC<GlobeChatInterfaceProps> = ({ onClose,
             </div>
 
             {/* Input Area */}
-            <div className="p-4 bg-black/80 md:bg-black/40 border-t border-white/10 shrink-0 pb-8 md:pb-4 safe-area-bottom">
+            <div className="p-4 bg-black/80 md:bg-black/40 border-t border-white/10 shrink-0 pb-4 md:pb-4 safe-area-bottom">
                 <div className="relative flex items-center group">
                     <input 
                         type="text" 

@@ -124,7 +124,7 @@ export const AIGlobe = () => {
   return (
     <div className="relative w-full h-full flex items-center justify-center">
       <motion.div
-        className="relative w-[300px] h-[300px] md:w-[350px] md:h-[350px] cursor-none clickable z-10"
+        className="relative w-[220px] h-[220px] md:w-[350px] md:h-[350px] clickable z-10"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={handleGlobeClick}

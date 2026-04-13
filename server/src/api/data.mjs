@@ -22,6 +22,7 @@ const defaultData = {
   experience: [],
   education: [],
   services: [],
+  testimonials: [],
   playgroundConfig: {
     heroTitle: "Playground Mode",
     heroSubtitle: "Experimenting with colors, shapes, and layouts.",
@@ -53,19 +54,21 @@ router.get("/", async (req, res) => {
       education,
       services,
       playgroundConfig,
+      testimonials,
     ] = await Promise.all([
       prisma.generalInfo.findFirst({ where: { id: 1 } }),
       prisma.skill.findMany({ orderBy: { id: "asc" } }),
-      prisma.project.findMany({ orderBy: { id: "asc" } }),
+      prisma.project.findMany({ orderBy: { id: "asc" }, include: { media: true } }),
       prisma.socialLink.findMany({ orderBy: { id: "asc" } }),
       prisma.article.findMany({ orderBy: { id: "asc" } }),
       prisma.experience.findMany({ orderBy: { id: "desc" } }),
       prisma.education.findMany({ orderBy: { id: "desc" } }),
       prisma.service.findMany({
         orderBy: { id: "asc" },
-        include: { projects: true },
+        include: { projects: { include: { media: true } } },
       }),
       prisma.playgroundConfig.findFirst({ where: { id: 1 } }),
+      prisma.testimonial.findMany({ orderBy: { id: "asc" } }),
     ]);
 
     let responseData;
@@ -88,6 +91,7 @@ router.get("/", async (req, res) => {
         experience,
         education,
         services,
+        testimonials,
         playgroundConfig: playgroundConfigWithoutId,
       };
     }
@@ -122,6 +126,7 @@ router.post("/", async (req, res) => {
       education,
       services,
       playgroundConfig,
+      testimonials,
     } = req.body ?? {};
 
     await prisma.$transaction(async (tx) => {
@@ -147,6 +152,7 @@ router.post("/", async (req, res) => {
       await tx.article.deleteMany();
       await tx.experience.deleteMany();
       await tx.education.deleteMany();
+      await tx.testimonial.deleteMany();
 
       // 3. Recreate Services and Map IDs
       const serviceIdMap = new Map();
@@ -163,21 +169,24 @@ router.post("/", async (req, res) => {
 
       // 4. Recreate Projects using Mapped Service IDs
       if (Array.isArray(projects) && projects.length > 0) {
-        const projectsToCreate = projects.map((project) => {
-          const { id, service, serviceId, ...rest } = project;
+        for (const project of projects) {
+          const { id, service, serviceId, media, ...rest } = project;
           // Resolve correct service ID
           const incomingServiceId = service?.id || serviceId;
           const mappedServiceId = serviceIdMap.get(incomingServiceId) || null;
 
-          return {
-            ...rest,
-            serviceId: mappedServiceId,
-          };
-        });
-
-        await tx.project.createMany({
-          data: projectsToCreate,
-        });
+          await tx.project.create({
+            data: {
+              ...rest,
+              serviceId: mappedServiceId,
+              ...(media && media.length > 0 ? {
+                media: {
+                  create: media.map(({ id, projectId, ...mRest }) => mRest)
+                }
+              } : {})
+            }
+          });
+        }
       }
 
       // 5. Recreate other simple lists
@@ -195,6 +204,9 @@ router.post("/", async (req, res) => {
       }
       if (Array.isArray(education) && education.length > 0) {
         await tx.education.createMany({ data: education.map(({ id, ...rest }) => rest) });
+      }
+      if (Array.isArray(testimonials) && testimonials.length > 0) {
+        await tx.testimonial.createMany({ data: testimonials.map(({ id, ...rest }) => rest) });
       }
     });
 
@@ -220,19 +232,21 @@ router.get("/export", async (req, res) => {
       education,
       services,
       playgroundConfig,
+      testimonials,
     ] = await Promise.all([
       prisma.generalInfo.findFirst({ where: { id: 1 } }),
       prisma.skill.findMany({ orderBy: { id: "asc" } }),
-      prisma.project.findMany({ orderBy: { id: "asc" } }),
+      prisma.project.findMany({ orderBy: { id: "asc" }, include: { media: true } }),
       prisma.socialLink.findMany({ orderBy: { id: "asc" } }),
       prisma.article.findMany({ orderBy: { id: "asc" } }),
       prisma.experience.findMany({ orderBy: { id: "desc" } }),
       prisma.education.findMany({ orderBy: { id: "desc" } }),
       prisma.service.findMany({
         orderBy: { id: "asc" },
-        include: { projects: true },
+        include: { projects: { include: { media: true } } },
       }),
       prisma.playgroundConfig.findFirst({ where: { id: 1 } }),
+      prisma.testimonial.findMany({ orderBy: { id: "asc" } }),
     ]);
 
     res.json({
@@ -244,6 +258,7 @@ router.get("/export", async (req, res) => {
       experience,
       education,
       services,
+      testimonials,
       playgroundConfig,
     });
   } catch (e) {

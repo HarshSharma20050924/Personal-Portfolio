@@ -39,7 +39,11 @@ const WorkPage = ({ name }: { name?: string }) => {
         </div>
 
         {projects.length === 0 ? (
-          <div className="text-white/50 text-center py-20 font-mono">Initializing Archive...</div>
+          <div className="flex justify-center py-20">
+            <span className="text-[10px] font-mono tracking-[1em] text-blue-500 uppercase animate-pulse">
+                SYSTEM_LABS
+            </span>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-20">
              {projects.map((project, index) => {

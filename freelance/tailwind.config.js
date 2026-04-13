@@ -20,7 +20,7 @@ export default {
         primary: 'hsl(212, 100%, 50%)',
         secondary: 'hsl(0, 0%, 27%)',
         'off-white': 'hsl(0, 0%, 97%)',
-        
+
         dark: {
           text: 'hsl(0, 0%, 93%)',
           background: 'hsl(0, 0%, 7%)',
@@ -30,10 +30,23 @@ export default {
         },
 
         // Elite / Freelance Theme Colors
+        blue: {
+          50: '#F0F6FF',
+          100: '#E1EDFF',
+          200: '#C3DBFF',
+          300: '#94BEFF',
+          400: '#5C96FF',
+          500: '#4388F5',
+          600: '#2B66FF',
+          700: '#1E51E1',
+          800: '#1D45B5',
+          900: '#1D3D8E',
+          950: '#162657',
+        },
         elite: {
-            bg: '#0D0D0D',
-            sub: '#A1A1AA', // Zinc 400
-            accent: '#3B82F6', // Blue 500
+          bg: '#0D0D0D',
+          sub: '#A1A1AA', // Zinc 400
+          accent: '#4388F5', 
         }
       },
       boxShadow: {

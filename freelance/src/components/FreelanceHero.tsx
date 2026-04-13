@@ -1,4 +1,3 @@
-
 import React, { useRef } from 'react';
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
 import { SplitText } from './SplitText';
@@ -71,7 +70,7 @@ export const FreelanceHero = ({ data, socialLinks }: { data: HeroData, socialLin
              <span className="text-xs font-mono text-elite-sub tracking-widest uppercase">Available for Select Projects</span>
           </motion.div>
 
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-medium text-white leading-[1.1] mb-6 md:mb-8 tracking-tight whitespace-normal md:whitespace-nowrap">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-medium text-white leading-[1.1] mb-4 md:mb-8 tracking-tight whitespace-normal md:whitespace-nowrap">
             <SplitText className="inline-block" delay={0.2} wordDelay={0.03}>
               Grow your business
             </SplitText>
@@ -87,7 +86,7 @@ export const FreelanceHero = ({ data, socialLinks }: { data: HeroData, socialLin
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 1.0, ease: [0.22, 1, 0.36, 1] }}
-            className="max-w-xl text-lg text-elite-sub leading-relaxed mb-8 md:mb-10 font-light tracking-wide"
+            className="max-w-xl text-sm md:text-lg text-elite-sub leading-relaxed mb-6 md:mb-10 font-light tracking-wide px-4 md:px-0"
           >
             Engineering digital ecosystems that operate with <span className="text-white font-medium">precision</span> and <span className="text-white font-medium">autonomy</span>.
           </motion.p>
@@ -96,14 +95,14 @@ export const FreelanceHero = ({ data, socialLinks }: { data: HeroData, socialLin
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 1.2, ease: [0.22, 1, 0.36, 1] }}
-            className="flex flex-col gap-8"
+            className="flex flex-col gap-6 md:gap-8 w-full md:w-auto"
           >
             <div className="flex flex-col md:flex-row items-center gap-6">
                 <motion.button 
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => navigate('/contact')}
-                className="clickable px-10 py-4 bg-white text-black text-sm font-semibold tracking-widest uppercase rounded-full hover:bg-neutral-200 transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                className="clickable w-full md:w-auto px-10 py-4 bg-white text-black text-xs md:text-sm font-semibold tracking-widest uppercase rounded-full hover:bg-neutral-200 transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.3)]"
                 >
                 Start Transformation
                 </motion.button>

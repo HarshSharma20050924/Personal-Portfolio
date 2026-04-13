@@ -45,6 +45,22 @@ export interface Project {
   outcome?: string;
   outcomeImage?: string;
   serviceId?: number; // Link to service
+  media?: {
+    id?: number;
+    url: string;
+    type: string;
+    title?: string;
+  }[];
+}
+
+export interface Testimonial {
+  id?: number;
+  clientName: string;
+  company?: string;
+  text: string;
+  projectUrl?: string;
+  showInClient?: boolean;
+  showInFreelance?: boolean;
 }
 
 export interface SocialLink {
@@ -111,7 +127,7 @@ export interface PlaygroundConfig {
   showProjects: boolean;
   showContact: boolean;
   animationSpeed: string;
-  
+
   particleCount?: number;
   particleSpread?: number;
   particleBaseSize?: number;

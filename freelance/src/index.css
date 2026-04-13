@@ -23,7 +23,8 @@ body {
 }
 
 /* Hide Default Cursor globally when custom cursor is active */
-.cursor-none, .cursor-none * {
+.cursor-none,
+.cursor-none * {
   cursor: none !important;
 }
 
@@ -47,8 +48,17 @@ body {
 
 /* Utility Animations */
 @keyframes pulse-slow {
-  0%, 100% { opacity: 0.3; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.05); }
+
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: scale(1.05);
+  }
 }
 
 .animate-pulse-slow {
@@ -65,4 +75,25 @@ body {
 .font-display {
   font-family: 'Inter', sans-serif;
   letter-spacing: -0.02em;
+}
+
+.vertical-text {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+
+/* Mobile App feeling utilities */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media (max-width: 768px) {
+  .cursor-none,
+  .cursor-none * {
+    cursor: auto !important;
+  }
 }

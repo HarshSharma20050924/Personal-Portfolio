@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import type { Project, Service } from '../types';
-import { Star, Upload, ImageIcon, Loader2, Briefcase, Monitor } from 'lucide-react';
+import { Star, Upload, ImageIcon, Loader2, Briefcase, Monitor, Trash2, Plus } from 'lucide-react';
 import API_BASE from '../utils/apiBase';
 
 interface ManageProjectsProps {
@@ -28,7 +28,8 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects, 
     challengeImage: '',
     outcome: '',
     outcomeImage: '',
-    serviceId: undefined
+    serviceId: undefined,
+    media: [] // Added media array
   };
   const [isEditing, setIsEditing] = useState<number | null>(null);
   const [form, setForm] = useState<Project>(blankForm);
@@ -96,6 +97,42 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects, 
       setUploadError((error as Error).message);
     } finally {
       loadingStateSetter(false);
+    }
+  };
+
+  const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const uploadData = new FormData();
+    uploadData.append('file', file);
+    setUploadError(null);
+
+    try {
+      const response = await fetch(`${API_BASE}/api/upload`, {
+        method: 'POST',
+        body: uploadData,
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || 'Upload failed');
+      
+      const newMedia = [...(currentForm.media || [])];
+      newMedia[index].url = result.filePath;
+      // Auto-detect type
+      if (file.type.startsWith('video/')) newMedia[index].type = 'video';
+      else if (file.type.startsWith('image/')) newMedia[index].type = 'image';
+
+      const newForm = { ...currentForm, media: newMedia };
+      setForm(newForm);
+
+      if (isEditing !== null) {
+        setProjects(projects.map((p, i) => (i === isEditing ? newForm : p)));
+      }
+
+    } catch (error) {
+      console.error("Media Upload Error:", error);
+      setUploadError((error as Error).message);
     }
   };
 
@@ -232,7 +269,85 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects, 
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Project Media Gallery */}
+          <div className="md:col-span-2 pt-6 border-t border-slate-200 dark:border-slate-700">
+            <h4 className="text-sm font-bold mb-4">Project Proofs (Media Gallery)</h4>
+            <div className="space-y-4">
+                {(currentForm.media || []).map((media, idx) => (
+                    <div key={idx} className="flex flex-col md:flex-row gap-4 items-start p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-600 relative">
+                        <button type="button" onClick={() => {
+                            const newMedia = (currentForm.media || []).filter((_, i) => i !== idx);
+                            const newForm = { ...currentForm, media: newMedia };
+                            setForm(newForm);
+                            if (isEditing !== null) setProjects(projects.map((p, i) => i === isEditing ? newForm : p));
+                        }} className="absolute top-2 right-2 text-red-500 hover:text-red-700 hover:bg-red-50 p-1 rounded-full"><Trash2 size={16}/></button>
+
+                        <div className="w-full md:w-1/3">
+                            {media.url ? (
+                                media.type === 'video' ? 
+                                    <video src={media.url} className="w-full h-24 object-cover rounded bg-black" /> :
+                                    <img src={media.url} className="w-full h-24 object-cover rounded bg-black" />
+                            ) : (
+                                <div className="w-full h-24 bg-slate-200 dark:bg-slate-600 rounded flex items-center justify-center text-slate-400 text-xs">No media</div>
+                            )}
+                        </div>
+                        <div className="w-full md:w-2/3 space-y-3">
+                            <div>
+                                <label className="text-[10px] text-slate-500 font-bold uppercase">Title / Name</label>
+                                <input value={media.title || ''} onChange={(e) => {
+                                    const newMedia = [...(currentForm.media || [])];
+                                    newMedia[idx].title = e.target.value;
+                                    const newForm = { ...currentForm, media: newMedia };
+                                    setForm(newForm);
+                                    if (isEditing !== null) setProjects(projects.map((p, i) => i === isEditing ? newForm : p));
+                                }} placeholder="e.g. Landing Page" className="w-full p-2 border rounded dark:bg-slate-800 dark:border-slate-600 text-sm" />
+                            </div>
+                            <div className="flex gap-4">
+                                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                                    <input type="radio" name={`media_${idx}_type`} checked={media.type === 'image'} onChange={() => {
+                                        const newMedia = [...(currentForm.media || [])];
+                                        newMedia[idx].type = 'image';
+                                        const newForm = { ...currentForm, media: newMedia };
+                                        setForm(newForm);
+                                        if (isEditing !== null) setProjects(projects.map((p, i) => i === isEditing ? newForm : p));
+                                    }} /> Image
+                                </label>
+                                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                                    <input type="radio" name={`media_${idx}_type`} checked={media.type === 'video'} onChange={() => {
+                                        const newMedia = [...(currentForm.media || [])];
+                                        newMedia[idx].type = 'video';
+                                        const newForm = { ...currentForm, media: newMedia };
+                                        setForm(newForm);
+                                        if (isEditing !== null) setProjects(projects.map((p, i) => i === isEditing ? newForm : p));
+                                    }} /> Video
+                                </label>
+                            </div>
+                            <div className="flex gap-2">
+                                <input value={media.url} onChange={(e) => {
+                                    const newMedia = [...(currentForm.media || [])];
+                                    newMedia[idx].url = e.target.value;
+                                    const newForm = { ...currentForm, media: newMedia };
+                                    setForm(newForm);
+                                    if (isEditing !== null) setProjects(projects.map((p, i) => i === isEditing ? newForm : p));
+                                }} placeholder="https://..." className="flex-1 p-2 border rounded dark:bg-slate-800 dark:border-slate-600 text-sm" />
+                                <label className="cursor-pointer bg-slate-100 dark:bg-slate-700 px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1 hover:bg-slate-200">
+                                    <Upload size={12}/>
+                                    Upload
+                                    <input type="file" onChange={(e) => handleMediaUpload(e, idx)} className="hidden" />
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+                <button type="button" onClick={() => {
+                    const newForm = { ...currentForm, media: [...(currentForm.media || []), { url: '', type: 'image', title: '' }] };
+                    setForm(newForm);
+                    if (isEditing !== null) setProjects(projects.map((p, i) => i === isEditing ? newForm : p));
+                }} className="text-sm font-bold text-blue-500 hover:text-blue-700 flex items-center gap-1"><Plus size={16}/> Add New Proof</button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-200 dark:border-slate-700 pt-6">
             <div className="md:col-span-2">
                 <label className="block text-xs font-semibold text-slate-500 mb-1">Tags (Comma Separated)</label>
                 <input name="tags" value={currentForm.tags.join(', ')} onChange={handleFormChange} placeholder="React, Three.js, AI" className="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600" />

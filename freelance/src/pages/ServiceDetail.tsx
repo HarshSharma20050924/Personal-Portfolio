@@ -51,7 +51,13 @@ const ServiceDetail = ({ name }: { name?: string }) => {
         });
   }, [id]);
 
-  if (!service) return <div className="min-h-screen bg-elite-bg flex items-center justify-center text-white">Loading Capability...</div>;
+  if (!service) return (
+    <div className="min-h-screen bg-elite-bg flex items-center justify-center">
+        <span className="text-[10px] font-mono tracking-[1em] text-blue-500 uppercase animate-pulse">
+            SYSTEM_LABS
+        </span>
+    </div>
+  );
 
   const handleStartProject = () => {
     navigate('/contact', { state: { service: service.title } });
@@ -169,6 +175,47 @@ const ServiceDetail = ({ name }: { name?: string }) => {
                             <span className="text-xs font-mono text-elite-sub uppercase tracking-widest">Case Study 0{index + 1}</span>
                         </div>
                         </div>
+                        
+                        {/* Media Gallery Section */}
+                        {work.media && work.media.length > 0 && (
+                            <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-white/5">
+                                <div className="md:col-span-2 mb-4">
+                                    <h4 className="text-xl font-display text-white">Project Proofs</h4>
+                                    <p className="text-xs font-mono text-white/40 uppercase tracking-widest mt-1">Verified Delivery Dossier</p>
+                                </div>
+                                {work.media.map((mediaItem, mIndex) => (
+                                    <motion.div 
+                                        key={mediaItem.id || mIndex} 
+                                        initial={{ opacity: 0, y: 20 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        viewport={{ once: true }}
+                                        transition={{ delay: mIndex * 0.1 }}
+                                        className="flex flex-col gap-3 w-full"
+                                    >
+                                        <div className="aspect-video bg-neutral-900 overflow-hidden relative border border-white/10 rounded-sm">
+                                            {mediaItem.type === 'video' ? (
+                                                <video 
+                                                    src={mediaItem.url} 
+                                                    autoPlay loop muted playsInline
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <img 
+                                                    src={mediaItem.url} 
+                                                    alt={mediaItem.title || 'Project Media'} 
+                                                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                                                />
+                                            )}
+                                        </div>
+                                        {mediaItem.title && (
+                                            <span className="text-xs font-mono text-white/50 uppercase tracking-widest px-2 border-l-2 border-blue-500">
+                                                {mediaItem.title}
+                                            </span>
+                                        )}
+                                    </motion.div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                     )) : (
                         <div className="text-center text-gray-500 py-20 border border-dashed border-white/10 rounded-xl">

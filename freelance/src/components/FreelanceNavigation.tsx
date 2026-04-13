@@ -32,7 +32,7 @@ export const FreelanceNavigation = ({ name = 'Harsh.' }: { name?: string }) => {
   const handleNav = (path: string) => {
     setIsOpen(false);
     if (path.startsWith('/#')) {
-      const hash = path.substring(1); 
+      const hash = path.substring(1);
       if (location.pathname !== '/') {
         navigate('/');
         setTimeout(() => {
@@ -60,15 +60,15 @@ export const FreelanceNavigation = ({ name = 'Harsh.' }: { name?: string }) => {
         className="fixed top-0 left-0 right-0 z-40 flex justify-center pt-8 px-4 pointer-events-none"
       >
         <div className="pointer-events-auto bg-black/40 backdrop-blur-xl border border-white/5 rounded-full px-8 py-4 flex items-center gap-10 shadow-2xl transition-all hover:bg-black/60 hover:border-white/10">
-          <button onClick={() => { navigate('/'); window.scrollTo({ top: 0, behavior: 'smooth'}); }} className="clickable flex items-center gap-3 bg-transparent border-none p-0 group">
+          <button onClick={() => { navigate('/'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="clickable flex items-center gap-3 bg-transparent border-none p-0 group">
             <SystemLabsLogo className="w-6 h-6 text-white group-hover:text-blue-500 transition-colors duration-300" />
             <span className="font-display text-lg text-white font-bold tracking-tight">SystemLabs.</span>
           </button>
-          
+
           <div className="hidden md:flex items-center gap-8">
             {links.map((link) => (
-              <button 
-                key={link.name} 
+              <button
+                key={link.name}
                 onClick={() => handleNav(link.path)}
                 className="clickable text-xs font-medium text-elite-sub hover:text-white transition-colors uppercase tracking-widest bg-transparent border-none cursor-pointer"
               >
@@ -78,7 +78,7 @@ export const FreelanceNavigation = ({ name = 'Harsh.' }: { name?: string }) => {
           </div>
 
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={() => navigate('/contact')}
               className="clickable hidden md:block bg-white text-black px-6 py-2 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-neutral-200 transition-colors"
             >
@@ -91,7 +91,7 @@ export const FreelanceNavigation = ({ name = 'Harsh.' }: { name?: string }) => {
         </div>
       </motion.nav>
 
-      <motion.div 
+      <motion.div
         initial={false}
         animate={isOpen ? "open" : "closed"}
         variants={{
@@ -101,20 +101,20 @@ export const FreelanceNavigation = ({ name = 'Harsh.' }: { name?: string }) => {
         className="fixed inset-0 z-30 bg-black/95 backdrop-blur-lg pt-32 px-6 md:hidden flex flex-col items-center gap-8"
       >
         {links.map((link) => (
-          <button 
-            key={link.name} 
+          <button
+            key={link.name}
             onClick={() => handleNav(link.path)}
             className="text-3xl font-display font-medium text-white/80 hover:text-white bg-transparent border-none"
           >
             {link.name}
           </button>
         ))}
-         <button 
-            onClick={() => { handleNav('/contact'); }}
-            className="text-3xl font-display font-medium text-white mt-4"
-          >
-            Start Project
-          </button>
+        <button
+          onClick={() => { handleNav('/contact'); }}
+          className="text-3xl font-display font-medium text-white mt-4"
+        >
+          Start Project
+        </button>
       </motion.div>
     </>
   );

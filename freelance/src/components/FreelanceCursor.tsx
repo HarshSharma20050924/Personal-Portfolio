@@ -14,10 +14,14 @@ const FreelanceCursor = () => {
   const ringY = useSpring(mouseY, springConfig);
 
   useEffect(() => {
-    if (window.matchMedia("(pointer: coarse)").matches) return;
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) return;
 
     const moveCursor = (e: MouseEvent) => {
-      if (!isVisible) setIsVisible(true);
+      if (!isVisible) {
+        setIsVisible(true);
+        document.body.classList.add('cursor-none');
+      }
       mouseX.set(e.clientX);
       mouseY.set(e.clientY);
     };
@@ -41,6 +45,7 @@ const FreelanceCursor = () => {
     return () => {
       window.removeEventListener('mousemove', moveCursor);
       window.removeEventListener('mouseover', handleMouseOver);
+      document.body.classList.remove('cursor-none');
     };
   }, [mouseX, mouseY, isVisible]);
 

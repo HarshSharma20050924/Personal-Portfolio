@@ -31,24 +31,24 @@ export const FreelanceProcess = () => {
   const scaleY = useTransform(scrollYProgress, [0, 1], [0, 1]);
 
   return (
-    <section className="py-40 bg-elite-bg relative">
+    <section className="py-20 md:py-40 bg-elite-bg relative">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-24">
-          <h2 className="text-3xl md:text-5xl font-display font-medium text-white mb-4">The Methodology</h2>
-          <p className="text-elite-sub">From chaos to clarity.</p>
+        <div className="text-center mb-16 md:mb-24">
+          <h2 className="text-3xl md:text-5xl font-display font-medium text-white mb-2 md:mb-4 tracking-tight">The Methodology</h2>
+          <p className="text-elite-sub text-sm">From chaos to clarity.</p>
         </div>
 
         <div ref={ref} className="relative max-w-3xl mx-auto">
           {/* Static Line */}
-          <div className="absolute left-[20px] md:left-1/2 top-0 bottom-0 w-px bg-white/5 -translate-x-1/2" />
+          <div className="absolute left-[12px] md:left-1/2 top-0 bottom-0 w-px bg-white/5 -translate-x-1/2" />
           
           {/* Dynamic Progress Line */}
           <motion.div 
             style={{ scaleY, originY: 0 }}
-            className="absolute left-[20px] md:left-1/2 top-0 bottom-0 w-px bg-elite-accent -translate-x-1/2" 
+            className="absolute left-[12px] md:left-1/2 top-0 bottom-0 w-px bg-elite-accent -translate-x-1/2" 
           />
           
-          <div className="space-y-32">
+          <div className="space-y-16 md:space-y-32">
             {steps.map((step, index) => (
               <ProcessStep key={index} step={step} index={index} />
             ))}
@@ -79,12 +79,12 @@ const ProcessStep = ({ step, index }: { step: any, index: number }) => {
     >
       <motion.div 
         style={{ backgroundColor: color, borderColor: color }}
-        className="absolute left-[20px] md:left-1/2 -translate-x-1/2 w-4 h-4 rounded-full border-2 z-10" 
+        className="absolute left-[12px] md:left-1/2 -translate-x-1/2 w-3 h-3 md:w-4 md:h-4 rounded-full border-2 z-10" 
       />
 
-      <div className={`pl-12 md:pl-0 w-full md:w-1/2 ${index % 2 !== 0 ? '' : 'md:pr-10'} ${index % 2 !== 0 ? 'md:pl-10' : ''}`}>
-        <h3 className="text-2xl font-display font-medium text-white mb-2">{step.title}</h3>
-        <p className="text-elite-sub leading-relaxed">{step.desc}</p>
+      <div className={`pl-10 md:pl-0 w-full md:w-1/2 ${index % 2 !== 0 ? '' : 'md:pr-10'} ${index % 2 !== 0 ? 'md:pl-10' : ''}`}>
+        <h3 className="text-xl md:text-2xl font-display font-medium text-white mb-2">{step.title}</h3>
+        <p className="text-elite-sub text-sm md:text-base leading-relaxed">{step.desc}</p>
       </div>
       <div className="hidden md:block w-1/2" />
     </motion.div>

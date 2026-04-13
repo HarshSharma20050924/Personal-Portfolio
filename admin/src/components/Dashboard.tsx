@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import type { HeroData, Skill, Project, SocialLink, Article, Experience, Education, PlaygroundConfig, Message, Service } from '../types';
+import type { HeroData, Skill, Project, SocialLink, Article, Experience, Education, PlaygroundConfig, Message, Service, Testimonial } from '../types';
 import ManageHero from './ManageHero';
 import ManageSkills from './ManageSkills';
 import ManageProjects from './ManageProjects';
@@ -13,11 +13,12 @@ import ManageExperience from './ManageExperience';
 import ManageMessages from './ManageMessages';
 import ManageAI from './ManageAI';
 import ManageServices from './ManageServices';
+import ManageTestimonials from './ManageTestimonials';
 import FreelanceAdmin from './FreelanceAdmin';
 import { 
   LayoutDashboard, Palette, FlaskConical, BriefcaseBusiness, Cpu, GraduationCap, FolderKanban, 
   Share2, FileText, MessageSquare, Bot, ShieldCheck, Menu, X, Save, Loader2, AlertTriangle, 
-  ChevronRight, ExternalLink, Trash2, Edit3 
+  ChevronRight, ExternalLink, Trash2, Edit3, Quote
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -41,9 +42,11 @@ interface DashboardProps {
   setPlaygroundConfig: React.Dispatch<React.SetStateAction<PlaygroundConfig>>;
   services: Service[]; // Added prop
   setServices: React.Dispatch<React.SetStateAction<Service[]>>; // Added prop
+  testimonials: Testimonial[]; // Added prop
+  setTestimonials: React.Dispatch<React.SetStateAction<Testimonial[]>>; // Added prop
 }
 
-type AdminView = 'hero' | 'theme' | 'skills' | 'projects' | 'socials' | 'blog' | 'experience' | 'messages' | 'playground' | 'security' | 'ai' | 'services' | 'freelance';
+type AdminView = 'hero' | 'theme' | 'skills' | 'projects' | 'socials' | 'blog' | 'experience' | 'testimonials' | 'messages' | 'playground' | 'security' | 'ai' | 'services' | 'freelance';
 
 const Dashboard: React.FC<DashboardProps> = (props) => {
   const [view, setView] = useState<AdminView>('hero');
@@ -65,6 +68,7 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
     { id: 'skills', label: 'Skills', icon: Cpu },
     { id: 'experience', label: 'Experience & Edu', icon: GraduationCap },
     { id: 'projects', label: 'Projects', icon: FolderKanban },
+    { id: 'testimonials', label: 'Testimonials', icon: Quote },
     { id: 'socials', label: 'Social Links', icon: Share2 },
     { id: 'blog', label: 'Blog', icon: FileText },
     { id: 'messages', label: 'Inbox', icon: MessageSquare },
@@ -113,6 +117,8 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
         return <ManageExperience experience={props.experience} setExperience={props.setExperience} education={props.education} setEducation={props.setEducation} />;
       case 'projects':
         return <ManageProjects projects={props.projects} setProjects={props.setProjects} services={props.services} />;
+      case 'testimonials':
+        return <ManageTestimonials testimonials={props.testimonials} setTestimonials={props.setTestimonials} />;
       case 'socials':
         return <ManageSocials socialLinks={props.socialLinks} setSocialLinks={props.setSocialLinks} />;
       case 'blog':
