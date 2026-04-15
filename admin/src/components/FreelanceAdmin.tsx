@@ -87,7 +87,7 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
 
     const fetchTestimonials = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/testimonials`);
+            const res = await fetch(`${API_BASE}/api/data/testimonials`);
             if (res.ok) setTestimonials(await res.json());
         } catch (e) {}
     };
@@ -352,75 +352,78 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
                             />
                         </div>
                         <div className="lg:col-span-8">
-                            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden break-words">
                                 <div className="p-4 bg-slate-50 dark:bg-slate-900 border-b flex justify-between items-center">
                                     <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Invoice Preview</span>
                                     <button onClick={handlePrint} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-all"><Printer size={16} /></button>
                                 </div>
-                                <div ref={printRef}>
-                                    <div className="bg-black text-white p-12 border-b-8 border-blue-600">
-                                        <div className="flex justify-between items-center">
+                                <div ref={printRef} className="w-full max-w-[210mm] mx-auto bg-white">
+                                    <div className="bg-black text-white p-10 border-b-8 border-blue-600">
+                                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                                             <div className="flex items-center gap-6">
-                                                <img src="/logo.svg" className="w-12 h-12" />
+                                                <div className="w-12 h-12 bg-white rounded flex items-center justify-center p-1">
+                                                    <img src={adminConfig.brochureLogo || "/logo.svg"} className="w-full h-full object-contain" />
+                                                </div>
                                                 <div>
                                                     <h1 className="text-3xl font-black">{adminConfig.brochureName || heroData.name}</h1>
                                                     <p className="text-[10px] uppercase font-bold tracking-[.4em] opacity-60">Service Invoice</p>
                                                 </div>
                                             </div>
-                                            <div className="text-right">
+                                            <div className="text-left sm:text-right">
                                                 <p className="text-sm font-black">#INV-{new Date().getFullYear()}-{accounts.length + 1}</p>
                                                 <p className="text-[10px] font-bold opacity-60 mt-1">{new Date().toLocaleDateString()}</p>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="p-12 space-y-12">
-                                        <div className="grid grid-cols-2 gap-12 text-xs uppercase tracking-widest font-black">
-                                            <div className="border-l-4 border-blue-600 pl-4">
+                                    <div className="p-10 space-y-10">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 text-xs uppercase tracking-widest font-black">
+                                            <div className="border-l-4 border-blue-600 pl-4 break-words">
                                                 <p className="text-slate-400 mb-2">From</p>
                                                 <p className="text-slate-900">{heroData.name}</p>
                                                 <p className="text-slate-400 lowercase font-medium">{heroData.email}</p>
                                             </div>
-                                            <div className="text-right border-r-4 border-slate-100 pr-4">
+                                            <div className="text-left sm:text-right sm:border-r-4 border-l-4 sm:border-l-0 border-slate-100 pl-4 sm:pl-0 sm:pr-4 break-words">
                                                 <p className="text-slate-400 mb-2">Billing To</p>
-                                                <p className="text-slate-900">{clientName}</p>
-                                                <p className="text-slate-400 lowercase font-medium">{clientEmail}</p>
+                                                <p className="text-slate-900 break-all">{clientName}</p>
+                                                <p className="text-slate-400 lowercase font-medium break-all">{clientEmail}</p>
                                             </div>
                                         </div>
-                                        <div className="border border-slate-100 rounded-2xl overflow-hidden">
-                                            <table className="w-full text-left">
+                                        <div className="border border-slate-100 rounded-2xl overflow-hidden overflow-x-auto">
+                                            <table className="w-full text-left min-w-[500px]">
                                                 <thead className="bg-slate-50 text-[10px] uppercase font-black text-slate-400">
                                                     <tr>
-                                                        <th className="p-6">Description</th>
-                                                        <th className="p-6 text-center">Qty</th>
-                                                        <th className="p-6 text-right">Unit Price</th>
-                                                        <th className="p-6 text-right">Total</th>
+                                                        <th className="p-4 sm:p-6 w-1/2">Description</th>
+                                                        <th className="p-4 sm:p-6 text-center w-16">Qty</th>
+                                                        <th className="p-4 sm:p-6 text-right">Unit Price</th>
+                                                        <th className="p-4 sm:p-6 text-right">Total</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="text-xs">
                                                     {billItems.map((item, idx) => (
                                                         <tr key={idx} className="border-t border-slate-50">
-                                                            <td className="p-6 font-bold">{item.desc}</td>
-                                                            <td className="p-6 text-center">{item.qty}</td>
-                                                            <td className="p-6 text-right">₹{item.price.toLocaleString()}</td>
-                                                            <td className="p-6 text-right font-black">₹{(item.price * item.qty).toLocaleString()}</td>
+                                                            <td className="p-4 sm:p-6 font-bold break-words whitespace-normal">{item.desc}</td>
+                                                            <td className="p-4 sm:p-6 text-center">{item.qty}</td>
+                                                            <td className="p-4 sm:p-6 text-right break-words">₹{item.price.toLocaleString()}</td>
+                                                            <td className="p-4 sm:p-6 text-right font-black break-words">₹{(item.price * item.qty).toLocaleString()}</td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
                                             </table>
-                                            <div className="bg-slate-50 p-8 flex justify-end gap-12 border-t text-blue-600">
+                                            <div className="bg-slate-50 p-6 sm:p-8 flex justify-end gap-12 border-t text-blue-600">
                                                 <div className="text-right">
                                                     <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Amount Due</p>
-                                                    <p className="text-4xl font-black">₹{billItems.reduce((s, i) => s + (i.price * i.qty), 0).toLocaleString()}</p>
+                                                    <p className="text-3xl sm:text-4xl font-black break-words">₹{billItems.reduce((s, i) => s + (i.price * i.qty), 0).toLocaleString()}</p>
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="flex justify-between items-end pt-8 border-t">
-                                            <div className="text-[10px] font-black uppercase text-slate-400 leading-relaxed">
+                                            <div className="text-[10px] font-black uppercase text-slate-400 leading-relaxed break-words max-w-[50%]">
                                                 <p>Contact: {adminConfig.contactPhone || heroData.phone}</p>
-                                                <p>Email: {adminConfig.contactEmail || heroData.email}</p>
+                                                <p className="break-all">Email: {adminConfig.contactEmail || heroData.email}</p>
                                             </div>
-                                            <div className="text-center px-10 border-t pt-4">
-                                                <p className="text-[10px] font-black uppercase text-slate-400">Authorized Signature</p>
+                                            <div className="text-center px-4 sm:px-10 border-t border-slate-200 pt-2 flex flex-col items-center">
+                                                <p className="text-2xl text-blue-600 opacity-80" style={{ fontFamily: "cursive", fontStyle: "italic" }}>{heroData.name}</p>
+                                                <p className="text-[10px] font-black uppercase text-slate-400 mt-2">Authorized Signature</p>
                                             </div>
                                         </div>
                                     </div>

@@ -94,7 +94,7 @@ const BrochurePreview: React.FC<BrochurePreviewProps> = ({
                                 <div className="text-[10px] font-medium text-white/60 space-y-1">
                                     <p>{adminConfig.contactEmail || heroData.email}</p>
                                     <p>{adminConfig.contactPhone || heroData.phone}</p>
-                                    <p className="text-blue-400">www.systemlabs.tech</p>
+                                    <p className="text-blue-400">{adminConfig.brochureWebsite || 'www.systemlabs.tech'}</p>
                                 </div>
                             </div>
                         </div>
@@ -139,20 +139,31 @@ const BrochurePreview: React.FC<BrochurePreviewProps> = ({
                                     <p className="text-[10px] text-slate-400 font-medium">Selection of production projects</p>
                                 </div>
                                 <div className="grid grid-cols-2 gap-8">
-                                    {projects.filter(p => parseJSON(adminConfig.brochureProjects).includes(p.id)).map((p) => (
-                                        <div key={p.id} className="no-break space-y-3">
-                                            <div className="aspect-video bg-slate-100 border border-slate-200 overflow-hidden rounded">
-                                                <img src={p.imageUrl} className="w-full h-full object-cover" />
+                                    {projects.filter(p => parseJSON(adminConfig.brochureProjects).includes(p.id)).map((p) => {
+                                        const customData = parseJSON(adminConfig.brochureProjectCustomizations)[p.id || 0] || {};
+                                        const displayLink = customData.link !== undefined && customData.link !== '' ? customData.link : (p.liveUrl || p.repoUrl || p.docUrl);
+                                        const displayDesc = customData.description !== undefined && customData.description !== '' ? customData.description : p.description;
+
+                                        return (
+                                            <div key={p.id} className="no-break space-y-3">
+                                                <div className="aspect-video bg-slate-100 border border-slate-200 overflow-hidden rounded">
+                                                    <img src={p.imageUrl} className="w-full h-full object-cover" />
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-bold text-sm text-slate-800">{p.title}</h4>
+                                                    {displayLink && (
+                                                        <a href={displayLink} target="_blank" rel="noopener noreferrer" className="inline-block mt-1 text-[10px] font-bold text-blue-600 hover:text-blue-800 hover:underline break-all">
+                                                            {displayLink}
+                                                        </a>
+                                                    )}
+                                                    <p className="text-[10px] text-slate-500 leading-relaxed line-clamp-2 mt-1">{displayDesc}</p>
+                                                    {p.tags && p.tags[0] && (
+                                                        <span className="inline-block mt-2 px-2 py-0.5 bg-blue-50 text-blue-600 text-[8px] font-bold rounded uppercase tracking-tighter">{p.tags[0]}</span>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div>
-                                                <h4 className="font-bold text-sm text-slate-800">{p.title}</h4>
-                                                <p className="text-[10px] text-slate-500 leading-relaxed line-clamp-2">{p.description}</p>
-                                                {p.tags && p.tags[0] && (
-                                                    <span className="inline-block mt-2 px-2 py-0.5 bg-blue-50 text-blue-600 text-[8px] font-bold rounded uppercase tracking-tighter">{p.tags[0]}</span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                     {parseJSON(adminConfig.brochureManualProjects).map((p: any, idx: number) => (
                                         <div key={`m-${idx}`} className="no-break space-y-3">
                                             <div className="aspect-video bg-slate-100 border border-slate-200 overflow-hidden rounded">
@@ -160,7 +171,12 @@ const BrochurePreview: React.FC<BrochurePreviewProps> = ({
                                             </div>
                                             <div>
                                                 <h4 className="font-bold text-sm text-slate-800">{p.title}</h4>
-                                                <p className="text-[10px] text-slate-500 leading-relaxed line-clamp-2">{p.description}</p>
+                                                {p.link && (
+                                                    <a href={p.link} target="_blank" rel="noopener noreferrer" className="inline-block mt-1 text-[10px] font-bold text-blue-600 hover:text-blue-800 hover:underline break-all">
+                                                        {p.link}
+                                                    </a>
+                                                )}
+                                                <p className="text-[10px] text-slate-500 leading-relaxed line-clamp-2 mt-1">{p.description}</p>
                                             </div>
                                         </div>
                                     ))}

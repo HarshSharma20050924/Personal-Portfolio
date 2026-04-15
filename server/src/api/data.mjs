@@ -111,6 +111,16 @@ router.get("/", async (req, res) => {
   }
 });
 
+/* ---------- GET /api/data/testimonials ---------- */
+router.get("/testimonials", async (req, res) => {
+  try {
+    const testimonials = await prisma.testimonial.findMany({ orderBy: { id: "asc" } });
+    res.json(testimonials);
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error", error: error?.message });
+  }
+});
+
 /* ---------- POST /api/data ---------- */
 router.post("/", async (req, res) => {
   try {

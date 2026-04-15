@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { Save, IndianRupee, Trash2, Plus } from 'lucide-react';
+import React, { useState } from 'react';
+import { Save, IndianRupee, Trash2, Plus, ArchiveRestore } from 'lucide-react';
 
 interface ClientAccount {
     id: number;
@@ -9,6 +9,7 @@ interface ClientAccount {
     totalAmount: number;
     paidAmount: number;
     notes: string;
+    status: 'active' | 'completed' | 'on-hold' | 'archived';
     emiDetails?: string;
 }
 
@@ -23,6 +24,10 @@ interface ClientLedgerProps {
 const ClientLedger: React.FC<ClientLedgerProps> = ({
     accounts, fetchLedger, updateAccount, deleteAccount, addAccount
 }) => {
+    const [showArchived, setShowArchived] = useState(false);
+
+    const filteredAccounts = accounts.filter(acc => showArchived ? acc.status === 'archived' : acc.status !== 'archived');
+
     return (
         <div className="space-y-8 animate-fadeIn">
             <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
@@ -32,6 +37,10 @@ const ClientLedger: React.FC<ClientLedgerProps> = ({
                         <p className="text-xs text-slate-500 mt-1">Status of all active and completed contracts.</p>
                     </div>
                     <div className="flex gap-3">
+                        <button onClick={() => setShowArchived(!showArchived)} className={`p-3 border rounded-2xl transition-all flex items-center gap-2 text-xs font-bold ${showArchived ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900' : 'bg-white dark:bg-slate-800 text-slate-500 hover:text-slate-900'}`}>
+                            <ArchiveRestore size={16} />
+                            {showArchived ? 'Showing Archived' : 'Show Archived'}
+                        </button>
                         <button onClick={fetchLedger} className="p-3 bg-white dark:bg-slate-800 border dark:border-slate-700 text-blue-600 rounded-2xl hover:shadow-lg transition-all">
                             <Save size={20} className="rotate-90" />
                         </button>
@@ -42,12 +51,12 @@ const ClientLedger: React.FC<ClientLedgerProps> = ({
                 </div>
 
                 <div className="p-8 space-y-6">
-                    {accounts.length === 0 ? (
+                    {filteredAccounts.length === 0 ? (
                         <div className="py-20 text-center text-slate-400">
                             <p className="text-sm font-medium">No client records found. Start by adding a new account.</p>
                         </div>
                     ) : (
-                        accounts.map(acc => (
+                        filteredAccounts.map(acc => (
                             <div key={acc.id} className="p-8 bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-slate-100 dark:border-slate-800 group hover:bg-white dark:hover:bg-slate-800 hover:shadow-2xl transition-all duration-500">
                                 <div className="flex flex-col lg:row-span-1 lg:flex-row justify-between gap-8">
                                     <div className="flex-1 space-y-6">
@@ -116,12 +125,22 @@ const ClientLedger: React.FC<ClientLedgerProps> = ({
                                                 ></div>
                                             </div>
                                         </div>
-                                        <button 
-                                            onClick={() => deleteAccount(acc.id)}
-                                            className="w-full py-3 bg-red-50 dark:bg-red-900/10 text-red-500 text-[10px] font-black uppercase tracking-widest rounded-2xl border border-red-100 dark:border-red-900/20 hover:bg-red-500 hover:text-white transition-all"
-                                        >
-                                            ARCHIVE ACCOUNT
-                                        </button>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <button 
+                                                onClick={() => acc.status === 'archived' ? updateAccount(acc.id, 'status', 'active') : updateAccount(acc.id, 'status', 'archived')}
+                                                className="w-full py-3 bg-red-50 dark:bg-red-900/10 text-red-500 text-[10px] font-black uppercase tracking-widest rounded-2xl border border-red-100 dark:border-red-900/20 hover:bg-red-500 hover:text-white transition-all"
+                                            >
+                                                {acc.status === 'archived' ? 'RESTORE' : 'ARCHIVE'}
+                                            </button>
+                                            {acc.status === 'archived' && (
+                                                <button 
+                                                    onClick={() => deleteAccount(acc.id)}
+                                                    className="w-full py-3 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-red-700 transition-all shadow-lg"
+                                                >
+                                                    DELETE
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>

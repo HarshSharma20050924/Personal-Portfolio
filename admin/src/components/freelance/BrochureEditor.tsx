@@ -58,8 +58,16 @@ const BrochureEditor: React.FC<BrochureEditorProps> = ({
                                 <input value={adminConfig.brochureTitle || ''} onChange={(e) => updateAdminConfig('brochureTitle', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 text-sm font-bold focus:border-blue-500 outline-none transition-all" placeholder="e.g. Software Architect" />
                             </div>
                             <div className="space-y-1.5">
+                                <label className="text-[10px] uppercase font-black text-slate-400">Brand Logo URL</label>
+                                <input value={adminConfig.brochureLogo || ''} onChange={(e) => updateAdminConfig('brochureLogo', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 text-sm font-bold focus:border-blue-500 outline-none transition-all" placeholder="URL to brand logo icon" />
+                            </div>
+                            <div className="space-y-1.5">
                                 <label className="text-[10px] uppercase font-black text-slate-400">Profile Photo URL</label>
                                 <input value={adminConfig.brochurePhoto || ''} onChange={(e) => updateAdminConfig('brochurePhoto', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 text-sm font-bold focus:border-blue-500 outline-none transition-all" placeholder="URL to profile image" />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] uppercase font-black text-slate-400">Website Link</label>
+                                <input value={adminConfig.brochureWebsite || ''} onChange={(e) => updateAdminConfig('brochureWebsite', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 text-sm font-bold focus:border-blue-500 outline-none transition-all" placeholder="www.yourwebsite.com" />
                             </div>
                         </div>
                         <div className="space-y-4">
@@ -202,7 +210,7 @@ const BrochureEditor: React.FC<BrochureEditorProps> = ({
                     </div>
 
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Select from Main Portfolio (Max 4)</p>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                         {projects.map(p => {
                             const selected = parseJSON(adminConfig.brochureProjects).includes(p.id);
                             return (
@@ -224,6 +232,43 @@ const BrochureEditor: React.FC<BrochureEditorProps> = ({
                             );
                         })}
                     </div>
+                    {/* Database Project Overrides */}
+                    {parseJSON(adminConfig.brochureProjects).length > 0 && (
+                        <div className="space-y-4">
+                            <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Customize Selected Portfolio Projects</h5>
+                            {projects.filter(p => parseJSON(adminConfig.brochureProjects).includes(p.id)).map(p => {
+                                const customData = parseJSON(adminConfig.brochureProjectCustomizations, {})[p.id || 0] || {};
+                                return (
+                                    <div key={`custom-${p.id}`} className="bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-4 rounded-2xl space-y-3">
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <img src={p.imageUrl} className="w-10 h-10 object-cover rounded-lg" />
+                                            <span className="font-bold text-sm">{p.title}</span>
+                                        </div>
+                                        <input 
+                                            placeholder={`Link (Default: ${p.liveUrl || p.repoUrl || 'None'})`} 
+                                            value={customData.link !== undefined ? customData.link : ''} 
+                                            onChange={(e) => {
+                                                const customizations = parseJSON(adminConfig.brochureProjectCustomizations, {});
+                                                customizations[p.id!] = { ...customData, link: e.target.value };
+                                                updateAdminConfig('brochureProjectCustomizations', JSON.stringify(customizations));
+                                            }} 
+                                            className="w-full bg-white dark:bg-slate-800 border rounded-xl p-2 text-[10px] outline-none" 
+                                        />
+                                        <textarea 
+                                            placeholder={`Description (Default is from main DB)`} 
+                                            value={customData.description !== undefined ? customData.description : (p.description || '')} 
+                                            onChange={(e) => {
+                                                const customizations = parseJSON(adminConfig.brochureProjectCustomizations, {});
+                                                customizations[p.id!] = { ...customData, description: e.target.value };
+                                                updateAdminConfig('brochureProjectCustomizations', JSON.stringify(customizations));
+                                            }} 
+                                            className="w-full bg-white dark:bg-slate-800 border rounded-xl p-2 text-[10px] outline-none resize-none h-16" 
+                                        />
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
 
                 {/* 4. Custom Sections (Trust & Support) */}
