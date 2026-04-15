@@ -60,7 +60,8 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects, 
         updatedValue = value ? Number(value) : undefined;
     } else if (name === 'serviceIds') {
         const id = Number(value);
-        const currentIds = currentForm.serviceIds || [];
+        const currentIds = Array.isArray(currentForm.serviceIds) ? currentForm.serviceIds : 
+                          (currentForm.serviceIds ? [Number(currentForm.serviceIds)] : []);
         if (currentIds.includes(id)) {
             updatedValue = currentIds.filter(i => i !== id);
         } else {
@@ -240,7 +241,7 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects, 
                                 type="checkbox" 
                                 name="serviceIds" 
                                 value={s.id}
-                                checked={(currentForm.serviceIds || []).includes(s.id!)}
+                                checked={(Array.isArray(currentForm.serviceIds) ? currentForm.serviceIds : (currentForm.serviceIds ? [Number(currentForm.serviceIds)] : [])).includes(s.id!)}
                                 onChange={handleFormChange}
                                 className="w-4 h-4 text-sky-600 rounded"
                             />
@@ -391,9 +392,9 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects, 
                     {project.showInFreelance && <div title="Freelance Template"><Briefcase size={14} className="text-purple-500" /></div>}
                     {project.showInClient !== false && <div title="Portfolio Site"><Monitor size={14} className="text-indigo-500" /></div>}
                 </div>
-                {((project.serviceIds && project.serviceIds.length > 0) || project.serviceId) && (
+                {((Array.isArray(project.serviceIds) && project.serviceIds.length > 0) || project.serviceId) && (
                     <div className="flex flex-wrap gap-1 mt-1">
-                        {(project.serviceIds || (project.serviceId ? [project.serviceId] : [])).map(sid => (
+                        {(Array.isArray(project.serviceIds) ? project.serviceIds : (project.serviceId ? [project.serviceId] : [])).map(sid => (
                             <span key={sid} className="text-[10px] bg-sky-100 dark:bg-sky-900/30 text-sky-600 px-2 py-0.5 rounded border border-sky-200 dark:border-sky-800">
                                 {services.find(s => s.id === sid)?.title || sid}
                             </span>

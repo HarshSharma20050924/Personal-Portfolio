@@ -37,7 +37,10 @@ const ServiceDetail = () => {
                 const currentService = services[currentServiceIndex];
                 setService(currentService);
                 
-                const relatedProjects = allProjects.filter(p => p.serviceId === currentService.id && p.showInFreelance);
+                const relatedProjects = allProjects.filter(p => 
+                    (p.serviceId === currentService.id || (Array.isArray(p.serviceIds) && p.serviceIds.includes(currentService.id))) 
+                    && p.showInFreelance
+                );
                 setProjects(relatedProjects);
 
                 const nextIndex = (currentServiceIndex + 1) % services.length;

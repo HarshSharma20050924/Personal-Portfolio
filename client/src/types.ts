@@ -45,6 +45,7 @@ export interface Project {
   outcome?: string;
   outcomeImage?: string;
   serviceId?: number; // Link to service
+  serviceIds?: number[];
 }
 
 export interface SocialLink {

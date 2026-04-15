@@ -40,7 +40,7 @@ const ServiceDetail = ({ name }: { name?: string }) => {
                 setService(currentService);
                 
                 const relatedProjects = allProjects.filter(p => 
-                    (p.serviceId === currentService.id || (p.serviceIds && p.serviceIds.includes(currentService.id))) 
+                    (p.serviceId === currentService.id || (Array.isArray(p.serviceIds) && p.serviceIds.includes(currentService.id))) 
                     && p.showInFreelance
                 );
                 setProjects(relatedProjects);
