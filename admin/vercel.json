@@ -18,6 +18,10 @@
       "dest": "/favicon.svg"
     },
     {
+      "src": "/logo.svg",
+      "dest": "/logo.svg"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }

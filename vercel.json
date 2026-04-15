@@ -61,6 +61,10 @@
       "dest": "/client/favicon.svg"
     },
     {
+      "src": "/logo.svg",
+      "dest": "/client/logo.svg"
+    },
+    {
       "src": "/(.*)",
       "dest": "/client/index.html"
     }
