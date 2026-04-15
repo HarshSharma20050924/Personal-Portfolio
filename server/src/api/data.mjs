@@ -1,4 +1,4 @@
-
+// Database Schema Sync Trigger
 import { Router } from "express";
 import prisma from "../prisma.mjs";
 
@@ -55,6 +55,7 @@ router.get("/", async (req, res) => {
       services,
       playgroundConfig,
       testimonials,
+      adminConfig,
     ] = await Promise.all([
       prisma.generalInfo.findFirst({ where: { id: 1 } }),
       prisma.skill.findMany({ orderBy: { id: "asc" } }),
@@ -69,6 +70,7 @@ router.get("/", async (req, res) => {
       }),
       prisma.playgroundConfig.findFirst({ where: { id: 1 } }),
       prisma.testimonial.findMany({ orderBy: { id: "asc" } }),
+      prisma.adminConfig.findFirst({ where: { id: 1 } }),
     ]);
 
     let responseData;
@@ -92,6 +94,7 @@ router.get("/", async (req, res) => {
         education,
         services,
         testimonials,
+        adminConfig,
         playgroundConfig: playgroundConfigWithoutId,
       };
     }
@@ -170,15 +173,22 @@ router.post("/", async (req, res) => {
       // 4. Recreate Projects using Mapped Service IDs
       if (Array.isArray(projects) && projects.length > 0) {
         for (const project of projects) {
-          const { id, service, serviceId, media, ...rest } = project;
-          // Resolve correct service ID
+          const { id, service, serviceId, serviceIds, media, ...rest } = project;
+          // Resolve correct service ID for backwards compatibility
           const incomingServiceId = service?.id || serviceId;
           const mappedServiceId = serviceIdMap.get(incomingServiceId) || null;
+          
+          // Resolve multiple service IDs
+          const incomingServiceIds = serviceIds || (incomingServiceId ? [incomingServiceId] : []);
+          const mappedServiceIds = incomingServiceIds
+            .map(sid => serviceIdMap.get(sid))
+            .filter(sid => sid !== undefined && sid !== null);
 
           await tx.project.create({
             data: {
               ...rest,
               serviceId: mappedServiceId,
+              serviceIds: mappedServiceIds,
               ...(media && media.length > 0 ? {
                 media: {
                   create: media.map(({ id, projectId, ...mRest }) => mRest)
@@ -233,6 +243,7 @@ router.get("/export", async (req, res) => {
       services,
       playgroundConfig,
       testimonials,
+      adminConfig,
     ] = await Promise.all([
       prisma.generalInfo.findFirst({ where: { id: 1 } }),
       prisma.skill.findMany({ orderBy: { id: "asc" } }),
@@ -247,6 +258,7 @@ router.get("/export", async (req, res) => {
       }),
       prisma.playgroundConfig.findFirst({ where: { id: 1 } }),
       prisma.testimonial.findMany({ orderBy: { id: "asc" } }),
+      prisma.adminConfig.findFirst({ where: { id: 1 } }),
     ]);
 
     res.json({
@@ -260,9 +272,32 @@ router.get("/export", async (req, res) => {
       services,
       testimonials,
       playgroundConfig,
+      adminConfig,
     });
   } catch (e) {
     res.status(500).json({ message: "Internal Server Error", error: e?.message });
+  }
+});
+
+/* ---------- POST /api/data/config ---------- */
+router.post("/config", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (authHeader !== `Bearer ${process.env.ADMIN_API_KEY}`) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const { id, ...configData } = req.body;
+    await prisma.adminConfig.upsert({
+      where: { id: 1 },
+      update: configData,
+      create: { ...configData, id: 1 },
+    });
+
+    res.status(200).json({ message: "Config saved successfully" });
+  } catch (error) {
+    console.error("Config Save Error:", error);
+    res.status(500).json({ message: "Internal Server Error", error: error?.message });
   }
 });
 

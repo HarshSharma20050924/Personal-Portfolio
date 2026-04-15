@@ -68,6 +68,7 @@ model Project {
 
   // Relation to Service
   serviceId       Int?
+  serviceIds      Int[]     @default([])
   service         Service? @relation(fields: [serviceId], references: [id])
   media           ProjectMedia[]
 }
@@ -168,19 +169,40 @@ model PlaygroundConfig {
 }
 
 model ClientLedger {
-  id        Int      @id @default(autoincrement())
-  clientName String
-  project   String
-  totalAmount Float
-  paidAmount  Float
-  notes      String?
-  status     String   @default("active")
-  date       DateTime @default(now())
+  id              Int      @id @default(autoincrement())
+  clientName      String
+  project         String
+  totalAmount     Float
+  paidAmount      Float
+  notes           String?
+  status          String   @default("active")
+  date            DateTime @default(now())
+  invoiceNumber   String?
+  emiDetails      String?  // JSON string
+  remainingAmount Float    @default(0)
 }
 
 model AdminConfig {
-  id       Int     @id @default(autoincrement())
-  fcmToken String?
+  id               Int      @id @default(autoincrement())
+  fcmToken         String?
+  brochureLogo     String?
+  brochurePhoto    String?  // Developer photo
+  brochureName     String?  @default("SYSTEM LABS")
+  brochureTitle    String?  @default("Premium Software Solutions")
+  brochureSubtitle String?  @default("Builder • Harsh Sharma")
+  contactEmail     String?  @default("hello@systemlabs.dev")
+  contactPhone     String?  @default("+1 (555) 000-0000")
+  contactAddress   String?  @default("Silicon Valley, CA")
+  brochureSegments  String?  // JSON for dynamic content (Old field name)
+  brochureSections  String?  // JSON for logic sections
+  brochureServicesTitle String? @default("Service Solutions")
+  trustPoints      String?  // JSON string
+  brochurePricing  String?  // JSON for pricing guide
+  brochureSocials  String?  // JSON for social links
+  brochureProjects String?  // JSON of selected project IDs
+  brochureManualProjects String? // JSON of manual project entries (title, image, link, etc)
+  brochureTestimonials String? // JSON of selected testimonial IDs
+  customFields     String?  // JSON string
 }
 
 model ProjectMedia {

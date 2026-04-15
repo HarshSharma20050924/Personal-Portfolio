@@ -29,6 +29,7 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects, 
     outcome: '',
     outcomeImage: '',
     serviceId: undefined,
+    serviceIds: [],
     media: [] // Added media array
   };
   const [isEditing, setIsEditing] = useState<number | null>(null);
@@ -57,6 +58,14 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects, 
         updatedValue = (e.target as HTMLInputElement).checked;
     } else if (name === 'serviceId') {
         updatedValue = value ? Number(value) : undefined;
+    } else if (name === 'serviceIds') {
+        const id = Number(value);
+        const currentIds = currentForm.serviceIds || [];
+        if (currentIds.includes(id)) {
+            updatedValue = currentIds.filter(i => i !== id);
+        } else {
+            updatedValue = [...currentIds, id];
+        }
     }
 
     const newForm = { ...form, [name]: updatedValue };
@@ -223,19 +232,23 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects, 
             </div>
 
             <div className="md:col-span-2">
-                <label className="block text-xs font-semibold text-slate-500 mb-1">Associate with Expertise (Service)</label>
-                <select 
-                    name="serviceId" 
-                    value={currentForm.serviceId || ''} 
-                    onChange={handleFormChange}
-                    className="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600"
-                >
-                    <option value="">-- No specific service --</option>
+                <label className="block text-xs font-semibold text-slate-500 mb-3">Group with Services (Multi-select)</label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     {services && services.map(s => (
-                        <option key={s.id} value={s.id}>{s.title}</option>
+                        <label key={s.id} className="flex items-center gap-2 p-2 rounded border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors">
+                            <input 
+                                type="checkbox" 
+                                name="serviceIds" 
+                                value={s.id}
+                                checked={(currentForm.serviceIds || []).includes(s.id!)}
+                                onChange={handleFormChange}
+                                className="w-4 h-4 text-sky-600 rounded"
+                            />
+                            <span className="text-xs font-medium truncate">{s.title}</span>
+                        </label>
                     ))}
-                </select>
-                <p className="text-[10px] text-slate-400 mt-1">This groups the project under a specific service on the Freelance template work page.</p>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-2">Selecting multiple services will show this project across all of them in the Freelance template.</p>
             </div>
 
             <div className="md:col-span-2">
@@ -378,10 +391,14 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects, 
                     {project.showInFreelance && <div title="Freelance Template"><Briefcase size={14} className="text-purple-500" /></div>}
                     {project.showInClient !== false && <div title="Portfolio Site"><Monitor size={14} className="text-indigo-500" /></div>}
                 </div>
-                {project.serviceId && (
-                    <span className="text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-500 px-2 py-0.5 rounded">
-                        {services.find(s => s.id === project.serviceId)?.title || 'Unknown Service'}
-                    </span>
+                {((project.serviceIds && project.serviceIds.length > 0) || project.serviceId) && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                        {(project.serviceIds || (project.serviceId ? [project.serviceId] : [])).map(sid => (
+                            <span key={sid} className="text-[10px] bg-sky-100 dark:bg-sky-900/30 text-sky-600 px-2 py-0.5 rounded border border-sky-200 dark:border-sky-800">
+                                {services.find(s => s.id === sid)?.title || sid}
+                            </span>
+                        ))}
+                    </div>
                 )}
                 <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 max-w-xl mb-1">{project.description}</p>
               </div>

@@ -45,6 +45,7 @@ export interface Project {
   outcome?: string;
   outcomeImage?: string;
   serviceId?: number;
+  serviceIds?: number[];
   media?: {
     id?: number;
     url: string;

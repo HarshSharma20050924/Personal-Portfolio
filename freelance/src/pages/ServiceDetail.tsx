@@ -2,7 +2,7 @@
 import React, { useLayoutEffect, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, CheckCircle2, ArrowRight, ExternalLink } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, ArrowRight, ExternalLink, Search, X } from 'lucide-react';
 import { FreelanceNavigation } from '../components/FreelanceNavigation';
 import FreelanceCursor from '../components/FreelanceCursor';
 import { Service, Project } from '../types';
@@ -15,6 +15,7 @@ const ServiceDetail = ({ name }: { name?: string }) => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [nextServiceId, setNextServiceId] = useState<number | null>(null);
   const [nextServiceTitle, setNextServiceTitle] = useState<string>('');
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const { scrollYProgress } = useScroll();
   const heroTextY = useTransform(scrollYProgress, [0, 0.4], [0, 100]);
@@ -38,7 +39,10 @@ const ServiceDetail = ({ name }: { name?: string }) => {
                 const currentService = services[currentServiceIndex];
                 setService(currentService);
                 
-                const relatedProjects = allProjects.filter(p => p.serviceId === currentService.id && p.showInFreelance);
+                const relatedProjects = allProjects.filter(p => 
+                    (p.serviceId === currentService.id || (p.serviceIds && p.serviceIds.includes(currentService.id))) 
+                    && p.showInFreelance
+                );
                 setProjects(relatedProjects);
 
                 const nextIndex = (currentServiceIndex + 1) % services.length;
@@ -136,7 +140,8 @@ const ServiceDetail = ({ name }: { name?: string }) => {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true, margin: "-10%" }}
                         transition={{ duration: 0.8 }}
-                        className="relative aspect-[16/9] md:aspect-[2/1] overflow-hidden bg-neutral-900 mb-8"
+                        className="relative aspect-[16/9] md:aspect-[2/1] overflow-hidden bg-neutral-900 mb-8 cursor-pointer"
+                        onClick={() => setSelectedImage(work.imageUrl)}
                         >
                         <img 
                             src={work.imageUrl} 
@@ -144,7 +149,7 @@ const ServiceDetail = ({ name }: { name?: string }) => {
                             className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 hover:scale-105"
                         />
                         {(work.liveUrl || work.repoUrl) && (
-                            <div className="absolute top-4 right-4 z-20 flex gap-2">
+                            <div className="absolute top-4 right-4 z-20 flex gap-2" onClick={(e) => e.stopPropagation()}>
                                 {work.liveUrl && (
                                     <a href={work.liveUrl} target="_blank" rel="noreferrer" className="clickable p-3 bg-white text-black rounded-full hover:bg-elite-accent hover:text-white transition-colors">
                                         <ExternalLink size={20} />
@@ -152,22 +157,32 @@ const ServiceDetail = ({ name }: { name?: string }) => {
                                 )}
                             </div>
                         )}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors pointer-events-none flex items-center justify-center">
+                             <div className="opacity-0 group-hover:opacity-100 transition-opacity translate-y-4 group-hover:translate-y-0 duration-500">
+                                 <span className="bg-white/10 backdrop-blur px-4 py-2 rounded-full text-xs uppercase tracking-widest border border-white/20">Click to Preview</span>
+                             </div>
+                        </div>
                         </motion.div>
                         
                         <div className="flex flex-col md:flex-row justify-between items-start border-t border-white/10 pt-6">
-                        <div>
-                            <div className="flex items-center gap-4 mb-2">
+                        <div className="max-w-3xl">
+                            <div className="flex items-center gap-4 mb-3">
                                 <h3 className="text-3xl font-display text-white">{work.title}</h3>
                                 {work.liveUrl && (
-                                    <a href={work.liveUrl} target="_blank" rel="noreferrer" className="text-xs font-mono uppercase tracking-widest text-elite-sub hover:text-white border-b border-white/20 hover:border-white transition-colors clickable">
+                                    <a href={work.liveUrl} target="_blank" rel="noreferrer" className="text-xs font-mono uppercase tracking-widest text-elite-sub hover:text-white border-b border-white/20 hover:border-white transition-colors clickable" onClick={(e) => e.stopPropagation()}>
                                         Live Site
                                     </a>
                                 )}
                             </div>
+                            
+                            <p className="text-elite-sub text-lg leading-relaxed mb-6">
+                                {work.description}
+                            </p>
+
                             {work.outcome && (
                                 <div className="flex items-center gap-2 text-elite-accent">
                                     <CheckCircle2 size={16} />
-                                    <span className="text-sm font-mono uppercase">{work.outcome.substring(0, 40)}{work.outcome.length > 40 ? '...' : ''}</span>
+                                    <span className="text-sm font-mono uppercase">{work.outcome}</span>
                                 </div>
                             )}
                         </div>
@@ -192,7 +207,10 @@ const ServiceDetail = ({ name }: { name?: string }) => {
                                         transition={{ delay: mIndex * 0.1 }}
                                         className="flex flex-col gap-3 w-full"
                                     >
-                                        <div className="aspect-video bg-neutral-900 overflow-hidden relative border border-white/10 rounded-sm">
+                                        <div 
+                                            className="aspect-video bg-neutral-900 overflow-hidden relative border border-white/10 rounded-sm cursor-pointer group/pd"
+                                            onClick={() => mediaItem.type !== 'video' && setSelectedImage(mediaItem.url)}
+                                        >
                                             {mediaItem.type === 'video' ? (
                                                 <video 
                                                     src={mediaItem.url} 
@@ -200,11 +218,16 @@ const ServiceDetail = ({ name }: { name?: string }) => {
                                                     className="w-full h-full object-cover"
                                                 />
                                             ) : (
-                                                <img 
-                                                    src={mediaItem.url} 
-                                                    alt={mediaItem.title || 'Project Media'} 
-                                                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                                                />
+                                                <>
+                                                    <img 
+                                                        src={mediaItem.url} 
+                                                        alt={mediaItem.title || 'Project Media'} 
+                                                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                                                    />
+                                                    <div className="absolute inset-0 bg-black/0 group-hover/pd:bg-black/20 transition-colors flex items-center justify-center">
+                                                        <Search size={20} className="text-white opacity-0 group-hover/pd:opacity-100 transition-opacity" />
+                                                    </div>
+                                                </>
                                             )}
                                         </div>
                                         {mediaItem.title && (
@@ -254,8 +277,39 @@ const ServiceDetail = ({ name }: { name?: string }) => {
             </div>
         </motion.div>
       </AnimatePresence>
+      <AnimatePresence>
+        {selectedImage && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedImage(null)}
+            className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 md:p-10 cursor-zoom-out"
+          >
+            <motion.button 
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors"
+              onClick={() => setSelectedImage(null)}
+            >
+              <X size={32} />
+            </motion.button>
+            <motion.img 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              src={selectedImage} 
+              alt="Project Full Preview" 
+              className="max-w-full max-h-full object-contain shadow-2xl rounded-lg border border-white/10"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
+
 
 export default ServiceDetail;

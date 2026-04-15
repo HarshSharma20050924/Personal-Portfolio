@@ -95,9 +95,38 @@ async function main() {
     console.log('Skills table already contains data, skipping seed.');
   }
 
+  // Seed AdminConfig
+  await prisma.adminConfig.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      id: 1,
+      trustPoints: JSON.stringify([
+        { title: 'Safe Data', text: 'I take data safety very seriously. Your information and project data are always kept private and secure.' },
+        { title: 'Solid Code', text: 'I write clean, high-performance code that can scale with your business needs without breaking.' },
+        { title: 'Full Support', text: 'Working with me means having a technical partner. I help you grow and maintain the solution.' }
+      ])
+    }
+  });
+
+  // Seed services only if empty
+  if ((await prisma.service.count()) === 0) {
+    console.log('Seeding services...');
+    await prisma.service.createMany({
+      data: [
+        { title: 'AI Integration', description: 'Advanced AI and LLM solutions.', icon: 'Cpu' },
+        { title: 'Automation', description: 'Workflow and process automation.', icon: 'Zap' },
+        { title: 'Business Systems', description: 'Custom ERP and CRM systems.', icon: 'Briefcase' },
+      ]
+    });
+  }
+
   // Seed projects only if the table is empty
   if ((await prisma.project.count()) === 0) {
     console.log('Seeding projects...');
+    const services = await prisma.service.findMany();
+    const serviceIds = services.map(s => s.id);
+
     await prisma.project.createMany({
       data: [
         {
@@ -107,14 +136,18 @@ async function main() {
           tags: ['React', 'Node.js', 'API'],
           liveUrl: '#',
           repoUrl: '#',
+          serviceIds: serviceIds, // Link to all services for demo
+          showInFreelance: true
         },
         {
           title: 'Project Two',
           description: 'Another fantastic project showcasing different skills.',
           imageUrl: placeholderImage,
-          tags: ['TypeScript', 'Vite', 'UI/UX'],
+          tags: ['TypeScript', 'Vite', 'UI/UX', 'AI'],
           liveUrl: '#',
           repoUrl: '#',
+          serviceIds: serviceIds.slice(0, 1),
+          showInFreelance: true
         }
       ]
     });
