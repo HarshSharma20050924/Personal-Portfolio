@@ -268,7 +268,7 @@ const BrochureEditor: React.FC<BrochureEditorProps> = ({
                         ))}
                     </div>
 
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Select from Main Portfolio (Max 4)</p>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Select from Main Portfolio</p>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                         {projects.map(p => {
                             const selected = parseJSON(adminConfig.brochureProjects).includes(p.id);
@@ -278,7 +278,7 @@ const BrochureEditor: React.FC<BrochureEditorProps> = ({
                                     onClick={() => {
                                         let list = parseJSON(adminConfig.brochureProjects);
                                         if (selected) list = list.filter((id:number) => id !== p.id);
-                                        else if (list.length < 10) list.push(p.id);
+                                        else list.push(p.id);
                                         updateAdminConfig('brochureProjects', JSON.stringify(list));
                                     }}
                                     className={`relative rounded-2xl overflow-hidden aspect-square border-2 transition-all ${selected ? 'border-blue-600 ring-2 ring-blue-500/20 shadow-xl' : 'border-slate-100 dark:border-slate-800 grayscale hover:grayscale-0'}`}
