@@ -234,6 +234,7 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
             WindowPrt.document.write(`
                 <html>
                     <head>
+                        <base href="${window.location.origin}" />
                         <title>Professional Service Document</title>
                         <script src="https://cdn.tailwindcss.com"></script>
                         <style>
