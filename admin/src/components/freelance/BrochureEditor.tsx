@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Download, Trash2, X, Plus, ShieldCheck, Layout, User, Share2, IndianRupee, Briefcase, MessageSquare, PlusCircle } from 'lucide-react';
-import type { Project } from '../../types';
+import type { Project, SocialLink } from '../../types';
 
 interface BrochureEditorProps {
     adminConfig: any;
@@ -9,6 +9,7 @@ interface BrochureEditorProps {
     projects: Project[];
     testimonials: any[];
     handlePrint: () => void;
+    socialLinks: SocialLink[];
 }
 
 const BrochureEditor: React.FC<BrochureEditorProps> = ({ 
@@ -16,7 +17,8 @@ const BrochureEditor: React.FC<BrochureEditorProps> = ({
     updateAdminConfig, 
     projects, 
     testimonials, 
-    handlePrint 
+    handlePrint,
+    socialLinks 
 }) => {
     const parseJSON = (data: any, fallback: any = []) => {
         try {
@@ -69,6 +71,10 @@ const BrochureEditor: React.FC<BrochureEditorProps> = ({
                                 <label className="text-[10px] uppercase font-black text-slate-400">Website Link</label>
                                 <input value={adminConfig.brochureWebsite || ''} onChange={(e) => updateAdminConfig('brochureWebsite', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 text-sm font-bold focus:border-blue-500 outline-none transition-all" placeholder="www.yourwebsite.com" />
                             </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] uppercase font-black text-slate-400">Website Display Title</label>
+                                <input value={adminConfig.brochureWebsiteTitle || ''} onChange={(e) => updateAdminConfig('brochureWebsiteTitle', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 text-sm font-bold focus:border-blue-500 outline-none transition-all" placeholder="e.g. System Labs" />
+                            </div>
                         </div>
                         <div className="space-y-4">
                             <div className="space-y-1.5">
@@ -89,6 +95,59 @@ const BrochureEditor: React.FC<BrochureEditorProps> = ({
                             </div>
                         </div>
                     </div>
+                </div>
+
+                {/* 1.5 Social Links from Database */}
+                <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <h4 className="flex items-center gap-2 text-[11px] font-black uppercase text-blue-600 tracking-[.2em] mb-4 border-b pb-4">
+                        <Share2 size={14} /> Social Connections
+                    </h4>
+                    <p className="text-[10px] text-slate-400 mb-6">Select which social links to show on your brochure footer.</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {socialLinks.map((link) => {
+                            const selectedSocials: string[] = parseJSON(adminConfig.brochureSocials, []);
+                            const isSelected = selectedSocials.some((s: any) => 
+                                typeof s === 'object' ? s.platform === link.name : false  
+                            );
+                            return (
+                                <button
+                                    key={link.id || link.name}
+                                    onClick={() => {
+                                        let list: any[] = parseJSON(adminConfig.brochureSocials, []);
+                                        if (isSelected) {
+                                            list = list.filter((s: any) => s.platform !== link.name);
+                                        } else {
+                                            list.push({ platform: link.name, url: link.url });
+                                        }
+                                        updateAdminConfig('brochureSocials', JSON.stringify(list));
+                                    }}
+                                    className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-all text-left ${
+                                        isSelected 
+                                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-lg' 
+                                            : 'border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 hover:border-slate-300'
+                                    }`}
+                                >
+                                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black ${
+                                        isSelected ? 'bg-blue-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'
+                                    }`}>
+                                        {link.name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className={`text-sm font-bold truncate ${isSelected ? 'text-blue-600' : 'text-slate-700 dark:text-slate-300'}`}>{link.name}</p>
+                                        <p className="text-[10px] text-slate-400 truncate">{link.url}</p>
+                                    </div>
+                                    <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
+                                        isSelected ? 'border-blue-600 bg-blue-600' : 'border-slate-300'
+                                    }`}>
+                                        {isSelected && <span className="text-white text-[10px]">✓</span>}
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </div>
+                    {socialLinks.length === 0 && (
+                        <p className="text-sm text-slate-400 text-center py-6">No social links found in your database. Add them via the "Social Links" section in Main mode.</p>
+                    )}
                 </div>
 
                 {/* 2. Services & Pricing */}
@@ -219,7 +278,7 @@ const BrochureEditor: React.FC<BrochureEditorProps> = ({
                                     onClick={() => {
                                         let list = parseJSON(adminConfig.brochureProjects);
                                         if (selected) list = list.filter((id:number) => id !== p.id);
-                                        else if (list.length < 4) list.push(p.id);
+                                        else if (list.length < 10) list.push(p.id);
                                         updateAdminConfig('brochureProjects', JSON.stringify(list));
                                     }}
                                     className={`relative rounded-2xl overflow-hidden aspect-square border-2 transition-all ${selected ? 'border-blue-600 ring-2 ring-blue-500/20 shadow-xl' : 'border-slate-100 dark:border-slate-800 grayscale hover:grayscale-0'}`}

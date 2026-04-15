@@ -203,6 +203,7 @@ model AdminConfig {
   brochureManualProjects String? // JSON of manual project entries (title, image, link, etc)
   brochureTestimonials String? // JSON of selected testimonial IDs
   brochureWebsite   String?
+  brochureWebsiteTitle String? // Display title shown instead of raw URL
   brochureProjectCustomizations String? // JSON string for customized project details
   customFields     String?  // JSON string
 }

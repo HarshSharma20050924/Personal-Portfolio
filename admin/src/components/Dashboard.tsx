@@ -99,7 +99,7 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
 
   const renderView = () => {
     if (freelanceMode) {
-      return <FreelanceAdmin heroData={props.heroData} services={props.services} projects={props.projects} />;
+      return <FreelanceAdmin heroData={props.heroData} services={props.services} projects={props.projects} socialLinks={props.socialLinks} />;
     }
 
     switch (view) {

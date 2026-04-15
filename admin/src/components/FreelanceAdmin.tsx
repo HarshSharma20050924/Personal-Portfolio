@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { FileText, Receipt, Download, Layout, Save, MessageSquare, Bell, Printer, Calculator, RotateCw } from 'lucide-react';
-import type { HeroData, Service, Project } from '../types';
+import type { HeroData, Service, Project, SocialLink } from '../types';
 import { getFCMToken } from '../utils/firebase';
 import API_BASE from '../utils/apiBase';
 
@@ -15,6 +15,7 @@ interface FreelanceAdminProps {
     heroData: HeroData;
     services: Service[];
     projects: Project[];
+    socialLinks: SocialLink[];
 }
 
 interface ClientAccount {
@@ -41,7 +42,7 @@ interface FreelanceLead {
 
 const ADMIN_KEY = () => sessionStorage.getItem('apiKey') || import.meta.env.VITE_ADMIN_API_KEY;
 
-const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, projects }) => {
+const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, projects, socialLinks }) => {
     const [activeTab, setActiveTab] = useState<'brochure' | 'billing' | 'leads' | 'payments'>('brochure');
     const [billItems, setBillItems] = useState<{ desc: string, price: number, qty: number }[]>([
         { desc: 'Website Development', price: 15000, qty: 1 }
@@ -147,6 +148,7 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
     };
 
     const updateAccount = async (id: number, field: string, value: any) => {
+        setAccounts(accounts.map(acc => acc.id === id ? { ...acc, [field]: value } : acc));
         try {
             await fetch(`${API_BASE}/api/ledger/${id}`, {
                 method: 'PATCH',
@@ -156,7 +158,6 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
                 },
                 body: JSON.stringify({ [field]: value })
             });
-            setAccounts(accounts.map(acc => acc.id === id ? { ...acc, [field]: value } : acc));
         } catch (e) {}
     };
 
@@ -312,6 +313,7 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
                                 projects={projects}
                                 testimonials={testimonials}
                                 handlePrint={handlePrint}
+                                socialLinks={socialLinks}
                             />
                         </div>
                         <div className="lg:col-span-8">
@@ -322,6 +324,7 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
                                 projects={projects}
                                 testimonials={testimonials}
                                 activeTab={activeTab}
+                                socialLinks={socialLinks}
                             />
                         </div>
                     </>
@@ -362,7 +365,7 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
                                     <div className="bg-black text-white p-10 border-b-8 border-blue-600">
                                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                                             <div className="flex items-center gap-6">
-                                                <div className="w-12 h-12 bg-white rounded flex items-center justify-center p-1">
+                                                <div className="w-12 h-12 bg-transparent rounded flex items-center justify-center p-1">
                                                     <img src={adminConfig.brochureLogo || "/logo.svg"} className="w-full h-full object-contain" />
                                                 </div>
                                                 <div>
