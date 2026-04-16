@@ -2,10 +2,8 @@
   "version": 2,
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/service/(.*)", "destination": "/index.html" },
-    { "source": "/work", "destination": "/index.html" },
-    { "source": "/contact", "destination": "/index.html" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/service/:path*", "destination": "/index.html" },
+    { "source": "/:path*", "destination": "/index.html" }
   ]
 }
 

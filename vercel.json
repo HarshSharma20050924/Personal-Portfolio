@@ -65,6 +65,18 @@
       "dest": "/client/logo.svg"
     },
     {
+      "src": "/service/(.*)",
+      "dest": "/freelance/index.html"
+    },
+    {
+      "src": "/work",
+      "dest": "/freelance/index.html"
+    },
+    {
+      "src": "/contact",
+      "dest": "/freelance/index.html"
+    },
+    {
       "src": "/(.*)",
       "dest": "/client/index.html"
     }
