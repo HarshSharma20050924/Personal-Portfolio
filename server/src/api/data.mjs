@@ -172,6 +172,8 @@ router.post("/", async (req, res) => {
       if (Array.isArray(services) && services.length > 0) {
         for (const service of services) {
           const { id: oldId, projects: _p, ...rest } = service;
+          // Filter out IDs or other fields that might be null/invalid
+          if (!rest.title) continue;
           // Create one by one to get the new ID
           const newService = await tx.service.create({ data: rest });
           if (oldId) {
@@ -189,21 +191,26 @@ router.post("/", async (req, res) => {
           const mappedServiceId = serviceIdMap.get(incomingServiceId) || null;
           
           // Resolve multiple service IDs
-          const incomingServiceIds = serviceIds || (incomingServiceId ? [incomingServiceId] : []);
+          const incomingServiceIds = Array.isArray(serviceIds) ? serviceIds : (incomingServiceId ? [incomingServiceId] : []);
           const mappedServiceIds = incomingServiceIds
             .map(sid => serviceIdMap.get(sid))
             .filter(sid => sid !== undefined && sid !== null);
+
+          // Clean up rest to ensure no invalid fields are passed to Prisma
+          // Specifically remove relation fields that might have leaked in
+          delete rest.media;
+          delete rest.service;
 
           await tx.project.create({
             data: {
               ...rest,
               serviceId: mappedServiceId,
               serviceIds: mappedServiceIds,
-              ...(media && media.length > 0 ? {
-                media: {
-                  create: media.map(({ id, projectId, ...mRest }) => mRest)
-                }
-              } : {})
+              media: {
+                create: (Array.isArray(media) ? media : [])
+                  .filter(m => m.url && m.url.trim() !== "") // Skip empty media
+                  .map(({ id, projectId, ...mRest }) => mRest)
+              }
             }
           });
         }

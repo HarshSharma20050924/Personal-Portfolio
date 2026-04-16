@@ -32,6 +32,20 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects, 
     serviceIds: [],
     media: [] // Added media array
   };
+
+  const parseArray = (data: any): number[] => {
+    if (Array.isArray(data)) return data;
+    if (typeof data === 'string') {
+        try {
+            const parsed = JSON.parse(data);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+            return data ? [Number(data)] : [];
+        }
+    }
+    if (typeof data === 'number') return [data];
+    return [];
+  };
   const [isEditing, setIsEditing] = useState<number | null>(null);
   const [form, setForm] = useState<Project>(blankForm);
   const [isUploading, setIsUploading] = useState(false);
@@ -54,22 +68,23 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects, 
     let updatedValue: any = value;
     if (name === 'tags') {
         updatedValue = value.split(',').map(tag => tag.trim());
-    } else if (type === 'checkbox') {
-        updatedValue = (e.target as HTMLInputElement).checked;
-    } else if (name === 'serviceId') {
-        updatedValue = value ? Number(value) : undefined;
     } else if (name === 'serviceIds') {
         const id = Number(value);
-        const currentIds = Array.isArray(currentForm.serviceIds) ? currentForm.serviceIds : 
-                          (currentForm.serviceIds ? [Number(currentForm.serviceIds)] : []);
+        if (isNaN(id)) return;
+        const currentIds = parseArray(currentForm.serviceIds);
         if (currentIds.includes(id)) {
             updatedValue = currentIds.filter(i => i !== id);
         } else {
             updatedValue = [...currentIds, id];
         }
+    } else if (type === 'checkbox') {
+        updatedValue = (e.target as HTMLInputElement).checked;
+    } else if (name === 'serviceId') {
+        updatedValue = value ? Number(value) : undefined;
     }
 
-    const newForm = { ...form, [name]: updatedValue };
+    const targetBase = isEditing !== null ? projects[isEditing] : form;
+    const newForm = { ...targetBase, [name]: updatedValue };
     setForm(newForm);
 
     if (isEditing !== null) {
@@ -241,7 +256,7 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects, 
                                 type="checkbox" 
                                 name="serviceIds" 
                                 value={s.id}
-                                checked={(Array.isArray(currentForm.serviceIds) ? currentForm.serviceIds : (currentForm.serviceIds ? [Number(currentForm.serviceIds)] : [])).includes(s.id!)}
+                                checked={parseArray(currentForm.serviceIds).includes(Number(s.id))}
                                 onChange={handleFormChange}
                                 className="w-4 h-4 text-sky-600 rounded"
                             />
@@ -290,7 +305,7 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects, 
                 {(currentForm.media || []).map((media, idx) => (
                     <div key={idx} className="flex flex-col md:flex-row gap-4 items-start p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-600 relative">
                         <button type="button" onClick={() => {
-                            const newMedia = (currentForm.media || []).filter((_, i) => i !== idx);
+                            const newMedia = (parseArray(currentForm.media) as any).filter((_: any, i: number) => i !== idx);
                             const newForm = { ...currentForm, media: newMedia };
                             setForm(newForm);
                             if (isEditing !== null) setProjects(projects.map((p, i) => i === isEditing ? newForm : p));
@@ -392,9 +407,9 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects, 
                     {project.showInFreelance && <div title="Freelance Template"><Briefcase size={14} className="text-purple-500" /></div>}
                     {project.showInClient !== false && <div title="Portfolio Site"><Monitor size={14} className="text-indigo-500" /></div>}
                 </div>
-                {((Array.isArray(project.serviceIds) && project.serviceIds.length > 0) || project.serviceId) && (
+                {((parseArray(project.serviceIds).length > 0) || project.serviceId) && (
                     <div className="flex flex-wrap gap-1 mt-1">
-                        {(Array.isArray(project.serviceIds) ? project.serviceIds : (project.serviceId ? [project.serviceId] : [])).map(sid => (
+                        {(parseArray(project.serviceIds).length > 0 ? parseArray(project.serviceIds) : (project.serviceId ? [project.serviceId] : [])).map(sid => (
                             <span key={sid} className="text-[10px] bg-sky-100 dark:bg-sky-900/30 text-sky-600 px-2 py-0.5 rounded border border-sky-200 dark:border-sky-800">
                                 {services.find(s => s.id === sid)?.title || sid}
                             </span>
