@@ -331,70 +331,91 @@ const BrochureEditor: React.FC<BrochureEditorProps> = ({
                 </div>
 
                 {/* 4. Custom Sections (Trust & Support) */}
-                <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-2xl">
-                    <div className="flex justify-between items-center border-b border-white/10 pb-4 mb-8">
-                        <h4 className="flex items-center gap-2 text-[11px] font-black uppercase text-blue-400 tracking-[.2em]">
-                            <MessageSquare size={14} /> Trust & Support Sections
-                        </h4>
-                        <button 
-                            onClick={() => {
-                                let list = parseJSON(adminConfig.brochureSections);
-                                list.push({ title: 'Trust Policy', items: [{ title: '24/7 Support', text: 'Instant response on important matters', image: '' }] });
-                                updateAdminConfig('brochureSections', JSON.stringify(list));
-                            }}
-                            className="bg-white/10 text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-blue-600 transition-all flex items-center gap-1 border border-white/10">
-                            <PlusCircle size={12} /> New Section
-                        </button>
+                <div className="bg-slate-900 overflow-hidden rounded-[2.5rem] text-white shadow-2xl border border-white/5">
+                    <div className="p-8 pb-4">
+                        <div className="flex justify-between items-center border-b border-white/10 pb-4 mb-4">
+                            <h4 className="flex items-center gap-2 text-[10px] font-black uppercase text-blue-400 tracking-[.3em]">
+                                <MessageSquare size={14} /> Trust & Support
+                            </h4>
+                            <button 
+                                onClick={() => {
+                                    let list = parseJSON(adminConfig.brochureSections);
+                                    list.push({ title: 'New Category', items: [{ title: 'Point Title', text: 'Detail description...', image: '' }] });
+                                    updateAdminConfig('brochureSections', JSON.stringify(list));
+                                }}
+                                className="bg-blue-600/20 text-blue-400 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all flex items-center gap-1 border border-blue-400/20">
+                                <PlusCircle size={12} /> Add Category
+                            </button>
+                        </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="px-8 pb-8 space-y-6">
                         {parseJSON(adminConfig.brochureSections).map((sec:any, sIdx:number) => (
-                            <div key={sIdx} className="bg-white/5 border border-white/10 p-6 rounded-3xl space-y-6">
-                                <div className="flex justify-between items-center gap-4 border-b border-white/5 pb-4">
+                            <div key={sIdx} className="bg-white/[0.02] border border-white/10 rounded-3xl overflow-hidden group/sec">
+                                <div className="flex items-center gap-3 bg-white/[0.03] p-4 border-b border-white/5">
                                     <input value={sec.title} onChange={(e) => {
                                         let list = parseJSON(adminConfig.brochureSections);
                                         list[sIdx].title = e.target.value;
                                         updateAdminConfig('brochureSections', JSON.stringify(list));
-                                    }} className="bg-transparent font-black text-xs uppercase tracking-widest outline-none text-blue-400 flex-1" placeholder="Section Title" />
+                                    }} className="bg-transparent font-black text-[10px] uppercase tracking-[.2em] outline-none text-blue-400 flex-1" placeholder="Category Title (e.g. Policies)" />
                                     <button onClick={() => {
+                                        if(!confirm('Delete this entire section?')) return;
                                         let list = parseJSON(adminConfig.brochureSections);
                                         list.splice(sIdx, 1);
                                         updateAdminConfig('brochureSections', JSON.stringify(list));
-                                    }} className="text-red-400 hover:text-red-500"><Trash2 size={14}/></button>
+                                    }} className="p-2 text-white/20 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all"><Trash2 size={12}/></button>
                                 </div>
                                 
-                                <div className="space-y-4">
-                                    {sec.items.map((item:any, iIdx:number) => (
-                                        <div key={iIdx} className="bg-black/20 p-4 rounded-2xl space-y-3 relative group">
-                                            <button onClick={() => {
-                                                let list = parseJSON(adminConfig.brochureSections);
-                                                list[sIdx].items.splice(iIdx, 1);
-                                                updateAdminConfig('brochureSections', JSON.stringify(list));
-                                            }} className="absolute top-2 right-2 text-white/20 hover:text-red-400 opacity-0 group-hover:opacity-100"><X size={12}/></button>
-                                            <input placeholder="USP Point" value={item.title} onChange={(e) => {
-                                                let list = parseJSON(adminConfig.brochureSections);
-                                                list[sIdx].items[iIdx].title = e.target.value;
-                                                updateAdminConfig('brochureSections', JSON.stringify(list));
-                                            }} className="w-full bg-transparent font-bold text-[11px] outline-none text-white/90" />
-                                            <textarea placeholder="Detail text..." value={item.text} onChange={(e) => {
-                                                let list = parseJSON(adminConfig.brochureSections);
-                                                list[sIdx].items[iIdx].text = e.target.value;
-                                                updateAdminConfig('brochureSections', JSON.stringify(list));
-                                            }} className="w-full bg-transparent text-[10px] text-white/50 outline-none resize-none h-12" />
-                                            <input placeholder="Icon URL" value={item.image} onChange={(e) => {
-                                                let list = parseJSON(adminConfig.brochureSections);
-                                                list[sIdx].items[iIdx].image = e.target.value;
-                                                updateAdminConfig('brochureSections', JSON.stringify(list));
-                                            }} className="w-full bg-black/20 text-[9px] text-white/40 p-2 rounded-lg border border-white/5 outline-none" />
-                                        </div>
-                                    ))}
+                                <div className="p-4 space-y-4">
+                                    <div className="grid grid-cols-1 gap-4">
+                                        {sec.items.map((item:any, iIdx:number) => (
+                                            <div key={iIdx} className="bg-white/[0.03] p-5 rounded-2xl border border-white/[0.05] relative group/point transition-all hover:bg-white/[0.05] hover:border-white/10">
+                                                <button onClick={() => {
+                                                    let list = parseJSON(adminConfig.brochureSections);
+                                                    list[sIdx].items.splice(iIdx, 1);
+                                                    updateAdminConfig('brochureSections', JSON.stringify(list));
+                                                }} className="absolute top-4 right-4 text-white/10 hover:text-red-400 opacity-0 group-hover/point:opacity-100 transition-all"><X size={14}/></button>
+                                                
+                                                <div className="space-y-3">
+                                                    <div className="space-y-1">
+                                                        <label className="text-[8px] font-black uppercase text-blue-400/50 tracking-widest pl-1">Point Title</label>
+                                                        <input placeholder="e.g. 24/7 Availability" value={item.title} onChange={(e) => {
+                                                            let list = parseJSON(adminConfig.brochureSections);
+                                                            list[sIdx].items[iIdx].title = e.target.value;
+                                                            updateAdminConfig('brochureSections', JSON.stringify(list));
+                                                        }} className="w-full bg-white/[0.05] border border-white/5 p-2 rounded-lg font-bold text-[10px] outline-none text-white focus:border-blue-500/50 transition-all" />
+                                                    </div>
+                                                    
+                                                    <div className="space-y-1">
+                                                        <label className="text-[8px] font-black uppercase text-white/20 tracking-widest pl-1">Description</label>
+                                                        <textarea placeholder="Supporting details..." value={item.text} onChange={(e) => {
+                                                            let list = parseJSON(adminConfig.brochureSections);
+                                                            list[sIdx].items[iIdx].text = e.target.value;
+                                                            updateAdminConfig('brochureSections', JSON.stringify(list));
+                                                        }} className="w-full bg-white/[0.05] border border-white/5 p-2 rounded-lg text-[10px] text-white/60 outline-none resize-none h-16 focus:border-blue-500/50 transition-all" />
+                                                    </div>
+
+                                                    <div className="space-y-1">
+                                                        <label className="text-[8px] font-black uppercase text-white/20 tracking-widest pl-1">Icon Identifier/URL</label>
+                                                        <input placeholder="e.g. Shield, Clock, or https://..." value={item.image} onChange={(e) => {
+                                                            let list = parseJSON(adminConfig.brochureSections);
+                                                            list[sIdx].items[iIdx].image = e.target.value;
+                                                            updateAdminConfig('brochureSections', JSON.stringify(list));
+                                                        }} className="w-full bg-white/[0.05] border border-white/5 p-2 rounded-lg text-[9px] text-white/40 outline-none focus:border-blue-500/50 transition-all" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
                                     <button 
                                         onClick={() => {
                                             let list = parseJSON(adminConfig.brochureSections);
                                             list[sIdx].items.push({ title: 'New Point', text: '', image: '' });
                                             updateAdminConfig('brochureSections', JSON.stringify(list));
                                         }}
-                                        className="w-full py-3 border border-dashed border-white/10 rounded-2xl text-[9px] font-black uppercase text-white/30 hover:text-white hover:border-white/30 transition-all">+ Add USP Point</button>
+                                        className="w-full py-4 border border-dashed border-white/10 rounded-2xl text-[9px] font-black uppercase text-white/30 hover:text-blue-400 hover:border-blue-400/30 hover:bg-blue-400/5 transition-all flex items-center justify-center gap-2">
+                                        <PlusCircle size={12} /> Add USP Point
+                                    </button>
                                 </div>
                             </div>
                         ))}
