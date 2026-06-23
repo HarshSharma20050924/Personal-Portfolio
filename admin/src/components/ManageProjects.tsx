@@ -272,8 +272,42 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects, 
                 <textarea name="description" value={currentForm.description} onChange={handleFormChange} placeholder="Short Description" rows={3} className="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600" />
             </div>
 
-            {/* ... rest of the form (Uploads, Deep Dive, Links) remains the same ... */}
-            <div className="flex flex-col">
+            {/* Project Deep Dive */}
+            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-slate-200 dark:border-slate-700 pt-6">
+                <div className="space-y-4">
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">Core Challenge</label>
+                    <textarea name="challenge" value={currentForm.challenge || ''} onChange={handleFormChange} placeholder="Describe the core challenge..." rows={4} className="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600" />
+                    <div className="flex flex-col">
+                        <label className="text-xs font-semibold text-slate-500 mb-1">Challenge Image</label>
+                        <div className="flex items-center space-x-4 border p-2 rounded dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50">
+                            {currentForm.challengeImage && <img src={currentForm.challengeImage} alt="preview" className="w-16 h-10 object-cover rounded" />}
+                            <label className={`cursor-pointer bg-slate-200 dark:bg-slate-700 px-3 py-1.5 rounded text-xs font-medium flex items-center gap-2 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors ${isUploadingChallengeImg ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                {isUploadingChallengeImg ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                                {isUploadingChallengeImg ? '...' : 'Upload Image'}
+                                <input type="file" onChange={(e) => handleFileUpload(e, 'challengeImage', setIsUploadingChallengeImg)} disabled={isUploadingChallengeImg} className="hidden" accept="image/*"/>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="space-y-4">
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">Final Outcome</label>
+                    <textarea name="outcome" value={currentForm.outcome || ''} onChange={handleFormChange} placeholder="Describe the final outcome..." rows={4} className="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600" />
+                    <div className="flex flex-col">
+                        <label className="text-xs font-semibold text-slate-500 mb-1">Outcome Image</label>
+                        <div className="flex items-center space-x-4 border p-2 rounded dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50">
+                            {currentForm.outcomeImage && <img src={currentForm.outcomeImage} alt="preview" className="w-16 h-10 object-cover rounded" />}
+                            <label className={`cursor-pointer bg-slate-200 dark:bg-slate-700 px-3 py-1.5 rounded text-xs font-medium flex items-center gap-2 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors ${isUploadingOutcomeImg ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                {isUploadingOutcomeImg ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                                {isUploadingOutcomeImg ? '...' : 'Upload Image'}
+                                <input type="file" onChange={(e) => handleFileUpload(e, 'outcomeImage', setIsUploadingOutcomeImg)} disabled={isUploadingOutcomeImg} className="hidden" accept="image/*"/>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="flex flex-col md:col-span-2 border-t border-slate-200 dark:border-slate-700 pt-6 mt-2">
               <label className="text-xs font-semibold text-slate-500 mb-1">Main Cover Image</label>
               <div className="flex items-center space-x-4 border p-2 rounded dark:border-slate-600">
                 {currentForm.imageUrl && <img src={currentForm.imageUrl} alt="preview" className="w-16 h-10 object-cover rounded" />}

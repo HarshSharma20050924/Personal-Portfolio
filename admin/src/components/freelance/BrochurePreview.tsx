@@ -39,8 +39,8 @@ const BrochurePreview: React.FC<BrochurePreviewProps> = ({
                         margin: 0; 
                     }
                     html, body {
-                        width: 210mm;
-                        height: 297mm;
+                        width: 100%;
+                        height: auto;
                         background: white !important;
                         -webkit-print-color-adjust: exact !important;
                         print-color-adjust: exact !important;
@@ -62,7 +62,8 @@ const BrochurePreview: React.FC<BrochurePreviewProps> = ({
 
                 .brochure-font {
                     font-family: 'Inter', sans-serif;
-                    letter-spacing: -0.01em;
+                    letter-spacing: -0.0125em;
+                    line-height: 1.6;
                 }
             `}</style>
 
@@ -70,30 +71,38 @@ const BrochurePreview: React.FC<BrochurePreviewProps> = ({
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Minimalist Professional Document</span>
             </div>
 
-            <div ref={printRef} className="brochure-viewer flex-1 overflow-y-auto p-4 bg-slate-100 dark:bg-slate-950 brochure-font">
-                <div id="brochure-content" className="max-w-[210mm] mx-auto bg-white text-slate-900 shadow-xl min-h-[297mm] flex flex-col relative">
+            <div ref={printRef} className="brochure-viewer flex-1 overflow-y-auto p-0 sm:p-4 bg-slate-100 dark:bg-slate-950 brochure-font">
+                <div id="brochure-content" className="w-full max-w-[210mm] mx-auto bg-white text-slate-900 shadow-xl flex flex-col relative">
                     
                     {/* Header: Clean, Structured Identity */}
-                    <div className="bg-black text-white p-12 sm:p-16 flex flex-col sm:flex-row justify-between items-center sm:items-start border-b-[12px] border-blue-600">
-                        <div className="flex items-center gap-8 z-10">
-                            <div className="w-28 h-28 rounded-full border-2 border-white/20 overflow-hidden">
-                                <img src={adminConfig.brochurePhoto || 'https://1juvu95fflkay0z2.public.blob.vercel-storage.com/output-fA2itO6uP0asksZbDZ9uVBik0qno64.webp'} className="w-full h-full object-cover" />
+                    <div className="bg-black text-white p-8 sm:p-16 flex flex-col sm:flex-row justify-between items-center sm:items-start border-b-[8px] sm:border-b-[12px] border-blue-600">
+                        {adminConfig.brochureHideNamePhoto ? (
+                            <div className="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center border border-white/10 rounded-xl bg-white/5 p-4 z-10 mb-8 sm:mb-0">
+                                <img src={adminConfig.brochureLogo || '/logo.svg'} className="w-full h-full object-contain" />
                             </div>
-                            <div className="space-y-1">
-                                <h2 className="text-xl font-bold tracking-tight">{heroData.name}</h2>
-                                <p className="text-blue-400 font-medium text-xs tracking-wide">{adminConfig.brochureSubtitle || 'Software builder'}</p>
-                                <div className="h-[1px] w-full bg-blue-600 mt-2"></div>
+                        ) : (
+                            <div className="flex items-center gap-8 z-10">
+                                <div className="w-28 h-28 rounded-full border-2 border-white/20 overflow-hidden">
+                                    <img src={adminConfig.brochurePhoto || 'https://1juvu95fflkay0z2.public.blob.vercel-storage.com/output-fA2itO6uP0asksZbDZ9uVBik0qno64.webp'} className="w-full h-full object-cover" />
+                                </div>
+                                <div className="space-y-1">
+                                    <h2 className="text-xl font-bold tracking-tight">{heroData.name}</h2>
+                                    <p className="text-blue-400 font-medium text-xs tracking-wide">{adminConfig.brochureSubtitle || 'Software builder'}</p>
+                                    <div className="h-[1px] w-full bg-blue-600 mt-2"></div>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         <div className="mt-8 sm:mt-0 text-center sm:text-right z-10 flex flex-col items-center sm:items-end gap-4">
-                            <div className="w-12 h-12 flex items-center justify-center border border-white/10 rounded">
-                                <img src={adminConfig.brochureLogo || '/logo.svg'} className="w-10 h-10 object-contain" />
-                            </div>
+                            {!adminConfig.brochureHideNamePhoto && (
+                                <div className="w-12 h-12 flex items-center justify-center border border-white/10 rounded">
+                                    <img src={adminConfig.brochureLogo || '/logo.svg'} className="w-10 h-10 object-contain" />
+                                </div>
+                            )}
                             <div>
                                 <h1 className="text-4xl font-extrabold tracking-tighter whitespace-nowrap">{adminConfig.brochureName || 'System Labs'}</h1>
                                 <p className="text-blue-500 font-bold text-[10px] tracking-[0.3em] uppercase mt-1 mb-3">{adminConfig.brochureTitle || 'Documentation'}</p>
-                                <div className="text-[10px] font-medium text-white/60 space-y-2 flex flex-col items-end">
+                                <div className="text-[10px] font-medium text-white/60 space-y-2 flex flex-col items-center sm:items-end">
                                     <a href={`mailto:${adminConfig.contactEmail || heroData.email}`} className="hover:text-white transition-colors">{adminConfig.contactEmail || heroData.email}</a>
                                     <a href={`tel:${(adminConfig.contactPhone || heroData.phone || '').replace(/[^0-9+]/g, '')}`} className="hover:text-white transition-colors">{adminConfig.contactPhone || heroData.phone}</a>
                                     <a href={(adminConfig.brochureWebsite || 'www.systemlabs.tech').startsWith('http') ? (adminConfig.brochureWebsite || 'www.systemlabs.tech') : `https://${adminConfig.brochureWebsite || 'www.systemlabs.tech'}`} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1.5">
@@ -105,12 +114,12 @@ const BrochurePreview: React.FC<BrochurePreviewProps> = ({
                         </div>
                     </div>
 
-                    <div className="p-12 sm:p-16 flex-1 space-y-16">
+                    <div className="p-8 sm:p-16 flex-1 space-y-12 sm:space-y-16">
                         {/* Services Section */}
-                        <div className="space-y-8 no-break">
+                        <div className="space-y-8">
                             <div className="border-l-4 border-blue-600 pl-4">
                                 <h3 className="text-lg font-bold tracking-tight">{adminConfig.brochureServicesTitle || 'Services'}</h3>
-                                <p className="text-xs text-slate-400 font-medium">Standard pricing and range</p>
+                                <p className="text-sm text-slate-500 font-bold">Standard pricing and range</p>
                             </div>
                             
                             <div className="grid grid-cols-1 gap-4">
@@ -124,12 +133,12 @@ const BrochurePreview: React.FC<BrochurePreviewProps> = ({
                                             )}
                                             <div>
                                                 <h4 className="font-bold text-base text-slate-800">{p.service}</h4>
-                                                <p className="text-xs text-slate-500 mt-1">{p.note || 'Starting range'}</p>
+                                                <p className="text-sm text-slate-600 font-medium mt-1.5">{p.note || 'Starting range'}</p>
                                             </div>
                                         </div>
                                         <div className="sm:text-right flex-shrink-0 border-l sm:border-l-0 sm:border-r border-slate-200 pl-4 sm:pl-0 sm:pr-4">
-                                            <p className="text-xl font-semibold text-blue-500 tracking-tight">{p.range}</p>
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Est. range</p>
+                                            <p className="text-2xl font-bold text-blue-600 tracking-tight">{p.range}</p>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1.5">Est. range</p>
                                         </div>
                                     </div>
                                 ))}
@@ -138,12 +147,12 @@ const BrochurePreview: React.FC<BrochurePreviewProps> = ({
 
                         {/* Projects Section */}
                         {((parseJSON(adminConfig.brochureProjects).length > 0) || (parseJSON(adminConfig.brochureManualProjects).length > 0)) && (
-                            <div className="space-y-8 no-break">
+                            <div className="space-y-8">
                                 <div className="border-l-4 border-blue-600 pl-4">
                                     <h3 className="text-lg font-bold tracking-tight">Recent work</h3>
-                                    <p className="text-xs text-slate-400 font-medium">Selection of production projects</p>
+                                    <p className="text-sm text-slate-500 font-bold">Selection of production projects</p>
                                 </div>
-                                <div className="grid grid-cols-2 gap-8">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                                     {projects.filter(p => parseJSON(adminConfig.brochureProjects).includes(p.id)).map((p) => {
                                         const customData = parseJSON(adminConfig.brochureProjectCustomizations)[p.id || 0] || {};
                                         const displayLink = customData.link !== undefined && customData.link !== '' ? customData.link : (p.liveUrl || p.repoUrl || p.docUrl);
@@ -157,11 +166,12 @@ const BrochurePreview: React.FC<BrochurePreviewProps> = ({
                                                 <div>
                                                     <h4 className="font-bold text-base text-slate-800">{p.title}</h4>
                                                     {displayLink && (
-                                                        <a href={displayLink} target="_blank" rel="noopener noreferrer" className="inline-block mt-1 text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline break-all">
-                                                            {displayLink}
+                                                        <a href={displayLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 mt-2.5 px-4 py-2 bg-blue-50 text-blue-700 text-xs font-bold rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors no-underline">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                                            View Project
                                                         </a>
                                                     )}
-                                                    <p className="text-sm text-slate-500 leading-relaxed line-clamp-2 mt-1.5">{displayDesc}</p>
+                                                    <p className="text-base text-slate-600 leading-[1.6] font-medium mt-3 line-clamp-3">{displayDesc}</p>
                                                     {p.tags && p.tags[0] && (
                                                         <span className="inline-block mt-2 px-2.5 py-1 bg-blue-50 text-blue-600 text-[10px] font-bold rounded uppercase tracking-tighter">{p.tags[0]}</span>
                                                     )}
@@ -177,11 +187,12 @@ const BrochurePreview: React.FC<BrochurePreviewProps> = ({
                                             <div>
                                                 <h4 className="font-bold text-base text-slate-800">{p.title}</h4>
                                                 {p.link && (
-                                                    <a href={p.link} target="_blank" rel="noopener noreferrer" className="inline-block mt-1 text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline break-all">
-                                                        {p.link}
+                                                    <a href={p.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 mt-2.5 px-4 py-2 bg-blue-50 text-blue-700 text-xs font-bold rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors no-underline">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                                        View Project
                                                     </a>
                                                 )}
-                                                <p className="text-sm text-slate-500 leading-relaxed line-clamp-2 mt-1.5">{p.description}</p>
+                                                <p className="text-base text-slate-600 leading-[1.6] font-medium mt-3 line-clamp-3">{p.description}</p>
                                             </div>
                                         </div>
                                     ))}
@@ -191,11 +202,11 @@ const BrochurePreview: React.FC<BrochurePreviewProps> = ({
 
                         {/* Custom Sections (Trust etc) */}
                         {parseJSON(adminConfig.brochureSections).map((sec: any, idx: number) => (
-                            <div key={idx} className="space-y-8 no-break">
+                            <div key={idx} className="space-y-8">
                                 <div className="border-l-4 border-blue-600 pl-4">
                                     <h3 className="text-lg font-bold tracking-tight">{sec.title}</h3>
                                 </div>
-                                <div className="grid grid-cols-2 gap-8">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                                     {sec.items.map((item: any, iIdx: number) => (
                                         <div key={iIdx} className="flex gap-4 items-start no-break">
                                             {item.image && (
@@ -203,9 +214,9 @@ const BrochurePreview: React.FC<BrochurePreviewProps> = ({
                                                     <img src={item.image} className="w-full h-full object-contain" />
                                                 </div>
                                             )}
-                                            <div className="space-y-1">
-                                                <h4 className="font-bold text-base text-slate-800">{item.title}</h4>
-                                                <p className="text-sm text-slate-500 leading-relaxed font-medium mt-1.5">{item.text}</p>
+                                            <div className="space-y-2">
+                                                <h4 className="font-bold text-lg text-slate-800">{item.title}</h4>
+                                                <p className="text-base text-slate-600 leading-[1.6] font-medium">{item.text}</p>
                                             </div>
                                         </div>
                                     ))}
@@ -217,7 +228,7 @@ const BrochurePreview: React.FC<BrochurePreviewProps> = ({
                     {/* Footer: Action focused, extremely clean */}
                     <div className="mt-auto border-t border-slate-100">
                         <div
-                            className="bg-black text-white p-12 sm:p-14 flex flex-col sm:flex-row justify-between items-center gap-6"
+                            className="bg-black text-white p-8 sm:p-14 flex flex-col sm:flex-row justify-between items-center gap-6"
                         >
                             <a 
                                 href={`https://wa.me/${(adminConfig.contactPhone || heroData.phone).replace(/\D/g, '')}?text=${encodeURIComponent("Hi, I saw your brochure and I'm interested in starting a project.")}`}

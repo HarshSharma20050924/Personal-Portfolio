@@ -118,24 +118,25 @@ const EliteHero: React.FC<{ data: HeroData; socialLinks: SocialLink[]; isDark: b
       </motion.div>
 
       {/* Right Column: Image */}
-      <div className="flex-1 relative h-[50vh] md:h-screen w-full flex items-center justify-center md:justify-end mt-12 md:mt-0">
+      <div className="flex-1 relative h-[45vh] md:h-screen w-full flex items-center justify-center md:justify-end mt-8 md:mt-0 mb-12 md:mb-0">
          <motion.div 
             style={{ x: imgX, y: imgY, rotateY: textX }} 
-            className="relative w-full max-w-lg aspect-[3/4] md:h-[80vh] overflow-hidden"
+            className="relative w-[70%] max-w-[260px] md:w-full md:max-w-sm lg:max-w-md aspect-[3/4] md:h-[80vh] overflow-hidden rounded-sm shadow-2xl"
          >
-            <div className="absolute inset-0 bg-gray-200 dark:bg-gray-900 z-0" />
+            <div className="absolute inset-0 bg-gray-100 dark:bg-gray-900 z-0" />
             <motion.img 
                 initial={{ scale: 1.2, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 1.5, ease: "easeOut" }}
                 src={data.profileImageUrl}
                 alt="Portrait"
-                className="relative z-10 w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700 contrast-125"
+                className="relative z-10 w-full h-full object-cover grayscale-[50%] hover:grayscale-0 transition-all duration-700 contrast-[1.1]"
             />
-            {/* Overlay Lines */}
-            <div className="absolute inset-0 border-[1px] border-white/20 z-20 m-4 pointer-events-none" />
-            <div className="absolute bottom-8 right-8 z-20 flex flex-col items-end">
-                <span className="text-[10px] text-white font-mono uppercase tracking-widest bg-black/50 px-2 py-1 backdrop-blur-md">
+            {/* Overlay Lines and Gradient for professional look */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10 pointer-events-none" />
+            <div className="absolute inset-0 border-[1px] border-white/20 z-20 m-3 md:m-4 pointer-events-none" />
+            <div className="absolute bottom-6 right-6 z-20 flex flex-col items-end">
+                <span className="text-[9px] md:text-[10px] text-white font-mono uppercase tracking-widest bg-black/60 px-2.5 py-1.5 backdrop-blur-md rounded-sm border border-white/10">
                     System.Arch
                 </span>
             </div>

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Download, Trash2, X, Plus, ShieldCheck, Layout, User, Share2, IndianRupee, Briefcase, MessageSquare, PlusCircle } from 'lucide-react';
+import { Download, Trash2, X, Plus, ShieldCheck, Layout, User, Share2, IndianRupee, DollarSign, Briefcase, MessageSquare, PlusCircle } from 'lucide-react';
 import type { Project, SocialLink } from '../../types';
 
 interface BrochureEditorProps {
@@ -93,6 +93,16 @@ const BrochureEditor: React.FC<BrochureEditorProps> = ({
                                 <label className="text-[10px] uppercase font-black text-slate-400">Services Section Heading</label>
                                 <input value={adminConfig.brochureServicesTitle || ''} onChange={(e) => updateAdminConfig('brochureServicesTitle', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 text-sm font-bold focus:border-blue-500 outline-none transition-all" placeholder="Service Solutions" />
                             </div>
+                            <div className="space-y-1.5 pt-2 flex items-center gap-2">
+                                <input 
+                                    type="checkbox" 
+                                    id="hideNamePhoto"
+                                    checked={adminConfig.brochureHideNamePhoto || false} 
+                                    onChange={(e) => updateAdminConfig('brochureHideNamePhoto', e.target.checked)} 
+                                    className="w-4 h-4 cursor-pointer accent-blue-600"
+                                />
+                                <label htmlFor="hideNamePhoto" className="text-[10px] uppercase font-black text-slate-600 dark:text-slate-300 cursor-pointer">Hide Name & Photo in Brochure</label>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -154,17 +164,34 @@ const BrochureEditor: React.FC<BrochureEditorProps> = ({
                 <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
                     <div className="flex justify-between items-center border-b pb-4 mb-8">
                         <h4 className="flex items-center gap-2 text-[11px] font-black uppercase text-blue-600 tracking-[.2em]">
-                            <IndianRupee size={14} /> Service Inventory
+                            <DollarSign size={14} className="mr-[-6px]" /><IndianRupee size={14} /> Service Inventory
                         </h4>
-                        <button 
-                            onClick={() => {
-                                let list = parseJSON(adminConfig.brochurePricing);
-                                list.push({ service: 'New Solution', range: '₹10k - ₹20k', note: 'Essential features included' });
-                                updateAdminConfig('brochurePricing', JSON.stringify(list));
-                            }}
-                            className="bg-blue-50 dark:bg-blue-900/20 text-blue-600 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all flex items-center gap-1">
-                            <PlusCircle size={12} /> Add
-                        </button>
+                        <div className="flex gap-2">
+                            <button 
+                                onClick={() => {
+                                    let list = parseJSON(adminConfig.brochurePricing);
+                                    let convertedList = list.map((item: any) => {
+                                        let newRange = item.range;
+                                        newRange = newRange.replace(/₹\s*(\d+),000/g, (m: any, p1: string) => '$' + (parseInt(p1) * 10));
+                                        newRange = newRange.replace(/₹\s*(\d+)k/gi, (m: any, p1: string) => '$' + (parseInt(p1) * 10));
+                                        newRange = newRange.replace(/₹/g, '$');
+                                        return { ...item, range: newRange };
+                                    });
+                                    updateAdminConfig('brochurePricing', JSON.stringify(convertedList));
+                                }}
+                                className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all flex items-center gap-1">
+                                Convert to $
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    let list = parseJSON(adminConfig.brochurePricing);
+                                    list.push({ service: 'New Solution', range: '$100 - $200', note: 'Essential features included' });
+                                    updateAdminConfig('brochurePricing', JSON.stringify(list));
+                                }}
+                                className="bg-blue-50 dark:bg-blue-900/20 text-blue-600 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all flex items-center gap-1">
+                                <PlusCircle size={12} /> Add
+                            </button>
+                        </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {parseJSON(adminConfig.brochurePricing).map((p:any, idx:number) => (
