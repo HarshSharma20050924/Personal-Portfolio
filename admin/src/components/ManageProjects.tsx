@@ -415,8 +415,22 @@ const ManageProjects: React.FC<ManageProjectsProps> = ({ projects, setProjects, 
                 <label className="block text-xs font-semibold text-slate-500 mb-1">Tags (Comma Separated)</label>
                 <input name="tags" value={currentForm.tags.join(', ')} onChange={handleFormChange} placeholder="React, Three.js, AI" className="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600" />
             </div>
-            <input name="liveUrl" value={currentForm.liveUrl || ''} onChange={handleFormChange} placeholder="Live URL" className="p-2 border rounded dark:bg-slate-700 dark:border-slate-600" />
-            <input name="repoUrl" value={currentForm.repoUrl || ''} onChange={handleFormChange} placeholder="GitHub Repo URL" className="p-2 border rounded dark:bg-slate-700 dark:border-slate-600" />
+            <div className="flex flex-col">
+              <label className="text-xs font-semibold text-slate-500 mb-1">Live Demo URL</label>
+              <input name="liveUrl" value={currentForm.liveUrl || ''} onChange={handleFormChange} placeholder="https://..." className="p-2 border rounded dark:bg-slate-700 dark:border-slate-600" />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-xs font-semibold text-slate-500 mb-1">GitHub Repo URL</label>
+              <input name="repoUrl" value={currentForm.repoUrl || ''} onChange={handleFormChange} placeholder="https://..." className="p-2 border rounded dark:bg-slate-700 dark:border-slate-600" />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-xs font-semibold text-slate-500 mb-1">YouTube Embed Video URL</label>
+              <input name="videoUrl" value={currentForm.videoUrl || ''} onChange={handleFormChange} placeholder="https://www.youtube.com/embed/..." className="p-2 border rounded dark:bg-slate-700 dark:border-slate-600" />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-xs font-semibold text-slate-500 mb-1">HuggingFace URL</label>
+              <input name="huggingFaceUrl" value={currentForm.huggingFaceUrl || ''} onChange={handleFormChange} placeholder="https://huggingface.co/..." className="p-2 border rounded dark:bg-slate-700 dark:border-slate-600" />
+            </div>
           </div>
 
           <div className="flex items-center space-x-2 pt-4">
