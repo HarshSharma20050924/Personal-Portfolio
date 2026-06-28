@@ -147,6 +147,24 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
         } catch (e) {}
     };
 
+    // Bulk-save an entire config object in one request — used by snapshot restore
+    const bulkSaveAdminConfig = async (overrides: Record<string, any>) => {
+        const newConfig = { ...adminConfig, ...overrides };
+        setAdminConfig(newConfig);
+        try {
+            await fetch(`${API_BASE}/api/data/config`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${ADMIN_KEY()}` 
+                },
+                body: JSON.stringify(newConfig)
+            });
+        } catch (e) {
+            alert('Failed to save restored English config to server.');
+        }
+    };
+
     const updateAccount = async (id: number, field: string, value: any) => {
         setAccounts(accounts.map(acc => acc.id === id ? { ...acc, [field]: value } : acc));
         try {
@@ -314,6 +332,7 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
                             <BrochureEditor 
                                 adminConfig={adminConfig} 
                                 updateAdminConfig={updateAdminConfig}
+                                bulkSaveAdminConfig={bulkSaveAdminConfig}
                                 projects={projects}
                                 testimonials={testimonials}
                                 handlePrint={handlePrint}

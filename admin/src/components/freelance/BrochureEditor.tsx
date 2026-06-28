@@ -11,6 +11,7 @@ import type { Project, SocialLink } from '../../types';
 interface BrochureEditorProps {
     adminConfig: any;
     updateAdminConfig: (field: string, value: any) => void;
+    bulkSaveAdminConfig: (overrides: Record<string, any>) => Promise<void>;
     projects: Project[];
     testimonials: any[];
     handlePrint: () => void;
@@ -23,7 +24,8 @@ type EditorTab = 'identity' | 'socials' | 'services' | 'portfolio' | 'trust';
 
 const BrochureEditor: React.FC<BrochureEditorProps> = ({ 
     adminConfig, 
-    updateAdminConfig, 
+    updateAdminConfig,
+    bulkSaveAdminConfig,
     projects, 
     testimonials, 
     handlePrint,
@@ -34,6 +36,7 @@ const BrochureEditor: React.FC<BrochureEditorProps> = ({
     // Systematic Tab Navigation State
     const [activeTab, setActiveTab] = useState<EditorTab>('identity');
     const [isTranslating, setIsTranslating] = useState(false);
+    const [hasSnapshot, setHasSnapshot] = useState(() => !!localStorage.getItem('brochure_en_snapshot'));
 
     const parseJSON = (data: any, fallback: any = []) => {
         try {
@@ -75,50 +78,78 @@ const BrochureEditor: React.FC<BrochureEditorProps> = ({
                     )}
                     <button 
                         onClick={async () => {
-                            if (!window.confirm("Translate brochure content to Hindi? This might take a moment.")) return;
+                            if (!window.confirm("Translate brochure content to Hindi? Your English version will be saved so you can restore it.")) return;
                             setIsTranslating(true);
                             try {
-                                const translateText = async (text: string) => {
-                                    if (!text) return text;
-                                    const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|hi`);
-                                    const data = await res.json();
-                                    return data?.responseData?.translatedText || text;
+                                // --- Save English snapshot FIRST ---
+                                const snapshot: Record<string, any> = {};
+                                const snapKeys = [
+                                    'brochureName', 'brochureTitle', 'brochureSubtitle', 'brochureServicesTitle',
+                                    'brochurePricingNotes', 'brochurePricing', 'brochureSections', 'brochureManualProjects'
+                                ];
+                                for (const k of snapKeys) snapshot[k] = adminConfig[k];
+                                localStorage.setItem('brochure_en_snapshot', JSON.stringify(snapshot));
+                                setHasSnapshot(true);
+
+                                // --- Simple, reliable one-at-a-time translator ---
+                                const t1 = async (text: string): Promise<string> => {
+                                    if (!text?.trim()) return text;
+                                    try {
+                                        const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|hi`);
+                                        const data = await res.json();
+                                        const out = data?.responseData?.translatedText;
+                                        await new Promise(r => setTimeout(r, 200));
+                                        return out && !out.includes('MYMEMORY WARNING') ? out : text;
+                                    } catch { return text; }
                                 };
 
-                                if (adminConfig.brochureTitle) updateAdminConfig('brochureTitle', await translateText(adminConfig.brochureTitle));
-                                if (adminConfig.brochureSubtitle) updateAdminConfig('brochureSubtitle', await translateText(adminConfig.brochureSubtitle));
-                                if (adminConfig.brochureServicesTitle) updateAdminConfig('brochureServicesTitle', await translateText(adminConfig.brochureServicesTitle));
-                                if (adminConfig.brochurePricingNotes) updateAdminConfig('brochurePricingNotes', await translateText(adminConfig.brochurePricingNotes));
-                                
+                                // Identity fields
+                                if (adminConfig.brochureTitle) updateAdminConfig('brochureTitle', await t1(adminConfig.brochureTitle));
+                                if (adminConfig.brochureSubtitle) updateAdminConfig('brochureSubtitle', await t1(adminConfig.brochureSubtitle));
+                                if (adminConfig.brochureServicesTitle) updateAdminConfig('brochureServicesTitle', await t1(adminConfig.brochureServicesTitle));
+                                if (adminConfig.brochurePricingNotes) updateAdminConfig('brochurePricingNotes', await t1(adminConfig.brochurePricingNotes));
+
+                                // Pricing items — translate service name + each feature individually
                                 try {
                                     let pricing = parseJSON(adminConfig.brochurePricing);
                                     for (let p of pricing) {
-                                        if (p.service) p.service = await translateText(p.service);
-                                        if (p.note) p.note = await translateText(p.note);
+                                        if (p.service) p.service = await t1(p.service);
                                         if (Array.isArray(p.features)) {
                                             for (let i = 0; i < p.features.length; i++) {
-                                                if (p.features[i]) p.features[i] = await translateText(p.features[i]);
+                                                if (p.features[i]) p.features[i] = await t1(p.features[i]);
                                             }
+                                            p.note = p.features.join(', ');
                                         }
                                     }
                                     updateAdminConfig('brochurePricing', JSON.stringify(pricing));
                                 } catch (e) {}
 
+                                // Manual projects
+                                try {
+                                    let manual = parseJSON(adminConfig.brochureManualProjects);
+                                    for (let p of manual) {
+                                        if (p.title) p.title = await t1(p.title);
+                                        if (p.description) p.description = await t1(p.description);
+                                    }
+                                    updateAdminConfig('brochureManualProjects', JSON.stringify(manual));
+                                } catch (e) {}
+
+                                // Custom sections (trust/support)
                                 try {
                                     let sections = parseJSON(adminConfig.brochureSections);
                                     for (let s of sections) {
-                                        if (s.title) s.title = await translateText(s.title);
+                                        if (s.title) s.title = await t1(s.title);
                                         if (Array.isArray(s.items)) {
                                             for (let i of s.items) {
-                                                if (i.title) i.title = await translateText(i.title);
-                                                if (i.text) i.text = await translateText(i.text);
+                                                if (i.title) i.title = await t1(i.title);
+                                                if (i.text)  i.text  = await t1(i.text);
                                             }
                                         }
                                     }
                                     updateAdminConfig('brochureSections', JSON.stringify(sections));
                                 } catch (e) {}
                                 
-                                alert("Translation complete!");
+                                alert("Translation complete! Click 'RESTORE EN' to go back to English.");
                             } catch (e) {
                                 console.error(e);
                                 alert("Translation failed. Please try again.");
@@ -131,6 +162,29 @@ const BrochureEditor: React.FC<BrochureEditorProps> = ({
                     >
                         {isTranslating ? 'TRANSLATING...' : 'TRANSLATE (HI)'}
                     </button>
+
+                    {hasSnapshot && (
+                        <button 
+                            onClick={async () => {
+                                if (!window.confirm('Restore the saved English version? This will overwrite all current brochure content.')) return;
+                                try {
+                                    const snapshot = JSON.parse(localStorage.getItem('brochure_en_snapshot') || '{}');
+                                    if (Object.keys(snapshot).length === 0) {
+                                        alert('No English snapshot found.');
+                                        return;
+                                    }
+                                    // Single atomic save — no race conditions
+                                    await bulkSaveAdminConfig(snapshot);
+                                    alert('English version restored and saved to server!');
+                                } catch (e) {
+                                    alert('Could not restore snapshot.');
+                                }
+                            }}
+                            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-amber-50 text-amber-600 px-4 py-3 rounded-2xl text-[10px] font-black tracking-widest hover:bg-amber-500 hover:text-white transition-all shadow-sm"
+                        >
+                            RESTORE EN
+                        </button>
+                    )}
                     <button onClick={handlePrint} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-900 text-white px-8 py-3 rounded-2xl text-[10px] font-black tracking-widest hover:bg-blue-600 transition-all shadow-xl shadow-black/10">
                         <Download size={14} /> GENERATE DOCUMENT
                     </button>
@@ -549,9 +603,46 @@ const BrochureEditor: React.FC<BrochureEditorProps> = ({
                         <div className="bg-slate-900 overflow-hidden rounded-[2.5rem] text-white shadow-2xl border border-white/5 animate-fadeIn">
                             <div className="p-8 pb-4">
                                 <div className="flex justify-between items-center border-b border-white/10 pb-4 mb-4">
+                                <div className="flex items-center gap-2">
                                     <h4 className="flex items-center gap-2 text-[10px] font-black uppercase text-blue-400 tracking-[.3em]">
                                         <MessageSquare size={14} /> Trust & Support
                                     </h4>
+                                    <button
+                                        onClick={async () => {
+                                            if (!window.confirm('Translate all Trust & Support sections back to English?')) return;
+                                            try {
+                                                const t1hi = async (text: string): Promise<string> => {
+                                                    if (!text?.trim()) return text;
+                                                    try {
+                                                        const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=hi|en`);
+                                                        const data = await res.json();
+                                                        const out = data?.responseData?.translatedText;
+                                                        await new Promise(r => setTimeout(r, 200));
+                                                        return out && !out.includes('MYMEMORY WARNING') ? out : text;
+                                                    } catch { return text; }
+                                                };
+
+                                                let sections = parseJSON(adminConfig.brochureSections);
+                                                for (let s of sections) {
+                                                    if (s.title) s.title = await t1hi(s.title);
+                                                    if (Array.isArray(s.items)) {
+                                                        for (let i of s.items) {
+                                                            if (i.title) i.title = await t1hi(i.title);
+                                                            if (i.text)  i.text  = await t1hi(i.text);
+                                                        }
+                                                    }
+                                                }
+                                                updateAdminConfig('brochureSections', JSON.stringify(sections));
+                                                alert('Sections reverted to English!');
+                                            } catch (e) {
+                                                alert('Revert failed. Please try again.');
+                                            }
+                                        }}
+                                        className="ml-2 px-3 py-1.5 bg-amber-500/20 text-amber-400 hover:bg-amber-500 hover:text-white rounded-lg text-[9px] font-black uppercase tracking-widest transition-all"
+                                    >
+                                        ↩ REVERT TO EN
+                                    </button>
+                                </div>
                                     <button 
                                         onClick={() => {
                                             let list = parseJSON(adminConfig.brochureSections);
