@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { FileText, Receipt, Download, Layout, Save, MessageSquare, Bell, Printer, Calculator, RotateCw } from 'lucide-react';
 import type { HeroData, Service, Project, SocialLink } from '../types';
@@ -44,6 +43,7 @@ const ADMIN_KEY = () => sessionStorage.getItem('apiKey') || import.meta.env.VITE
 
 const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, projects, socialLinks }) => {
     const [activeTab, setActiveTab] = useState<'brochure' | 'billing' | 'leads' | 'payments'>('brochure');
+    const [showPreview, setShowPreview] = useState(true);
     const [billItems, setBillItems] = useState<{ desc: string, price: number, qty: number }[]>([
         { desc: 'Website Development', price: 15000, qty: 1 }
     ]);
@@ -228,8 +228,11 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
     const printRef = useRef<HTMLDivElement>(null);
 
     const handlePrint = () => {
-        const printContent = printRef.current;
+        const printContent = document.getElementById('brochure-content');
         if (!printContent) return;
+        
+        const totalHeight = printContent.scrollHeight;
+        
         const WindowPrt = window.open('', '', 'left=0,top=0,width=900,height=900,toolbar=0,scrollbars=0,status=0');
         if (WindowPrt) {
             WindowPrt.document.write(`
@@ -240,7 +243,7 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
                         <script src="https://cdn.tailwindcss.com"></script>
                         <style>
                             @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-                            @page { size: A4; margin: 0; }
+                            @page { size: 210mm ${totalHeight}px; margin: 0; }
                             body { 
                                 font-family: 'Inter', sans-serif; 
                                 -webkit-print-color-adjust: exact !important; 
@@ -272,6 +275,7 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
                 </html>
             `);
             WindowPrt.document.close();
+            WindowPrt.focus();
         }
     };
 
@@ -306,7 +310,7 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {activeTab === 'brochure' ? (
                     <>
-                        <div className="lg:col-span-4 h-fit">
+                        <div className={`${showPreview ? 'lg:col-span-4' : 'lg:col-span-12 max-w-5xl mx-auto w-full'} h-fit transition-all duration-300`}>
                             <BrochureEditor 
                                 adminConfig={adminConfig} 
                                 updateAdminConfig={updateAdminConfig}
@@ -314,19 +318,23 @@ const FreelanceAdmin: React.FC<FreelanceAdminProps> = ({ heroData, services, pro
                                 testimonials={testimonials}
                                 handlePrint={handlePrint}
                                 socialLinks={socialLinks}
+                                showPreview={showPreview}
+                                setShowPreview={setShowPreview}
                             />
                         </div>
-                        <div className="lg:col-span-8">
-                            <BrochurePreview 
-                                printRef={printRef}
-                                adminConfig={adminConfig}
-                                heroData={heroData}
-                                projects={projects}
-                                testimonials={testimonials}
-                                activeTab={activeTab}
-                                socialLinks={socialLinks}
-                            />
-                        </div>
+                        {showPreview && (
+                            <div className="lg:col-span-8">
+                                <BrochurePreview 
+                                    printRef={printRef}
+                                    adminConfig={adminConfig}
+                                    heroData={heroData}
+                                    projects={projects}
+                                    testimonials={testimonials}
+                                    activeTab={activeTab}
+                                    socialLinks={socialLinks}
+                                />
+                            </div>
+                        )}
                     </>
                 ) : activeTab === 'leads' ? (
                     <div className="lg:col-span-12">

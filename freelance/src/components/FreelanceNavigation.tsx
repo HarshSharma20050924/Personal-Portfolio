@@ -15,18 +15,16 @@ export const FreelanceNavigation = ({ name = 'Harsh.' }: { name?: string }) => {
   const displayName = name.split(' ')[0] + '.';
 
   useMotionValueEvent(scrollY, "change", (latest) => {
-    const previous = scrollY.getPrevious() || 0;
-    if (latest > previous && latest > 150) {
-      setHidden(true);
-    } else {
-      setHidden(false);
-    }
+    // Header should always be visible per user request
+    setHidden(false);
   });
 
   const links = [
     { name: "Expertise", path: "/#services" },
     { name: "About", path: "/#about" },
     { name: "Work", path: "/work" },
+    { name: "Pricing", path: "/pricing" },
+    { name: "Process", path: "/process" },
   ];
 
   const handleNav = (path: string) => {

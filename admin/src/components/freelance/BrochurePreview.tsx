@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { MessageSquare } from 'lucide-react';
 import type { Project, HeroData, SocialLink } from '../../types';
@@ -13,11 +12,11 @@ interface BrochurePreviewProps {
     socialLinks: SocialLink[];
 }
 
-const BrochurePreview: React.FC<BrochurePreviewProps> = ({ 
-    printRef, 
-    adminConfig, 
-    heroData, 
-    projects, 
+const BrochurePreview: React.FC<BrochurePreviewProps> = ({
+    printRef,
+    adminConfig,
+    heroData,
+    projects,
     testimonials,
     activeTab,
     socialLinks
@@ -25,7 +24,7 @@ const BrochurePreview: React.FC<BrochurePreviewProps> = ({
     const parseJSON = (val: any) => {
         try {
             return typeof val === 'string' ? JSON.parse(val || '[]') : (val || []);
-        } catch(e) { return []; }
+        } catch (e) { return []; }
     };
 
     return (
@@ -47,14 +46,24 @@ const BrochurePreview: React.FC<BrochurePreviewProps> = ({
                         margin: 0 !important;
                         padding: 0 !important;
                     }
-                    .brochure-viewer {
+                    .brochure-viewer, #brochure-content {
                         padding: 0 !important;
                         margin: 0 !important;
                         background: white !important;
+                        display: block !important; /* Fixes flex page-break issues */
+                        min-height: 100% !important;
                     }
                     .no-print { display: none !important; }
-                    .no-break { break-inside: avoid !important; page-break-inside: avoid !important; }
-                    
+                    .no-break { 
+                        break-inside: avoid !important; 
+                        page-break-inside: avoid !important; 
+                        -webkit-column-break-inside: avoid !important;
+                        display: block !important;
+                    }
+                    h3, h4 {
+                        page-break-after: avoid !important;
+                        break-after: avoid !important;
+                    }
                     .bg-black { background-color: #000000 !important; -webkit-print-color-adjust: exact !important; }
                     .text-white { color: white !important; }
                     .border-blue-600 { border-color: #2563eb !important; }
@@ -73,9 +82,9 @@ const BrochurePreview: React.FC<BrochurePreviewProps> = ({
 
             <div ref={printRef} className="brochure-viewer flex-1 overflow-y-auto p-0 sm:p-4 bg-slate-100 dark:bg-slate-950 brochure-font">
                 <div id="brochure-content" className="w-full max-w-[210mm] mx-auto bg-white text-slate-900 shadow-xl flex flex-col relative">
-                    
+
                     {/* Header: Clean, Structured Identity */}
-                    <div className="bg-black text-white p-8 sm:p-16 flex flex-col sm:flex-row justify-between items-center sm:items-start border-b-[8px] sm:border-b-[12px] border-blue-600">
+                    <div className="bg-black text-white p-8 sm:p-16 flex flex-col sm:flex-row justify-between items-center sm:items-start border-b-[8px] sm:border-b-[12px] border-blue-600 no-break">
                         {adminConfig.brochureHideNamePhoto ? (
                             <div className="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center border border-white/10 rounded-xl bg-white/5 p-4 z-10 mb-8 sm:mb-0">
                                 <img src={adminConfig.brochureLogo || '/logo.svg'} className="w-full h-full object-contain" />
@@ -106,7 +115,7 @@ const BrochurePreview: React.FC<BrochurePreviewProps> = ({
                                     <a href={`mailto:${adminConfig.contactEmail || heroData.email}`} className="hover:text-white transition-colors">{adminConfig.contactEmail || heroData.email}</a>
                                     <a href={`tel:${(adminConfig.contactPhone || heroData.phone || '').replace(/[^0-9+]/g, '')}`} className="hover:text-white transition-colors">{adminConfig.contactPhone || heroData.phone}</a>
                                     <a href={(adminConfig.brochureWebsite || 'www.systemlabs.tech').startsWith('http') ? (adminConfig.brochureWebsite || 'www.systemlabs.tech') : `https://${adminConfig.brochureWebsite || 'www.systemlabs.tech'}`} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1.5">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M2 12h20" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>
                                         <span className="font-bold tracking-wide">{adminConfig.brochureWebsiteTitle || adminConfig.brochureName || 'System Labs'}</span>
                                     </a>
                                 </div>
@@ -119,31 +128,71 @@ const BrochurePreview: React.FC<BrochurePreviewProps> = ({
                         <div className="space-y-8">
                             <div className="border-l-4 border-blue-600 pl-4">
                                 <h3 className="text-lg font-bold tracking-tight">{adminConfig.brochureServicesTitle || 'Services'}</h3>
-                                <p className="text-sm text-slate-500 font-bold">Standard pricing and range</p>
+                                <p className="text-sm text-slate-500 font-bold">Standard pricing and scope of work</p>
                             </div>
-                            
-                            <div className="grid grid-cols-1 gap-4">
-                                {parseJSON(adminConfig.brochurePricing).map((p:any, idx:number) => (
-                                    <div key={idx} className="p-6 bg-slate-50 border border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 no-break hover:bg-slate-100/50 transition-colors">
-                                        <div className="flex items-center gap-4">
-                                            {p.image && (
-                                                <div className="w-10 h-10 bg-white border border-slate-200 p-2 flex-shrink-0 rounded">
-                                                    <img src={p.image} className="w-full h-full object-contain" />
+
+                            <div className="grid grid-cols-1 gap-6">
+                                {parseJSON(adminConfig.brochurePricing).map((p: any, idx: number) => {
+                                    // Feature bullets fallback parser
+                                    const features: string[] = Array.isArray(p.features)
+                                        ? p.features
+                                        : (p.note ? p.note.split(',').map((f: string) => f.trim()) : []);
+
+                                    return (
+                                        <div key={idx} className="p-6 bg-slate-50 border border-slate-100 flex flex-col md:flex-row justify-between items-start gap-6 no-break hover:bg-slate-100/50 transition-colors rounded-xl">
+                                            <div className="flex items-start gap-4 flex-1">
+                                                {p.image && (
+                                                    <div className="w-10 h-10 bg-white border border-slate-200 p-2 flex-shrink-0 rounded mt-0.5">
+                                                        <img src={p.image} className="w-full h-full object-contain" />
+                                                    </div>
+                                                )}
+                                                <div className="space-y-3 flex-1">
+                                                    <h4 className="font-bold text-base text-slate-800">{p.service}</h4>
+
+                                                    {/* Custom Scannable Bullet Grids instead of basic notes */}
+                                                    {features.length > 0 && (
+                                                        <div className="pt-1">
+                                                            <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 mb-1.5">What's Included</p>
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
+                                                                {features.filter(f => f.trim() !== '').map((feat, fIdx) => (
+                                                                    <div key={fIdx} className="flex items-center gap-1.5 text-xs text-slate-600 font-medium">
+                                                                        <span className="w-1 h-1 rounded-full bg-blue-500 flex-shrink-0" />
+                                                                        <span>{feat}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            )}
-                                            <div>
-                                                <h4 className="font-bold text-base text-slate-800">{p.service}</h4>
-                                                <p className="text-sm text-slate-600 font-medium mt-1.5">{p.note || 'Starting range'}</p>
+                                            </div>
+                                            <div className="md:text-right flex-shrink-0 border-l md:border-l-0 md:border-r border-slate-200 pl-4 md:pl-0 md:pr-6 min-w-[120px] flex flex-col justify-center">
+                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Starting At</p>
+                                                <p className="text-2xl font-bold text-blue-600 tracking-tight">{p.range}</p>
                                             </div>
                                         </div>
-                                        <div className="sm:text-right flex-shrink-0 border-l sm:border-l-0 sm:border-r border-slate-200 pl-4 sm:pl-0 sm:pr-4">
-                                            <p className="text-2xl font-bold text-blue-600 tracking-tight">{p.range}</p>
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1.5">Est. range</p>
-                                        </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
-                        </div>
+                            <div className="mt-10 p-6 bg-slate-50/80 border-l-[3px] border-black rounded-r-2xl no-break space-y-4">
+                                <div className="flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
+                                    <p className="text-[10px] font-black uppercase text-slate-900 tracking-[0.2em]">Pricing Notes</p>
+                                </div>
+                                <div className="space-y-3 pl-1.5">
+                                    <div className="flex items-start gap-3 text-xs text-slate-700 font-medium leading-relaxed">
+                                        <span className="text-blue-600 mt-1 flex-shrink-0 text-[6px]">■</span>
+                                        <span>Prices shown are starting estimates for standard projects.</span>
+                                    </div>
+                                    <div className="flex items-start gap-3 text-xs text-slate-700 font-medium leading-relaxed">
+                                        <span className="text-blue-600 mt-1 flex-shrink-0 text-[6px]">■</span>
+                                        <span>Final quotation depends on project scope, features, integrations, and complexity.</span>
+                                    </div>
+                                    <div className="flex items-start gap-3 text-xs text-slate-700 font-medium leading-relaxed">
+                                        <span className="text-blue-600 mt-1 flex-shrink-0 text-[6px]">■</span>
+                                        <span>Domain, hosting, premium APIs, third-party services, and paid software licenses are charged separately unless explicitly included.</span>
+                                    </div>
+                                </div>
+                            </div>                </div>
 
                         {/* Projects Section */}
                         {((parseJSON(adminConfig.brochureProjects).length > 0) || (parseJSON(adminConfig.brochureManualProjects).length > 0)) && (
@@ -167,7 +216,7 @@ const BrochurePreview: React.FC<BrochurePreviewProps> = ({
                                                     <h4 className="font-bold text-base text-slate-800">{p.title}</h4>
                                                     {displayLink && (
                                                         <a href={displayLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 mt-2.5 px-4 py-2 bg-blue-50 text-blue-700 text-xs font-bold rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors no-underline">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M2 12h20" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>
                                                             View Project
                                                         </a>
                                                     )}
@@ -188,7 +237,7 @@ const BrochurePreview: React.FC<BrochurePreviewProps> = ({
                                                 <h4 className="font-bold text-base text-slate-800">{p.title}</h4>
                                                 {p.link && (
                                                     <a href={p.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 mt-2.5 px-4 py-2 bg-blue-50 text-blue-700 text-xs font-bold rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors no-underline">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M2 12h20" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>
                                                         View Project
                                                     </a>
                                                 )}
@@ -226,31 +275,31 @@ const BrochurePreview: React.FC<BrochurePreviewProps> = ({
                     </div>
 
                     {/* Footer: Action focused, extremely clean */}
-                    <div className="mt-auto border-t border-slate-100">
+                    <div className="mt-auto border-t border-slate-100 no-break">
                         <div
                             className="bg-black text-white p-8 sm:p-14 flex flex-col sm:flex-row justify-between items-center gap-6"
                         >
-                            <a 
+                            <a
                                 href={`https://wa.me/${(adminConfig.contactPhone || heroData.phone).replace(/\D/g, '')}?text=${encodeURIComponent("Hi, I saw your brochure and I'm interested in starting a project.")}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-center sm:text-left no-underline text-white"
                             >
-                                <h3 className="text-2xl font-bold tracking-tight mb-1">Start project</h3>
+                                <h3 className="text-2xl font-bold tracking-tight mb-1">Book a Free Consultation</h3>
                                 <p className="text-xs text-white/50 font-medium">WhatsApp: {adminConfig.contactPhone || heroData.phone}</p>
                             </a>
                             <div className="flex gap-3">
-                                {parseJSON(adminConfig.brochureSocials).filter((s:any) => s.url && s.url.trim() !== '' && s.url !== '#').map((s:any, idx:number) => {
+                                {parseJSON(adminConfig.brochureSocials).filter((s: any) => s.url && s.url.trim() !== '' && s.url !== '#').map((s: any, idx: number) => {
                                     const name = (s.platform || '').toLowerCase();
                                     const iconMap: Record<string, JSX.Element> = {
-                                        linkedin: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>,
-                                        instagram: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>,
-                                        facebook: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>,
-                                        youtube: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>,
-                                        twitter: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>,
-                                        x: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>,
-                                        github: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>,
-                                        mail: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>,
+                                        linkedin: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" /></svg>,
+                                        instagram: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" /></svg>,
+                                        facebook: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>,
+                                        youtube: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" /></svg>,
+                                        twitter: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>,
+                                        x: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>,
+                                        github: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" /></svg>,
+                                        mail: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>,
                                     };
                                     return (
                                         <a href={s.url} target="_blank" rel="noopener noreferrer" key={idx} className="w-10 h-10 border border-white/10 rounded-lg flex items-center justify-center text-white/50 hover:text-white hover:border-white/30 transition-colors" title={s.platform}>

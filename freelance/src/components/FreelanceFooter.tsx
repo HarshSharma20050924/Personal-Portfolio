@@ -56,6 +56,12 @@ export const FreelanceFooter = ({ socialLinks, name }: { socialLinks: SocialLink
         </div>
 
         <div className="flex gap-8 mt-6 md:mt-0">
+          <button 
+            onClick={() => { navigate('/terms'); window.scrollTo(0,0); }}
+            className="clickable hover:text-white transition-colors duration-300 font-mono uppercase tracking-widest text-xs"
+          >
+            Terms & Conditions
+          </button>
           {visibleLinks.length > 0 ? (
             visibleLinks.map(link => {
               const Icon = getSocialIcon(link.icon);

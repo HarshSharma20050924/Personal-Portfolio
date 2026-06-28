@@ -6,8 +6,9 @@ import { ChevronDown, Check, Send, Loader2 } from 'lucide-react';
 import { FreelanceNavigation } from '../components/FreelanceNavigation';
 import FreelanceCursor from '../components/FreelanceCursor';
 import { SplitText } from '../components/SplitText';
-import { Service } from '../types';
+import { Service, SocialLink } from '../types';
 import { API_BASE } from '../config';
+import { FreelanceFooter } from '../components/FreelanceFooter';
 
 // Custom Elite Select Component
 const EliteSelect = ({ options, value, onChange, placeholder }: any) => {
@@ -63,7 +64,7 @@ const EliteSelect = ({ options, value, onChange, placeholder }: any) => {
   );
 };
 
-const ContactPage = ({ name }: { name?: string }) => {
+const ContactPage = ({ name, socialLinks }: { name?: string, socialLinks?: SocialLink[] }) => {
   const location = useLocation();
   const [formState, setFormState] = useState({
     name: '', // Acts as Name / Company
@@ -280,6 +281,7 @@ const ContactPage = ({ name }: { name?: string }) => {
           </AnimatePresence>
         </div>
       </div>
+      <FreelanceFooter socialLinks={socialLinks || []} name={name} />
     </div>
   );
 };

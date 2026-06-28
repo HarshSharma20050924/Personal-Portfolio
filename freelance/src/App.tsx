@@ -5,6 +5,9 @@ import Home from './pages/Home';
 import Contact from './pages/Contact';
 import Work from './pages/Work';
 import ServiceDetail from './pages/ServiceDetail';
+import PricingPage from './pages/Pricing';
+import ProcessPage from './pages/Process';
+import TermsPage from './pages/Terms';
 import { HeroData, Project, Skill, SocialLink, Article, Testimonial } from './types';
 import { API_BASE, FALLBACK_DATA } from './config';
 
@@ -52,9 +55,12 @@ const App: React.FC = () => {
             articles={data.articles}
           />
         } />
-        <Route path="/contact" element={<Contact name={data.heroData.name} />} />
-        <Route path="/work" element={<Work name={data.heroData.name} />} />
-        <Route path="/service/:id" element={<ServiceDetail name={data.heroData.name} />} />
+        <Route path="/contact" element={<Contact name={data.heroData.name} socialLinks={data.socialLinks} />} />
+        <Route path="/work" element={<Work name={data.heroData.name} socialLinks={data.socialLinks} />} />
+        <Route path="/service/:id" element={<ServiceDetail name={data.heroData.name} socialLinks={data.socialLinks} />} />
+        <Route path="/pricing" element={<PricingPage name={data.heroData.name} socialLinks={data.socialLinks} />} />
+        <Route path="/process" element={<ProcessPage name={data.heroData.name} socialLinks={data.socialLinks} />} />
+        <Route path="/terms" element={<TermsPage name={data.heroData.name} socialLinks={data.socialLinks} />} />
       </Routes>
     </Router>
   );

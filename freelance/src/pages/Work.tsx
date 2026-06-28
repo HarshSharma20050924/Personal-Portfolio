@@ -8,8 +8,9 @@ import FreelanceCursor from '../components/FreelanceCursor';
 import { Project, Service } from '../types';
 import { API_BASE } from '../config';
 import { AnimatePresence } from 'framer-motion';
+import { FreelanceFooter } from '../components/FreelanceFooter';
 
-const WorkPage = ({ name }: { name?: string }) => {
+const WorkPage = ({ name, socialLinks }: { name?: string, socialLinks?: SocialLink[] }) => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
@@ -165,6 +166,7 @@ const WorkPage = ({ name }: { name?: string }) => {
           </motion.div>
         )}
       </AnimatePresence>
+      <FreelanceFooter socialLinks={socialLinks || []} name={name} />
     </div>
   );
 };
