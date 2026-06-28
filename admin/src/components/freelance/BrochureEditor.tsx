@@ -716,6 +716,11 @@ const BrochureEditor: React.FC<BrochureEditorProps> = ({
                                                                 list[sIdx].items[iIdx].text = e.target.value;
                                                                 updateAdminConfig('brochureSections', JSON.stringify(list));
                                                             }} className="w-full bg-white/[0.05] p-2 rounded-lg text-white/60 text-xs h-16 resize-none" placeholder="Description" />
+                                                            <input value={item.image || ''} onChange={(e) => {
+                                                                let list = parseJSON(adminConfig.brochureSections);
+                                                                list[sIdx].items[iIdx].image = e.target.value;
+                                                                updateAdminConfig('brochureSections', JSON.stringify(list));
+                                                            }} className="w-full bg-white/[0.05] p-2 rounded-lg text-white/60 text-xs" placeholder="Image URL (optional)" />
                                                         </div>
                                                     </div>
                                                 ))}

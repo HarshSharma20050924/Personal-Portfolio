@@ -25,6 +25,7 @@ export default defineConfig({
     },
   },
   build: {
+    assetsDir: 'freelance-assets',
     // Enable minification
     minify: 'terser',
     terserOptions: {

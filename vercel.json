@@ -25,6 +25,13 @@
       "config": {
         "distDir": "dist"
       }
+    },
+    {
+      "src": "freelance/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
     }
   ],
   "routes": [
@@ -65,11 +72,27 @@
       "dest": "/client/logo.svg"
     },
     {
+      "src": "/freelance-assets/(.*)",
+      "dest": "/freelance/freelance-assets/$1"
+    },
+    {
       "src": "/service/(.*)",
       "dest": "/freelance/index.html"
     },
     {
       "src": "/work",
+      "dest": "/freelance/index.html"
+    },
+    {
+      "src": "/pricing",
+      "dest": "/freelance/index.html"
+    },
+    {
+      "src": "/process",
+      "dest": "/freelance/index.html"
+    },
+    {
+      "src": "/terms",
       "dest": "/freelance/index.html"
     },
     {
